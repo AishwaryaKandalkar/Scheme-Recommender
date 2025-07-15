@@ -1,88 +1,138 @@
 import 'package:flutter/material.dart';
 
-class WelcomeScreen extends StatefulWidget {
-  @override
-  _WelcomeScreenState createState() => _WelcomeScreenState();
-}
-
-class _WelcomeScreenState extends State<WelcomeScreen> {
-  String _selectedLanguage = 'English';
-  final List<String> _languages = ['English', 'Hindi', 'Tamil', 'Telugu'];
+class WelcomeScreen extends StatelessWidget {
+  final List<Map<String, dynamic>> features = [
+    {
+      'icon': Icons.location_on,
+      'title': 'Location Based',
+      'description': 'Get personalized schemes based on your location and preferred language',
+      'color': Colors.blue,
+    },
+    {
+      'icon': Icons.support_agent,
+      'title': 'Expert Support',
+      'description': 'Chat or call local agents for personalized assistance',
+      'color': Colors.purple,
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          // Background
-          Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/welcome_bg.jpg'),
-                fit: BoxFit.cover,
+      backgroundColor: Color(0xFFF1F4FF),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Column(
+            children: [
+              SizedBox(height: 20),
+              Text(
+                '🪔 योजना Finance Guide',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
               ),
-            ),
-          ),
-          // Language selector
-          Positioned(
-            top: 40,
-            right: 16,
-            child: DropdownButton<String>(
-              value: _selectedLanguage,
-              dropdownColor: Colors.white,
-              icon: Icon(Icons.language, color: Colors.white),
-              underline: SizedBox(),
-              onChanged: (val) => setState(() => _selectedLanguage = val!),
-              items: _languages.map((lang) => DropdownMenuItem(
-                value: lang,
-                child: Text(lang),
-              )).toList(),
-            ),
-          ),
-          // Buttons
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Welcome to SchemeFinder',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    shadows: [Shadow(blurRadius: 10, color: Colors.black)],
+              SizedBox(height: 8),
+              Text(
+                'Your personalized guide to government and private financial schemes',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.black54,
+                ),
+              ),
+              SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.shield, color: Colors.green, size: 18),
+                  SizedBox(width: 4),
+                  Text('Secure & Trusted', style: TextStyle(color: Colors.green)),
+                  SizedBox(width: 16),
+                  Icon(Icons.auto_graph, color: Colors.blue, size: 18),
+                  SizedBox(width: 4),
+                  Text('AI Powered', style: TextStyle(color: Colors.blue)),
+                ],
+              ),
+              SizedBox(height: 28),
+              Expanded(
+                child: ListView.separated(
+                  itemCount: features.length,
+                  separatorBuilder: (_, __) => SizedBox(height: 20),
+                  itemBuilder: (context, index) {
+                    final feature = features[index];
+                    return Container(
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2)),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(feature['icon'], size: 40, color: feature['color']),
+                          SizedBox(height: 10),
+                          Text(
+                            feature['title'],
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            feature['description'],
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.grey[700]),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              SizedBox(height: 16),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                alignment: WrapAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () => Navigator.pushNamed(context, '/location', arguments: '/login'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    ),
+                    child: Text('Login', style: TextStyle(fontSize: 16, color: Colors.white)),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 30),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () => Navigator.pushNamed(context, '/login'),
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                        backgroundColor: Colors.greenAccent.shade700,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                      ),
-                      child: Text('Login', style: TextStyle(fontSize: 16, color: Colors.white)),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pushNamed(context, '/location', arguments: '/profile'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      padding: EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                     ),
-                    SizedBox(width: 20),
-                    ElevatedButton(
-                      onPressed: () => Navigator.pushNamed(context, '/register'),
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                        backgroundColor: Colors.blueAccent,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                      ),
-                      child: Text('Register', style: TextStyle(fontSize: 16, color: Colors.white)),
+                    child: Text('Register', style: TextStyle(fontSize: 16, color: Colors.white)),
+                  ),
+
+                  OutlinedButton.icon(
+                    onPressed: () => Navigator.pushNamed(context, '/location'),
+                    icon: Icon(Icons.location_on, color: Colors.blue),
+                    label: Text("Location Access", style: TextStyle(color: Colors.blue)),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.blue),
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 24),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
