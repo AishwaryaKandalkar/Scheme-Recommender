@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -22,7 +23,8 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Logged in successfully!')),
       );
-      // TODO: Navigate to your dashboard or home
+      // Redirect to HomeScreen after login
+      Navigator.pushReplacementNamed(context, '/home');
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Login failed: ${e.toString()}')),
