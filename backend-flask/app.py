@@ -54,23 +54,26 @@ def filter_by_profile(user, df):
 
 def recommend_schemes(user_profile, user_text_description, top_k=3):
     filtered_df = filter_by_profile(user_profile, df_schemes)
-    if len(filtered_df) == 0:
-        return None
-
     user_embedding = model.encode(user_text_description, convert_to_tensor=True)
 
-    filtered_texts = (
-        filtered_df['scheme_goal'].fillna('') + ". " +
-        filtered_df['eligibility'].fillna('') + ". " +
-        filtered_df['benefits'].fillna('') + ". " +
-        filtered_df['total_returns'].fillna('') + ". " +
-        filtered_df['time_duration'].fillna('')
-    ).tolist()
-    filtered_embeddings = model.encode(filtered_texts, convert_to_tensor=True)
+    # If no profile match, fallback to semantic search over all schemes
+    if len(filtered_df) == 0:
+        search_df = df_schemes
+    else:
+        search_df = filtered_df
 
-    similarities = util.pytorch_cos_sim(user_embedding, filtered_embeddings)[0].cpu().numpy()
+    search_texts = (
+        search_df['scheme_goal'].fillna('') + ". " +
+        search_df['eligibility'].fillna('') + ". " +
+        search_df['benefits'].fillna('') + ". " +
+        search_df['total_returns'].fillna('') + ". " +
+        search_df['time_duration'].fillna('')
+    ).tolist()
+    search_embeddings = model.encode(search_texts, convert_to_tensor=True)
+
+    similarities = util.pytorch_cos_sim(user_embedding, search_embeddings)[0].cpu().numpy()
     top_indices = np.argsort(similarities)[::-1][:top_k]
-    recommended = filtered_df.iloc[top_indices].copy()
+    recommended = search_df.iloc[top_indices].copy()
     recommended["similarity_score"] = similarities[top_indices]
 
     return recommended[[

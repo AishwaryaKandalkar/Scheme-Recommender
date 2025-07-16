@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import './_home_screen_body.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
@@ -64,86 +65,6 @@ final _auth = FirebaseAuth.instance;
   @override
   Widget build(BuildContext context) {
     final user = _auth.currentUser;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Welcome'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () => _logout(context),
-          )
-        ],
-      ),
-      body: FutureBuilder<Map<String, dynamic>?>(
-        future: _fetchProfile(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return Center(child: CircularProgressIndicator());
-          }
-          final profile = snapshot.data!;
-          return FutureBuilder<List<dynamic>?>(
-            future: _fetchSchemes(profile),
-            builder: (context, schemeSnap) {
-              if (schemeSnap.hasError) {
-                return Center(child: Text('Error: ${schemeSnap.error}'));
-              }
-              if (schemeSnap.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
-              }
-              final schemes = schemeSnap.data;
-              if (schemes == null) {
-                return Center(child: Text('No data received from backend.'));
-              }
-              return Padding(
-                padding: EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Welcome, ${user?.email ?? 'User'}!',
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 20),
-                    Text(
-                      'Here are your recommended schemes:',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                    ),
-                    SizedBox(height: 20),
-                    Expanded(
-                      child: schemes.isEmpty
-                          ? Center(child: Text('No recommendations found or check your profile data.'))
-                          : ListView.builder(
-                              itemCount: schemes.length,
-                              itemBuilder: (context, index) {
-                                final scheme = schemes[index];
-                                return Card(
-                                  margin: EdgeInsets.all(10),
-                                  child: ListTile(
-                                    title: Text(scheme['scheme_name'] ?? ''),
-                                    subtitle: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text('Goal: ${scheme['scheme_goal'] ?? ''}'),
-                                        Text('Benefits: ${scheme['benefits'] ?? ''}'),
-                                        Text('Returns: ${scheme['total_returns'] ?? ''}'),
-                                        Text('Duration: ${scheme['time_duration'] ?? ''}'),
-                                        Text('Website: ${scheme['scheme_website'] ?? ''}'),
-                                        Text('Score: ${scheme['similarity_score']?.toStringAsFixed(2) ?? ''}'),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        },
-      ),
-    );
+    return HomeScreenBody();
   }
 }
