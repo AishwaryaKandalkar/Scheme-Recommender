@@ -99,7 +99,7 @@ class WelcomeScreen extends StatelessWidget {
                 alignment: WrapAlignment.center,
                 children: [
                   ElevatedButton(
-                    onPressed: () => Navigator.pushNamed(context, '/location', arguments: '/login'),
+                    onPressed: () => Navigator.pushNamed(context, '/login'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       padding: EdgeInsets.symmetric(horizontal: 28, vertical: 14),
@@ -108,24 +108,13 @@ class WelcomeScreen extends StatelessWidget {
                     child: Text('Login', style: TextStyle(fontSize: 16, color: Colors.white)),
                   ),
                   ElevatedButton(
-                    onPressed: () => Navigator.pushNamed(context, '/location', arguments: '/profile'),
+                    onPressed: () => Navigator.pushNamed(context, '/profile'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       padding: EdgeInsets.symmetric(horizontal: 28, vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                     ),
                     child: Text('Register', style: TextStyle(fontSize: 16, color: Colors.white)),
-                  ),
-
-                  OutlinedButton.icon(
-                    onPressed: () => Navigator.pushNamed(context, '/location'),
-                    icon: Icon(Icons.location_on, color: Colors.blue),
-                    label: Text("Location Access", style: TextStyle(color: Colors.blue)),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.blue),
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                    ),
                   ),
                 ],
               ),

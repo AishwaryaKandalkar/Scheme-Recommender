@@ -17,7 +17,7 @@ final _auth = FirebaseAuth.instance;
     final user = _auth.currentUser;
     if (user == null) return null;
     final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-    print(doc.data());
+    print('Firestore profile: ${doc.data()}');
     return doc.data();
   }
 
@@ -38,19 +38,27 @@ final _auth = FirebaseAuth.instance;
       'social_category': profile['category'] ?? 'General',
       'income_group': _mapIncome(profile['annual_income']),
       'location': profile['location'] ?? 'Urban',
-      'situation': profile['situation'] ?? '',
+      'situation': profile['situation'] ?? 'Looking for investment schemes',
     };
+    print('Sending to backend: $data');
     final url = Uri.parse('http://10.78.91.251:5000/recommend');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
       body: json.encode(data),
     );
+    print('Backend response: ${response.body}');
     if (response.statusCode == 200) {
       final result = json.decode(response.body);
-      return result['recommended_schemes'];
+      if (result.containsKey('recommended_schemes')) {
+        return result['recommended_schemes'];
+      } else {
+        print('Backend error/message: ${result['error'] ?? result['message']}');
+        return [];
+      }
     }
-    return null;
+    print('HTTP error: ${response.statusCode}');
+    return [];
   }
 
   @override
@@ -76,10 +84,16 @@ final _auth = FirebaseAuth.instance;
           return FutureBuilder<List<dynamic>?>(
             future: _fetchSchemes(profile),
             builder: (context, schemeSnap) {
-              if (!schemeSnap.hasData) {
+              if (schemeSnap.hasError) {
+                return Center(child: Text('Error: ${schemeSnap.error}'));
+              }
+              if (schemeSnap.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
               }
-              final schemes = schemeSnap.data!;
+              final schemes = schemeSnap.data;
+              if (schemes == null) {
+                return Center(child: Text('No data received from backend.'));
+              }
               return Padding(
                 padding: EdgeInsets.all(24),
                 child: Column(
@@ -98,7 +112,7 @@ final _auth = FirebaseAuth.instance;
                     SizedBox(height: 20),
                     Expanded(
                       child: schemes.isEmpty
-                          ? Center(child: Text('No recommendations found.'))
+                          ? Center(child: Text('No recommendations found or check your profile data.'))
                           : ListView.builder(
                               itemCount: schemes.length,
                               itemBuilder: (context, index) {

@@ -100,7 +100,18 @@ def recommend():
     if result_df is None:
         return jsonify({"message": "No eligible schemes found."})
 
-    result_json = result_df.to_dict(orient="records")
+    # Clean NaN and infinite values before returning JSON
+    import numpy as np
+    def clean_json(obj):
+        if isinstance(obj, dict):
+            return {k: clean_json(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [clean_json(v) for v in obj]
+        elif isinstance(obj, float) and (np.isnan(obj) or np.isinf(obj)):
+            return "N/A"
+        return obj
+
+    result_json = clean_json(result_df.to_dict(orient="records"))
 
     return jsonify({
         "recommended_schemes": result_json,
