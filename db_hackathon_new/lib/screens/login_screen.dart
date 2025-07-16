@@ -97,6 +97,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Text("Don’t have an account? Register",
                       style: TextStyle(color: Colors.blue)),
                 ),
+                SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: () => Navigator.pushNamed(context, '/chatbot'),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: Size(double.infinity, 45),
+                    backgroundColor: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text("Chatbot", style: TextStyle(color: Colors.white)),
+                ),
               ],
             ),
           ),

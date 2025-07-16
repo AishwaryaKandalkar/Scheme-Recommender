@@ -7,6 +7,7 @@ import 'screens/login_screen.dart';
 import 'screens/profile_creation_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/language_selection_screen.dart';
+import 'screens/chatbot_screen.dart';
 import 'providers/language_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -30,12 +31,13 @@ class SchemeFinderApp extends StatelessWidget {
             supportedLocales: const [Locale('en'), Locale('hi'), Locale('ta'), Locale('te')],
             initialRoute: '/',
             routes: {
-              '/': (_) => WelcomeScreen(),
-              '/location': (_) => LocationAccessScreen(),
-              '/language': (_) => LanguageSelectionScreen(),
-              '/login': (_) => LoginScreen(),
-              '/profile': (_) => ProfileCreationScreen(),
-              '/home': (_) => HomeScreen(),
+                  '/': (_) => WelcomeScreen(),
+                  '/location': (_) => LocationAccessScreen(),
+                  '/language': (_) => LanguageSelectionScreen(),
+                  '/login': (_) => LoginScreen(),
+                  '/profile': (_) => ProfileCreationScreen(),
+                  '/home': (_) => HomeScreen(),
+                  '/chatbot': (_) => ChatbotScreen(),
             },
           );
         },

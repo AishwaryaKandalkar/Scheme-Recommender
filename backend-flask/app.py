@@ -121,6 +121,44 @@ def recommend():
         "count": len(result_json)
     })
 
+
+# Chatbot endpoint: answers any question about the schemes dataset
+@app.route("/chatbot", methods=["POST"])
+def chatbot():
+    data = request.get_json()
+    question = data.get("question", "").strip()
+    if not question:
+        return jsonify({"answer": "Please provide a question."}), 400
+
+    # Embed the user question
+    question_embedding = model.encode(question, convert_to_tensor=True)
+    # Use the text_blob column for semantic search
+    scheme_texts = df_schemes['text_blob'].tolist()
+    scheme_embeddings = model.encode(scheme_texts, convert_to_tensor=True)
+    similarities = util.pytorch_cos_sim(question_embedding, scheme_embeddings)[0].cpu().numpy()
+    top_indices = np.argsort(similarities)[::-1][:3]
+    top_schemes = df_schemes.iloc[top_indices]
+
+    # Compose a conversational answer
+    answer = "Here are the most relevant schemes I found for your question:\n\n"
+    for idx, row in top_schemes.iterrows():
+        answer += f"\U0001F4C4 {row['scheme_name']}\n"
+        if pd.notna(row['scheme_goal']):
+            answer += f"Goal: {row['scheme_goal']}\n"
+        if pd.notna(row['eligibility']):
+            answer += f"Eligibility: {row['eligibility']}\n"
+        if pd.notna(row['benefits']):
+            answer += f"Benefits: {row['benefits']}\n"
+        if pd.notna(row['total_returns']):
+            answer += f"Returns: {row['total_returns']}\n"
+        if pd.notna(row['time_duration']):
+            answer += f"Duration: {row['time_duration']}\n"
+        if pd.notna(row['scheme_website']):
+            answer += f"Website: {row['scheme_website']}\n"
+        answer += "\n"
+    answer = answer.strip()
+    return jsonify({"answer": answer})
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
 
