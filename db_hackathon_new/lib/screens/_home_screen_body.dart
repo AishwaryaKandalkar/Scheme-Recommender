@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
+import 'scheme_detail_screen.dart';
 import 'dart:convert';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -88,9 +89,9 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
         title: Text('Welcome'),
         actions: [
           IconButton(
-            icon: Icon(Icons.edit),
-            tooltip: 'Edit Profile',
-            onPressed: () => Navigator.pushNamed(context, '/profile'),
+            icon: Icon(Icons.account_circle),
+            tooltip: 'Account',
+            onPressed: () => Navigator.pushNamed(context, '/account'),
           ),
           IconButton(
             icon: Icon(Icons.logout),
@@ -148,7 +149,26 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                         return Card(
                           margin: EdgeInsets.all(10),
                           child: ListTile(
-                            title: Text(scheme['scheme_name'] ?? ''),
+                            title: GestureDetector(
+                              child: Text(
+                                scheme['scheme_name'] ?? '',
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              onTap: () {
+                                if ((scheme['scheme_name'] ?? '').isNotEmpty) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => SchemeDetailScreen(schemeName: scheme['scheme_name']),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [

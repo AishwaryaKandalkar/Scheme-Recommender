@@ -8,6 +8,8 @@ import 'screens/profile_creation_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/language_selection_screen.dart';
 import 'screens/chatbot_screen.dart';
+import 'screens/account_page.dart';
+import 'screens/my_schemes_page.dart';
 import 'providers/language_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -38,6 +40,9 @@ class SchemeFinderApp extends StatelessWidget {
                   '/profile': (_) => ProfileCreationScreen(),
                   '/home': (_) => HomeScreen(),
                   '/chatbot': (_) => ChatbotScreen(),
+                  '/account': (_) => AccountPage(),
+                  '/edit_profile': (_) => ProfileCreationScreen(),
+                  '/my_schemes': (_) => MySchemesPage(),
             },
           );
         },
