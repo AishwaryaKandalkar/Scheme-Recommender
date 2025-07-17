@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../gen_l10n/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -14,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   void _login() async {
+    final loc = AppLocalizations.of(context)!;
     setState(() => _isLoading = true);
     try {
       await _auth.signInWithEmailAndPassword(
@@ -21,13 +23,12 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Logged in successfully!')),
+        SnackBar(content: Text(loc.loginSuccess)),
       );
-      // Redirect to HomeScreen after login
       Navigator.pushReplacementNamed(context, '/home');
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login failed: ${e.toString()}')),
+        SnackBar(content: Text('${loc.loginFailed}: ${e.toString()}')),
       );
     } finally {
       setState(() => _isLoading = false);
@@ -36,6 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Color(0xFFF7FAFE),
       body: Center(
@@ -53,14 +55,14 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 Icon(Icons.lock_open, size: 60, color: Colors.blue),
                 SizedBox(height: 16),
-                Text("Login",
+                Text(loc.login,
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                 SizedBox(height: 24),
 
                 TextField(
                   controller: _emailController,
                   decoration: InputDecoration(
-                    labelText: 'Email',
+                    labelText: loc.email,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   ),
                   keyboardType: TextInputType.emailAddress,
@@ -71,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _passwordController,
                   obscureText: true,
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: loc.password,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   ),
                 ),
@@ -88,13 +90,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: _isLoading
                       ? CircularProgressIndicator(color: Colors.white)
-                      : Text("Login"),
+                      : Text(loc.login),
                 ),
                 SizedBox(height: 12),
 
                 TextButton(
                   onPressed: () => Navigator.pushNamed(context, '/profile'),
-                  child: Text("Don’t have an account? Register",
+                  child: Text(loc.dontHaveAccount,
                       style: TextStyle(color: Colors.blue)),
                 ),
                 SizedBox(height: 12),
@@ -107,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: Text("Chatbot", style: TextStyle(color: Colors.white)),
+                  child: Text(loc.chatbot, style: TextStyle(color: Colors.white)),
                 ),
               ],
             ),

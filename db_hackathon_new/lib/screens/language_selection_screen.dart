@@ -33,10 +33,9 @@ class LanguageSelectionScreen extends StatelessWidget {
                 runSpacing: 10,
                 alignment: WrapAlignment.center,
                 children: [
-                  _langBtn(context, 'English', 'en', targetRoute),
-                  _langBtn(context, 'हिन्दी', 'hi', targetRoute),
-                  _langBtn(context, 'தமிழ்', 'ta', targetRoute),
-                  _langBtn(context, 'తెలుగు', 'te', targetRoute),
+                  _langBtn(context, 'English', 'en', '/'),
+                  _langBtn(context, 'हिन्दी', 'hi', '/'),
+                  _langBtn(context, 'मराठी', 'mr', '/'),
                 ],
               )
             ],

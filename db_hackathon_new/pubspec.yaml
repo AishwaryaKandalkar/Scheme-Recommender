@@ -35,6 +35,9 @@ dependencies:
   cloud_firestore: ^4.15.0
   geolocator: ^10.1.0  # or latest
   provider: ^6.1.1
+  intl: ^0.20.2
+  flutter_localizations:
+    sdk: flutter
 
 
 
@@ -59,9 +62,10 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  generate: true
+  uses-material-design: true
   assets:
     - assets/images/welcome_bg.jpg
-
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

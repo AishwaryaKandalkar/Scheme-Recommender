@@ -4,10 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../gen_l10n/app_localizations.dart';
 
 class HomeScreen extends StatelessWidget {
-final _auth = FirebaseAuth.instance;
-
+  final _auth = FirebaseAuth.instance;
 
   void logout(BuildContext context) async {
     await _auth.signOut();
@@ -22,27 +22,27 @@ final _auth = FirebaseAuth.instance;
     return doc.data();
   }
 
-  Future<List<dynamic>?> fetchSchemes(Map<String, dynamic> profile) async {
-    // Map Firestore profile to backend API format
+  Future<List<dynamic>?> fetchSchemes(Map<String, dynamic> profile, BuildContext context) async {
+    final loc = AppLocalizations.of(context)!;
     String mapIncome(dynamic income) {
       if (income == null) return '';
       double val = double.tryParse(income.toString().replaceAll(',', '')) ?? 0;
-      if (val < 100000) return '<1 Lakh';
-      if (val < 200000) return '1-2 Lakh';
-      if (val < 500000) return '2-5 Lakh';
-      if (val < 1000000) return '5-10 Lakh';
-      return '10+ Lakh';
+      if (val < 100000) return loc.incomeGroup1Lakh;
+      if (val < 200000) return loc.incomeGroup1to2Lakh;
+      if (val < 500000) return loc.incomeGroup2to5Lakh;
+      if (val < 1000000) return loc.incomeGroup5to10Lakh;
+      return loc.incomeGroup10PlusLakh;
     }
     final data = {
       'age': profile['age'] ?? 30,
-      'gender': profile['gender'] ?? 'Male',
-      'social_category': profile['category'] ?? 'General',
+      'gender': profile['gender'] ?? loc.male,
+      'social_category': profile['category'] ?? loc.general,
       'income_group': mapIncome(profile['annual_income']),
-      'location': profile['location'] ?? 'Urban',
-      'situation': profile['situation'] ?? 'Looking for investment schemes',
+      'location': profile['location'] ?? loc.urban,
+      'situation': profile['situation'] ?? loc.defaultSituation,
     };
     print('Sending to backend: $data');
-    final url = Uri.parse('http://192.168.0.111:5000/recommend');
+    final url = Uri.parse('http://192.168.1.8:5000/recommend');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -64,7 +64,6 @@ final _auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
-    final user = _auth.currentUser;
     return HomeScreenBody();
   }
 }

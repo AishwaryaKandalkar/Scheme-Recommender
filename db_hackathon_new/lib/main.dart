@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'firebase_options.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/location_access_screen.dart';
@@ -10,6 +11,7 @@ import 'screens/language_selection_screen.dart';
 import 'screens/chatbot_screen.dart';
 import 'providers/language_provider.dart';
 import 'package:provider/provider.dart';
+import '../gen_l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,8 +30,18 @@ class SchemeFinderApp extends StatelessWidget {
             title: 'SchemeFinder',
             debugShowCheckedModeBanner: false,
             locale: Locale(langProvider.languageCode),
-            supportedLocales: const [Locale('en'), Locale('hi'), Locale('ta'), Locale('te')],
-            initialRoute: '/',
+            supportedLocales: const [
+              Locale('en'),
+              Locale('hi'),
+              Locale('mr'),
+            ],
+            localizationsDelegates: [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            initialRoute: '/language', // start from language screen
             routes: {
                   '/': (_) => WelcomeScreen(),
                   '/location': (_) => LocationAccessScreen(),

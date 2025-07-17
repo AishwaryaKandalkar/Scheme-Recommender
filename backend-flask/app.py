@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 # Load model and data once on startup
 
-df_schemes = pd.read_csv("datasets/financial_inclusion_schemes.csv")
+df_schemes = pd.read_csv("C:/Users/USER/Documents/projects/Scheme-Recommender/datasets//financial_inclusion_schemes.csv")
 df_schemes['text_blob'] = (
     df_schemes['scheme_goal'].fillna('') + ". " +
     df_schemes['eligibility'].fillna('') + ". " +
