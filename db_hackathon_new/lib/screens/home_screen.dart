@@ -9,12 +9,12 @@ class HomeScreen extends StatelessWidget {
 final _auth = FirebaseAuth.instance;
 
 
-  void _logout(BuildContext context) async {
+  void logout(BuildContext context) async {
     await _auth.signOut();
     Navigator.pushReplacementNamed(context, '/login');
   }
 
-  Future<Map<String, dynamic>?> _fetchProfile() async {
+  Future<Map<String, dynamic>?> fetchProfile() async {
     final user = _auth.currentUser;
     if (user == null) return null;
     final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
@@ -22,9 +22,9 @@ final _auth = FirebaseAuth.instance;
     return doc.data();
   }
 
-  Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile) async {
+  Future<List<dynamic>?> fetchSchemes(Map<String, dynamic> profile) async {
     // Map Firestore profile to backend API format
-    String _mapIncome(dynamic income) {
+    String mapIncome(dynamic income) {
       if (income == null) return '';
       double val = double.tryParse(income.toString().replaceAll(',', '')) ?? 0;
       if (val < 100000) return '<1 Lakh';
@@ -37,12 +37,12 @@ final _auth = FirebaseAuth.instance;
       'age': profile['age'] ?? 30,
       'gender': profile['gender'] ?? 'Male',
       'social_category': profile['category'] ?? 'General',
-      'income_group': _mapIncome(profile['annual_income']),
+      'income_group': mapIncome(profile['annual_income']),
       'location': profile['location'] ?? 'Urban',
       'situation': profile['situation'] ?? 'Looking for investment schemes',
     };
     print('Sending to backend: $data');
-    final url = Uri.parse('http://10.78.91.251:5000/recommend');
+    final url = Uri.parse('http://192.168.0.111:5000/recommend');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},

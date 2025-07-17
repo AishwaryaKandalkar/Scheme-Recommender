@@ -1,6 +1,10 @@
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+// TODO: Move to config or env for production
+const String chatbotApiUrl = 'http://192.168.0.111:5000/chatbot';
 
 class ChatbotScreen extends StatefulWidget {
   @override
@@ -22,23 +26,23 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     });
     try {
       final response = await http.post(
-        Uri.parse('http://10.78.91.251:5000/chatbot'),
+        Uri.parse(chatbotApiUrl),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'message': userMessage}),
+        body: jsonEncode({'question': userMessage}),
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
-          _messages.add({'role': 'bot', 'text': data['response'] ?? 'No response.'});
+          _messages.add({'role': 'bot', 'text': data['answer'] ?? 'No response.'});
         });
       } else {
         setState(() {
-          _messages.add({'role': 'bot', 'text': 'Error: Could not get response.'});
+          _messages.add({'role': 'bot', 'text': 'Error: Could not get response from server.'});
         });
       }
     } catch (e) {
       setState(() {
-        _messages.add({'role': 'bot', 'text': 'Error: $e'});
+        _messages.add({'role': 'bot', 'text': 'Network error: $e'});
       });
     } finally {
       setState(() {

@@ -20,7 +20,7 @@ Future<Map<String, dynamic>?> _fetchProfile() async {
 
 // Use 10.0.2.2 for Android emulator, or your PC's IP for physical device
 Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile) async {
-  final url = Uri.parse('http://10.78.91.251:5000/recommend'); // Change to your PC IP if using a real device
+  final url = Uri.parse('http://192.168.0.111:5000/recommend'); // Change to your PC IP if using a real device
   print('Sending profile to backend: ${jsonEncode(profile)}');
   final response = await http.post(url, body: jsonEncode(profile), headers: {'Content-Type': 'application/json'});
   print('Backend response status: ${response.statusCode}');
@@ -38,10 +38,6 @@ class HomeScreenBody extends StatefulWidget {
 }
 class HomeScreenBodyState extends State<HomeScreenBody> {
   final TextEditingController goalController = TextEditingController();
-  final TextEditingController ageController = TextEditingController();
-  final TextEditingController locationController = TextEditingController();
-  final TextEditingController incomeGroupController = TextEditingController();
-  final TextEditingController socialCategoryController = TextEditingController();
   int currentPage = 1;
   List<dynamic> schemes = [];
   bool loading = false;
@@ -52,24 +48,17 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
     setState(() { loading = true; error = ''; });
     final userProfile = await _fetchProfile();
     profile = userProfile;
-    // Prompt for missing fields
-    String age = profile?['age']?.toString() ?? ageController.text;
-    String location = profile?['location']?.toString() ?? locationController.text;
-    String incomeGroup = profile?['income_group']?.toString() ?? profile?['annual_income']?.toString() ?? incomeGroupController.text;
-    String socialCategory = profile?['social_category']?.toString() ?? profile?['category']?.toString() ?? socialCategoryController.text;
-
-    if (age.isEmpty || location.isEmpty || incomeGroup.isEmpty || socialCategory.isEmpty) {
-      setState(() { loading = false; error = 'Please fill all required fields.'; });
+    if (profile == null) {
+      setState(() { loading = false; error = 'User profile not found.'; });
       return;
     }
-
     final payload = {
       'situation': goalController.text.isNotEmpty ? goalController.text : (profile?['situation'] ?? 'Looking for investment schemes'),
-      'income_group': incomeGroup,
-      'social_category': socialCategory,
+      'income_group': profile?['income_group'] ?? profile?['annual_income'] ?? '',
+      'social_category': profile?['social_category'] ?? profile?['category'] ?? '',
       'gender': profile?['gender'] ?? '',
-      'age': age,
-      'location': location,
+      'age': profile?['age']?.toString() ?? '',
+      'location': profile?['location'] ?? '',
     };
     print('Sending payload to backend: ${jsonEncode(payload)}');
     final result = await _fetchSchemes(payload);
@@ -85,10 +74,6 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
   @override
   void dispose() {
     goalController.dispose();
-    ageController.dispose();
-    locationController.dispose();
-    incomeGroupController.dispose();
-    socialCategoryController.dispose();
     super.dispose();
   }
 
@@ -116,138 +101,90 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              'Describe your problem or goal:',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
                   child: TextFormField(
                     controller: goalController,
                     decoration: InputDecoration(
-                      labelText: 'Describe your goal/problem',
+                      labelText: 'What are you looking for?',
+                      border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.question_answer),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
+                    minLines: 1,
+                    maxLines: 3,
                   ),
                 ),
                 SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: () async {
+                  onPressed: loading ? null : () async {
                     currentPage = 1;
                     await fetchSchemes();
                   },
-                  child: Text('Enter'),
+                  child: loading ? SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : Text('Get Recommendations'),
                 ),
               ],
             ),
-            SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: ageController,
-                    decoration: InputDecoration(
-                      labelText: 'Age',
-                      prefixIcon: Icon(Icons.cake),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 8),
-                Expanded(
-                  child: TextFormField(
-                    controller: locationController,
-                    decoration: InputDecoration(
-                      labelText: 'Location',
-                      prefixIcon: Icon(Icons.location_on),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: incomeGroupController,
-                    decoration: InputDecoration(
-                      labelText: 'Income Group',
-                      prefixIcon: Icon(Icons.money),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 8),
-                Expanded(
-                  child: TextFormField(
-                    controller: socialCategoryController,
-                    decoration: InputDecoration(
-                      labelText: 'Social Category',
-                      prefixIcon: Icon(Icons.group),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
-            if (loading)
-              Center(child: CircularProgressIndicator()),
             if (error.isNotEmpty)
-              Center(child: Text(error)),
-            if (!loading && error.isEmpty)
-              Expanded(
-                child: pageSchemes.isEmpty
-                    ? Center(child: Text('No eligible recommendations found.'))
-                    : Column(
-                        children: [
-                          Expanded(
-                            child: ListView.builder(
-                              itemCount: pageSchemes.length,
-                              itemBuilder: (context, index) {
-                                final scheme = pageSchemes[index];
-                                return Card(
-                                  margin: EdgeInsets.all(10),
-                                  child: ListTile(
-                                    title: Text(scheme['scheme_name'] ?? ''),
-                                    subtitle: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text('Goal: ${scheme['scheme_goal'] ?? ''}'),
-                                        Text('Benefits: ${scheme['benefits'] ?? ''}'),
-                                        Text('Returns: ${scheme['total_returns'] ?? ''}'),
-                                        Text('Duration: ${scheme['time_duration'] ?? ''}'),
-                                        Text('Website: ${scheme['scheme_website'] ?? ''}'),
-                                        Text('Score: ${scheme['similarity_score']?.toStringAsFixed(2) ?? ''}'),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(error, style: TextStyle(color: Colors.red)),
+              ),
+            SizedBox(height: 16),
+            Expanded(
+              child: pageSchemes.isEmpty && !loading && error.isEmpty
+                  ? Center(child: Text('No eligible recommendations found.'))
+                  : ListView.builder(
+                      itemCount: pageSchemes.length,
+                      itemBuilder: (context, index) {
+                        final scheme = pageSchemes[index];
+                        return Card(
+                          margin: EdgeInsets.all(10),
+                          child: ListTile(
+                            title: Text(scheme['scheme_name'] ?? ''),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Goal: ${scheme['scheme_goal'] ?? ''}'),
+                                Text('Benefits: ${scheme['benefits'] ?? ''}'),
+                                Text('Returns: ${scheme['total_returns'] ?? ''}'),
+                                Text('Duration: ${scheme['time_duration'] ?? ''}'),
+                                Text('Website: ${scheme['scheme_website'] ?? ''}'),
+                                Text('Score: ${scheme['similarity_score']?.toStringAsFixed(2) ?? ''}'),
+                              ],
                             ),
                           ),
-                          SizedBox(height: 12),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: List.generate(totalPages, (i) {
-                              final pageNum = i + 1;
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4),
-                                child: OutlinedButton(
-                                  onPressed: () {
-                                    setState(() { currentPage = pageNum; });
-                                  },
-                                  style: OutlinedButton.styleFrom(
-                                    backgroundColor: currentPage == pageNum ? Colors.blue.shade100 : null,
-                                  ),
-                                  child: Text('$pageNum'),
-                                ),
-                              );
-                            }),
-                          ),
-                        ],
+                        );
+                      },
+                    ),
+            ),
+            if (pageSchemes.isNotEmpty)
+              SizedBox(height: 12),
+            if (pageSchemes.isNotEmpty)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(totalPages, (i) {
+                  final pageNum = i + 1;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: OutlinedButton(
+                      onPressed: () {
+                        setState(() { currentPage = pageNum; });
+                      },
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: currentPage == pageNum ? Colors.blue.shade100 : null,
                       ),
+                      child: Text('$pageNum'),
+                    ),
+                  );
+                }),
               ),
           ],
         ),

@@ -8,7 +8,7 @@ from io import StringIO
 app = Flask(__name__)
 
 # Load model and data once on startup
-print("Loading model and data...")
+
 df_schemes = pd.read_csv("datasets/financial_inclusion_schemes.csv")
 df_schemes['text_blob'] = (
     df_schemes['scheme_goal'].fillna('') + ". " +
@@ -24,6 +24,8 @@ def matches(dataframe, field, value):
     return val.str.contains(value.lower()) | val.str.contains("all")
 
 def age_matches(user_age, age_group_str):
+    if user_age is None or not isinstance(user_age, int):
+        return False
     if pd.isna(age_group_str) or 'all' in age_group_str.lower():
         return True
     parts = [a.strip() for a in age_group_str.split(',')]
@@ -33,21 +35,24 @@ def age_matches(user_age, age_group_str):
                 low, high = map(int, part.split('-'))
                 if low <= user_age <= high:
                     return True
-            except:
+            except Exception:
                 continue
         elif '+' in part:
             try:
                 if user_age >= int(part.replace('+', '')):
                     return True
-            except:
+            except Exception:
                 continue
     return False
 
 def filter_by_profile(user, df):
+    # Use annual_income_group if present, else fallback to income_group
+    income_field = "annual_income_group" if "annual_income_group" in df.columns else ("income_group" if "income_group" in df.columns else None)
+    income_match = matches(df, income_field, user["income_group"]) if income_field else True
     return df[
         (matches(df, "gender", user["gender"])) &
         (matches(df, "social_category", user["social_category"])) &
-        (matches(df, "annual_income_group", user["income_group"])) &
+        income_match &
         (matches(df, "location", user["location"])) &
         (df["age_group"].fillna("All").apply(lambda ag: age_matches(user["age"], ag)))
     ].reset_index(drop=True)
@@ -89,12 +94,23 @@ def recommend():
     if not required_fields.issubset(set(data)):
         return jsonify({"error": f"Missing fields. Required: {', '.join(required_fields)}"}), 400
 
+
+    # Defensive conversion for age
+    age_val = data.get("age", "")
+    try:
+        age = int(age_val) if str(age_val).strip().isdigit() else None
+    except Exception:
+        age = None
+
+    # Fallback for income_group/annual_income_group
+    income_group = data.get("income_group") or data.get("annual_income_group") or ""
+
     user_profile = {
-        "age": int(data["age"]),
-        "gender": data["gender"],
-        "social_category": data["social_category"],
-        "income_group": data["income_group"],
-        "location": data["location"]
+        "age": age,
+        "gender": data.get("gender", ""),
+        "social_category": data.get("social_category", ""),
+        "income_group": income_group,
+        "location": data.get("location", "")
     }
 
     user_text = data["situation"]
