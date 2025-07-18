@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
+import 'scheme_detail_screen.dart';
 import 'dart:convert';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -99,9 +100,9 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
         title: Text('Welcome', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
-            icon: Icon(Icons.edit, color: Colors.black87),
-            tooltip: 'Edit Profile',
-            onPressed: () => Navigator.pushNamed(context, '/profile'),
+            icon: Icon(Icons.account_circle, color: Colors.black87),
+            tooltip: 'Account',
+            onPressed: () => Navigator.pushNamed(context, '/account'),
           ),
           IconButton(
             icon: Icon(Icons.logout, color: Colors.redAccent),
@@ -171,6 +172,29 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                       itemBuilder: (context, index) {
                         final scheme = pageSchemes[index];
                         return Card(
+                          margin: EdgeInsets.all(10),
+                          child: ListTile(
+                            title: GestureDetector(
+                              child: Text(
+                                scheme['scheme_name'] ?? '',
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              onTap: () {
+                                if ((scheme['scheme_name'] ?? '').isNotEmpty) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => SchemeDetailScreen(schemeName: scheme['scheme_name']),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                            subtitle: Column(
                           elevation: 3,
                           margin: EdgeInsets.symmetric(vertical: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
