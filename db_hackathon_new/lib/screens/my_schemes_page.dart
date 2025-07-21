@@ -28,6 +28,27 @@ class MySchemesPage extends StatelessWidget {
     return null;
   }
 
+  double calculateProgress(DateTime? start, DateTime? end) {
+    if (start == null || end == null) return 0.0;
+    final total = end.difference(start).inDays.toDouble();
+    if (total <= 0) return 0.0;
+
+    final passed = DateTime.now().difference(start).inDays.toDouble();
+    return (passed / total).clamp(0.0, 1.0); // Keeps between 0.0 and 1.0
+  }
+
+  double estimateReturnGrowth(String? amountStr, double progressPercent) {
+    if (amountStr == null) return 0.0;
+    try {
+      final amount = double.tryParse(amountStr) ?? 0.0;
+      const yearlyGrowthRate = 0.08; // Assumed 8% return/year
+      final growth = amount * yearlyGrowthRate * progressPercent;
+      return double.parse(growth.toStringAsFixed(2));
+    } catch (_) {
+      return 0.0;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,24 +63,52 @@ class MySchemesPage extends StatelessWidget {
           if (schemes.isEmpty) {
             return Center(child: Text('No schemes registered yet.'));
           }
+
           return ListView.builder(
             itemCount: schemes.length,
             itemBuilder: (context, index) {
               final scheme = schemes[index];
+              final name = scheme['scheme_name'] ?? 'Unnamed Scheme';
+              final amount = scheme['amount'];
               final regDate = scheme['registered_at'] != null ? DateTime.tryParse(scheme['registered_at']) : null;
               final dueDate = scheme['due_date'] != null ? DateTime.tryParse(scheme['due_date']) : null;
               final reminder = getReminder(scheme);
+
+              final progress = calculateProgress(regDate, dueDate);
+              final estimatedGrowth = estimateReturnGrowth(amount?.toString(), progress);
+
               return Card(
                 margin: EdgeInsets.all(10),
-                child: ListTile(
-                  title: Text(scheme['scheme_name'] ?? ''),
-                  subtitle: Column(
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (scheme['amount'] != null) Text('Amount: ₹${scheme['amount']}'),
-                      if (regDate != null) Text('Registered on: ${regDate.toLocal().toString().split(' ')[0]}'),
-                      if (dueDate != null) Text('Next Due Date: ${dueDate.toLocal().toString().split(' ')[0]}'),
-                      if (reminder != null) Text(reminder, style: TextStyle(color: Colors.red)),
+                      Text(name, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      if (amount != null) Text('Amount: ₹$amount'),
+                      if (regDate != null)
+                        Text('Registered on: ${regDate.toLocal().toString().split(' ')[0]}'),
+                      if (dueDate != null)
+                        Text('Next Due Date: ${dueDate.toLocal().toString().split(' ')[0]}'),
+                      if (reminder != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Text(
+                            reminder,
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      SizedBox(height: 10),
+                      Text('Progress toward due date'),
+                      LinearProgressIndicator(
+                        value: progress.isNaN || progress.isInfinite ? 0.0 : progress,
+                        backgroundColor: Colors.grey[300],
+                        color: Colors.green,
+                        minHeight: 8,
+                      ),
+                      SizedBox(height: 8),
+                      Text('Estimated Return Gained: ₹$estimatedGrowth'),
                     ],
                   ),
                 ),

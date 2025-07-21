@@ -230,17 +230,62 @@ def scheme_detail():
 def register_scheme():
     data = request.get_json()
     scheme_name = data.get("scheme_name")
-    amount_paid = data.get("amount_paid")
-    start_date = data.get("start_date")
+    amount_paid = data.get("amount_paid")  # still optionally user input
+    start_date = data.get("start_date")    # optional input
 
-    if not scheme_name or not amount_paid or not start_date:
-        return jsonify({"error": "Missing required fields"}), 400
+    if not scheme_name:
+        return jsonify({"error": "Missing scheme_name"}), 400
 
-    # Optional: Save this data to a file or database
-    print(f"User registered for {scheme_name} with amount {amount_paid} starting {start_date}")
+    # Normalize and match scheme
+    def normalize(text):
+        return " ".join(text.lower().strip().split())
+    
+    norm_name = normalize(scheme_name)
+    df_schemes["normalized_name"] = df_schemes["scheme_name"].astype(str).apply(normalize)
+    match = df_schemes[df_schemes["normalized_name"] == norm_name]
 
-    return jsonify({"message": f"Successfully registered for {scheme_name}."}), 200
+    if match.empty:
+        return jsonify({"error": f"Scheme '{scheme_name}' not found."}), 404
 
+    scheme = match.iloc[0]
+    combined_text = get_text_features(scheme)
+    X_vectorized = vectorizer.transform([combined_text])
+
+    # Predict amount and duration using ML models
+    predicted_amount = float(amount_model.predict(X_vectorized)[0])
+    predicted_duration = int(duration_model.predict(X_vectorized)[0])
+
+    # === Validate amount_paid ===
+    response = {
+        "scheme_name": scheme_name,
+        "predicted_amount": round(predicted_amount, 2),
+        "predicted_duration_months": predicted_duration
+    }
+
+    # Allow 20% margin for validation
+    lower_bound = 0.8 * predicted_amount
+    upper_bound = 1.2 * predicted_amount
+
+    if amount_paid:
+        try:
+            paid = float(amount_paid)
+            response["user_entered_amount"] = paid
+            if not (lower_bound <= paid <= upper_bound):
+                response["note"] = f"Your entered amount ₹{paid} seems off. Based on scheme details, we recommend around ₹{round(predicted_amount, 2)}."
+            else:
+                response["note"] = "Your entered amount is within expected range."
+        except ValueError:
+            response["note"] = "Invalid amount entered. Using predicted amount."
+    else:
+        response["note"] = "No amount entered. Using predicted amount."
+
+    # Log or store registration (optional)
+    print(f"[REGISTERED] Scheme: {scheme_name} | Recommended Amount: ₹{predicted_amount} | Duration: {predicted_duration} months | Start: {start_date}")
+
+    return jsonify({
+        "message": "Registration successful (with smart amount and duration prediction).",
+        "details": response
+    }), 200
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)

@@ -20,15 +20,21 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
   String? error;
 
   final TextEditingController amountController = TextEditingController();
+  DateTime? registrationDate;
   DateTime? dueDate;
   String? amountError;
   bool registering = false;
   String? registerMsg;
 
+  double? predictedAmount;
+  int? predictedDuration;
+  bool showAmountWarning = false;
+
   @override
   void initState() {
     super.initState();
     fetchSchemeDetail();
+    fetchPrediction();
   }
 
   Future<void> fetchSchemeDetail() async {
@@ -57,6 +63,50 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
     }
   }
 
+  Future<void> fetchPrediction() async {
+    final url = Uri.parse(
+        'http://192.168.1.4:5000/predict_limits?scheme_name=${Uri.encodeComponent(widget.schemeName)}');
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final result = json.decode(response.body);
+        setState(() {
+          predictedAmount = (result['predicted_amount'] as num?)?.toDouble();
+          predictedDuration = result['predicted_duration_months'];
+        });
+
+        if (amountController.text.trim().isEmpty && predictedAmount != null) {
+          amountController.text = predictedAmount!.toStringAsFixed(0);
+        }
+      }
+    } catch (e) {
+      print("Prediction fetch failed: $e");
+    }
+  }
+
+  void calculateDueDate() {
+    if (registrationDate == null || schemeData == null) return;
+
+    final interval = schemeData?['payment_interval']?.toLowerCase() ?? '';
+
+    Duration offset;
+    if (interval.contains('month')) {
+      offset = Duration(days: 30);
+    } else if (interval.contains('quarter')) {
+      offset = Duration(days: 90);
+    } else if (interval.contains('year')) {
+      offset = Duration(days: 365);
+    } else {
+      offset = Duration(days: 30); // default to 1 month
+    }
+
+    setState(() {
+      dueDate = registrationDate!.add(offset);
+    });
+  }
+
   Future<void> registerForScheme() async {
     setState(() {
       registering = true;
@@ -73,6 +123,29 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
       return;
     }
 
+    if (predictedAmount != null) {
+      final entered = double.tryParse(amount);
+      final lower = predictedAmount! * 0.8;
+      final upper = predictedAmount! * 1.2;
+
+      if (entered == null || entered < lower || entered > upper) {
+        setState(() {
+          amountError =
+              'Amount must be within ±20% of ₹${predictedAmount!.toStringAsFixed(0)}';
+          registering = false;
+        });
+        return;
+      }
+    }
+
+    if (registrationDate == null || dueDate == null) {
+      setState(() {
+        registerMsg = 'Please select a registration date.';
+        registering = false;
+      });
+      return;
+    }
+
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
@@ -83,10 +156,12 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
         return;
       }
 
-      final docRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+      final docRef =
+          FirebaseFirestore.instance.collection('users').doc(user.uid);
       final doc = await docRef.get();
       final data = doc.data() ?? {};
-      final mySchemes = List<Map<String, dynamic>>.from(data['my_schemes'] ?? []);
+      final mySchemes =
+          List<Map<String, dynamic>>.from(data['my_schemes'] ?? []);
 
       if (mySchemes.any((s) => s['scheme_name'] == widget.schemeName)) {
         setState(() {
@@ -96,12 +171,11 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
         return;
       }
 
-      final now = DateTime.now();
       mySchemes.add({
         'scheme_name': widget.schemeName,
-        'registered_at': now.toIso8601String(),
+        'registered_at': registrationDate!.toIso8601String(),
         'amount': amount,
-        'due_date': dueDate?.toIso8601String(),
+        'due_date': dueDate!.toIso8601String(),
       });
 
       await docRef.set({'my_schemes': mySchemes}, SetOptions(merge: true));
@@ -133,10 +207,45 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
         text: TextSpan(
           style: TextStyle(color: Colors.black87),
           children: [
-            TextSpan(text: "$title: ", style: TextStyle(fontWeight: FontWeight.bold)),
+            TextSpan(
+                text: "$title: ",
+                style: TextStyle(fontWeight: FontWeight.bold)),
             TextSpan(text: value),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPredictionInfo() {
+    if (predictedAmount == null && predictedDuration == null) return SizedBox();
+
+    final amtText = predictedAmount != null
+        ? "💰 ₹${predictedAmount!.toStringAsFixed(0)} (±20%)"
+        : null;
+
+    final durationText =
+        predictedDuration != null ? "⏳ $predictedDuration months" : null;
+
+    return Container(
+      padding: EdgeInsets.all(12),
+      margin: EdgeInsets.only(top: 12, bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.blueAccent),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "🔍 Suggested by AI:",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          if (amtText != null) Text(amtText),
+          if (durationText != null) Text(durationText),
+          Text("These are inferred from the scheme using AI/ML."),
+        ],
       ),
     );
   }
@@ -161,22 +270,28 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
                       _buildDetail("Benefits", schemeData?["benefits"]),
                       _buildDetail("Returns", schemeData?["total_returns"]),
                       _buildDetail("Duration", schemeData?["time_duration"]),
-                      _buildDetail("Application Process", schemeData?["application_process"]),
-                      _buildDetail("Documents Required", schemeData?["required_documents"]),
+                      _buildDetail(
+                          "Application Process", schemeData?["application_process"]),
+                      _buildDetail(
+                          "Documents Required", schemeData?["required_documents"]),
                       _buildDetail("Funding Agency", schemeData?["funding_agency"]),
                       _buildDetail("Contact Details", schemeData?["contact_details"]),
                       if (schemeData?["scheme_website"] != null &&
                           schemeData!["scheme_website"].toString().startsWith("http"))
                         GestureDetector(
-                          onTap: () => _launchWebsite(schemeData!["scheme_website"]),
+                          onTap: () =>
+                              _launchWebsite(schemeData!["scheme_website"]),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: Text(
                               "Visit Official Website",
-                              style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+                              style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline),
                             ),
                           ),
                         ),
+                      _buildPredictionInfo(),
                       Divider(height: 32, thickness: 1.5),
                       TextField(
                         controller: amountController,
@@ -186,29 +301,59 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
                           border: OutlineInputBorder(),
                           errorText: amountError,
                         ),
+                        onChanged: (val) {
+                          if (predictedAmount != null) {
+                            final num? v = double.tryParse(val);
+                            final lower = predictedAmount! * 0.8;
+                            final upper = predictedAmount! * 1.2;
+                            setState(() {
+                              showAmountWarning =
+                                  v != null && (v < lower || v > upper);
+                            });
+                          }
+                        },
                       ),
+                      if (showAmountWarning)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6.0),
+                          child: Text(
+                            '⚠️ This amount is outside the expected range.',
+                            style: TextStyle(color: Colors.orange[700]),
+                          ),
+                        ),
                       SizedBox(height: 12),
                       Row(
                         children: [
-                          Text('Next due date: '),
-                          Text(dueDate == null
+                          Text('Registration date: '),
+                          Text(registrationDate == null
                               ? 'Not set'
-                              : '${dueDate!.toLocal()}'.split(' ')[0]),
+                              : '${registrationDate!.toLocal()}'.split(' ')[0]),
                           SizedBox(width: 8),
                           ElevatedButton(
                             onPressed: () async {
                               final picked = await showDatePicker(
                                 context: context,
-                                initialDate: dueDate ?? DateTime.now(),
-                                firstDate: DateTime.now(),
+                                initialDate: registrationDate ?? DateTime.now(),
+                                firstDate: DateTime(2000),
                                 lastDate: DateTime.now().add(Duration(days: 365 * 5)),
                               );
-                              if (picked != null) setState(() => dueDate = picked);
+                              if (picked != null) {
+                                setState(() {
+                                  registrationDate = picked;
+                                });
+                                calculateDueDate();
+                              }
                             },
                             child: Text('Pick Date'),
                           ),
                         ],
                       ),
+                      SizedBox(height: 8),
+                      if (dueDate != null)
+                        Text(
+                          'Next due date: ${dueDate!.toLocal()}'.split(' ')[0],
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       SizedBox(height: 16),
                       ElevatedButton.icon(
                         icon: Icon(Icons.how_to_reg),
