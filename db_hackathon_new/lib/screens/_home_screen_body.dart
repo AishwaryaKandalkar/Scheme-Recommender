@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
-import 'scheme_detail_screen.dart';
 import 'dart:convert';
+
+import 'scheme_detail_screen.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -20,11 +21,13 @@ Future<Map<String, dynamic>?> _fetchProfile() async {
 }
 
 Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile) async {
-  final url = Uri.parse('http://192.168.1.8:5000/recommend');
-  print('Sending profile to backend: ${jsonEncode(profile)}');
-  final response = await http.post(url, body: jsonEncode(profile), headers: {'Content-Type': 'application/json'});
-  print('Backend response status: ${response.statusCode}');
-  print('Backend response body: ${response.body}');
+  final url = Uri.parse('http://192.168.1.4:5000/recommend');
+  final response = await http.post(
+    url,
+    body: jsonEncode(profile),
+    headers: {'Content-Type': 'application/json'},
+  );
+
   if (response.statusCode == 200) {
     final data = jsonDecode(response.body);
     return data['recommended_schemes'] ?? [];
@@ -50,8 +53,8 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
       loading = true;
       error = '';
     });
-    final userProfile = await _fetchProfile();
-    profile = userProfile;
+
+    profile = await _fetchProfile();
     if (profile == null) {
       setState(() {
         loading = false;
@@ -59,21 +62,29 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
       });
       return;
     }
+
     final payload = {
-      'situation': goalController.text.isNotEmpty ? goalController.text : (profile?['situation'] ?? 'Looking for investment schemes'),
+      'situation': goalController.text.isNotEmpty
+          ? goalController.text
+          : (profile?['situation'] ?? 'Looking for investment schemes'),
       'income_group': profile?['income_group'] ?? profile?['annual_income'] ?? '',
       'social_category': profile?['social_category'] ?? profile?['category'] ?? '',
       'gender': profile?['gender'] ?? '',
       'age': profile?['age']?.toString() ?? '',
       'location': profile?['location'] ?? '',
     };
-    print('Sending payload to backend: ${jsonEncode(payload)}');
+
     final result = await _fetchSchemes(payload);
     if (result != null) {
-      schemes = result;
+      setState(() {
+        schemes = result;
+      });
     } else {
-      error = 'No data received from backend.';
+      setState(() {
+        error = 'No data received from backend.';
+      });
     }
+
     setState(() {
       loading = false;
     });
@@ -142,17 +153,23 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                   ),
                   SizedBox(width: 8),
                   ElevatedButton.icon(
-                    onPressed: loading ? null : () async {
-                      currentPage = 1;
-                      await fetchSchemes();
-                    },
+                    onPressed: loading
+                        ? null
+                        : () async {
+                            currentPage = 1;
+                            await fetchSchemes();
+                          },
                     icon: loading
-                        ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                        ? SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2))
                         : Icon(Icons.search),
                     label: loading ? Text('') : Text('Find'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blueAccent,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
                 ],
@@ -172,46 +189,48 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                       itemBuilder: (context, index) {
                         final scheme = pageSchemes[index];
                         return Card(
-                          margin: EdgeInsets.all(10),
-                          child: ListTile(
-                            title: GestureDetector(
-                              child: Text(
-                                scheme['scheme_name'] ?? '',
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              onTap: () {
-                                if ((scheme['scheme_name'] ?? '').isNotEmpty) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => SchemeDetailScreen(schemeName: scheme['scheme_name']),
-                                    ),
-                                  );
-                                }
-                              },
-                            ),
-                            subtitle: Column(
                           elevation: 3,
                           margin: EdgeInsets.symmetric(vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                           child: Padding(
                             padding: const EdgeInsets.all(14),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(scheme['scheme_name'] ?? '',
-                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => SchemeDetailScreen(
+                                            schemeName:
+                                                scheme['scheme_name'] ?? ''),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    scheme['scheme_name'] ?? '',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
                                 SizedBox(height: 6),
                                 Text('🎯 Goal: ${scheme['scheme_goal'] ?? ''}'),
-                                Text('💡 Benefits: ${scheme['benefits'] ?? ''}'),
-                                Text('📈 Returns: ${scheme['total_returns'] ?? ''}'),
-                                Text('⏳ Duration: ${scheme['time_duration'] ?? ''}'),
-                                Text('🔗 Website: ${scheme['scheme_website'] ?? ''}'),
-                                Text('📊 Match Score: ${scheme['similarity_score']?.toStringAsFixed(2) ?? ''}'),
+                                Text(
+                                    '💡 Benefits: ${scheme['benefits'] ?? ''}'),
+                                Text(
+                                    '📈 Returns: ${scheme['total_returns'] ?? ''}'),
+                                Text(
+                                    '⏳ Duration: ${scheme['time_duration'] ?? ''}'),
+                                Text(
+                                    '🔗 Website: ${scheme['scheme_website'] ?? ''}'),
+                                Text(
+                                    '📊 Match Score: ${scheme['similarity_score']?.toStringAsFixed(2) ?? ''}'),
                               ],
                             ),
                           ),
@@ -237,7 +256,9 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                           },
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(color: Colors.blueAccent),
-                            backgroundColor: currentPage == pageNum ? Colors.blue.shade50 : Colors.white,
+                            backgroundColor: currentPage == pageNum
+                                ? Colors.blue.shade50
+                                : Colors.white,
                           ),
                           child: Text('$pageNum'),
                         ),

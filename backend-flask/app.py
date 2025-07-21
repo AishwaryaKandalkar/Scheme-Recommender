@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 # Load model and data once on startup
 
-df_schemes = pd.read_csv("C:/Users/USER/Documents/projects/Scheme-Recommender/datasets//financial_inclusion_schemes.csv")
+df_schemes = pd.read_csv("datasets/financial_inclusion_schemes_1000_v3.csv")
 df_schemes['text_blob'] = (
     df_schemes['scheme_goal'].fillna('') + ". " +
     df_schemes['eligibility'].fillna('') + ". " +
@@ -174,6 +174,73 @@ def chatbot():
         answer += "\n"
     answer = answer.strip()
     return jsonify({"answer": answer})
+
+# === BACKEND (Flask API enhancement) ===
+# File: app.py
+
+import pickle
+from datetime import timedelta
+
+# Load ML models
+amount_model = pickle.load(open("models/amount_prediction_model.pkl", "rb"))
+duration_model = pickle.load(open("models/duration_prediction_model.pkl", "rb"))
+
+# Helper to extract prediction text features
+def get_text_features(row):
+    return " ".join([
+        str(row.get("scheme_goal", "")),
+        str(row.get("benefits", "")),
+        str(row.get("application_process", ""))
+    ])
+
+@app.route("/scheme_detail", methods=["GET"])
+def scheme_detail():
+    scheme_name = request.args.get("name", "").strip().lower()
+
+    if not scheme_name:
+        return jsonify({"error": "Scheme name is required."}), 400
+
+    # Normalize both user query and dataset names for better matching
+    def normalize(text):
+        return " ".join(text.lower().strip().split())
+
+    normalized_query = normalize(scheme_name)
+    df_schemes["normalized_name"] = df_schemes["scheme_name"].astype(str).apply(normalize)
+
+    matched = df_schemes[df_schemes["normalized_name"] == normalized_query]
+
+    if matched.empty:
+        return jsonify({
+            "error": f"Scheme '{scheme_name}' not found."
+        }), 404
+
+    scheme = matched.iloc[0].to_dict()
+
+    # Clean any problematic data
+    def clean(val):
+        if pd.isna(val):
+            return "N/A"
+        if isinstance(val, float) and (np.isnan(val) or np.isinf(val)):
+            return "N/A"
+        return val
+
+    return jsonify({k: clean(v) for k, v in scheme.items()})
+
+@app.route("/register_scheme", methods=["POST"])
+def register_scheme():
+    data = request.get_json()
+    scheme_name = data.get("scheme_name")
+    amount_paid = data.get("amount_paid")
+    start_date = data.get("start_date")
+
+    if not scheme_name or not amount_paid or not start_date:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    # Optional: Save this data to a file or database
+    print(f"User registered for {scheme_name} with amount {amount_paid} starting {start_date}")
+
+    return jsonify({"message": f"Successfully registered for {scheme_name}."}), 200
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)

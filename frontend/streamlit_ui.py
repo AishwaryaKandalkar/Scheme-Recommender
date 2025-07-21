@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 
-API_URL = "http://10.78.91.251:5000/recommend" # Change this if your backend is deployed elsewhere
+API_URL = "http://192.168.1.4:5000/recommend" # Change this if your backend is deployed elsewhere
 
 st.set_page_config(page_title="Scheme Recommender", layout="centered")
 

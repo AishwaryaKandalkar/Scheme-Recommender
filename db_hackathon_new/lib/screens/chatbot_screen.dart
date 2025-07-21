@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 // TODO: Move to config or env for production
-const String chatbotApiUrl = 'http://192.168.1.8:5000/chatbot';
+const String chatbotApiUrl = 'http://192.168.1.4:5000/chatbot';
 
 class ChatbotScreen extends StatefulWidget {
   @override
