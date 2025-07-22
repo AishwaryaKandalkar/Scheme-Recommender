@@ -6,6 +6,7 @@ import 'dart:convert';
 
 import 'scheme_detail_screen.dart';
 import 'account_page.dart';
+import 'my_schemes_page.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -22,7 +23,7 @@ Future<Map<String, dynamic>?> _fetchProfile() async {
 }
 
 Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile) async {
-  final url = Uri.parse('http://192.168.1.4:5000/recommend');
+  final url = Uri.parse('http://192.168.1.2:5000/recommend');
   final response = await http.post(
     url,
     body: jsonEncode(profile),
@@ -48,6 +49,7 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
   bool loading = false;
   String error = '';
   Map<String, dynamic>? profile;
+  String? userName;
 
   Future<void> fetchSchemes({String? customGoal}) async {
     setState(() {
@@ -63,6 +65,10 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
       });
       return;
     }
+
+    setState(() {
+      userName = profile?['name'] ?? 'User';
+    });
 
     final payload = {
       'situation': customGoal ?? (profile?['situation'] ?? 'Looking for investment schemes'),
@@ -92,7 +98,6 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
   @override
   void initState() {
     super.initState();
-    // Automatically fetch eligible schemes on home page load
     fetchSchemes();
   }
 
@@ -118,31 +123,47 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 24, left: 24, right: 24, bottom: 8),
-                child: Text(
-                  'Recommended Schemes',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade900,
-                    letterSpacing: 0.5,
-                  ),
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
+                color: Colors.white,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Icon(Icons.menu, color: Colors.black87),
+                    Text(
+                      'Welcome, ${userName ?? 'User'}!',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black),
+                    ),
+                    Row(
+                      children: [
+                        Icon(Icons.notifications_none, color: Colors.black54),
+                        SizedBox(width: 8),
+                        CircleAvatar(
+                          backgroundColor: Colors.grey.shade400,
+                          child: Text(
+                            userName != null ? userName![0].toUpperCase() : '',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   children: [
                     Expanded(
                       child: TextFormField(
                         controller: goalController,
                         decoration: InputDecoration(
-                          hintText: 'Type your goal or need (optional)',
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          prefixIcon: Icon(Icons.search, color: Colors.blueAccent),
+                          hintText: 'Search your goal or need',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+                          prefixIcon: Icon(Icons.search, color: Colors.pinkAccent),
                           contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                          filled: true,
+                          fillColor: Colors.white,
                         ),
                         minLines: 1,
                         maxLines: 2,
@@ -157,17 +178,13 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                               await fetchSchemes(customGoal: goalController.text.isNotEmpty ? goalController.text : null);
                             },
                       icon: loading
-                          ? SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2))
-                          : Icon(Icons.search),
-                      label: loading ? Text('') : Text('Find'),
+                          ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : Icon(Icons.search, color: Colors.white),
+                      label: loading ? Text('') : Text('Find', style: TextStyle(color: Colors.white)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        padding: EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                        backgroundColor: Colors.pinkAccent,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                       ),
                     ),
                   ],
@@ -179,221 +196,84 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                   child: Text(error, style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                 ),
               SizedBox(height: 10),
-              Container(
-                constraints: BoxConstraints(minHeight: 300),
-                child: pageSchemes.isEmpty && !loading && error.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.info_outline, color: Colors.grey, size: 48),
-                            SizedBox(height: 10),
-                            Text('No eligible recommendations found.', style: TextStyle(fontSize: 16, color: Colors.grey)),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: pageSchemes.length,
-                        itemBuilder: (context, index) {
-                          final scheme = pageSchemes[index];
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [Colors.white, Color(0xFFe3f0ff)],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(18),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.blue.shade100,
-                                    blurRadius: 12,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(18),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => SchemeDetailScreen(
-                                          schemeName: scheme['scheme_name'] ?? ''),
-                                    ),
-                                  );
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Container(
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              gradient: LinearGradient(
-                                                colors: [Colors.orangeAccent, Colors.yellow.shade100],
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
-                                              ),
-                                            ),
-                                            padding: EdgeInsets.all(6),
-                                            child: Icon(Icons.star, color: Colors.white, size: 24),
-                                          ),
-                                          SizedBox(width: 12),
-                                          Expanded(
-                                            child: Text(
-                                              scheme['scheme_name'] ?? '',
-                                              style: TextStyle(
-                                                fontSize: 21,
-                                                fontWeight: FontWeight.w700,
-                                                color: Colors.blue.shade800,
-                                                decoration: TextDecoration.underline,
-                                                letterSpacing: 0.2,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(height: 10),
-                                      if ((scheme['scheme_goal'] ?? '').toString().isNotEmpty)
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Icon(Icons.flag, color: Colors.green, size: 20),
-                                            SizedBox(width: 8),
-                                            Expanded(child: Text('Goal: ${scheme['scheme_goal']}', style: TextStyle(fontSize: 16))),
-                                          ],
-                                        ),
-                                      if ((scheme['benefits'] ?? '').toString().isNotEmpty)
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Icon(Icons.thumb_up, color: Colors.blueAccent, size: 20),
-                                            SizedBox(width: 8),
-                                            Expanded(child: Text('Benefits: ${scheme['benefits']}', style: TextStyle(fontSize: 16))),
-                                          ],
-                                        ),
-                                      if ((scheme['total_returns'] ?? '').toString().isNotEmpty)
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Icon(Icons.trending_up, color: Colors.purple, size: 20),
-                                            SizedBox(width: 8),
-                                            Expanded(child: Text('Returns: ${scheme['total_returns']}', style: TextStyle(fontSize: 16))),
-                                          ],
-                                        ),
-                                      if ((scheme['time_duration'] ?? '').toString().isNotEmpty)
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Icon(Icons.timer, color: Colors.teal, size: 20),
-                                            SizedBox(width: 8),
-                                            Expanded(child: Text('Duration: ${scheme['time_duration']}', style: TextStyle(fontSize: 16))),
-                                          ],
-                                        ),
-                                      if ((scheme['scheme_website'] ?? '').toString().isNotEmpty)
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Icon(Icons.link, color: Colors.indigo, size: 20),
-                                            SizedBox(width: 8),
-                                            Expanded(child: Text('Website: ${scheme['scheme_website']}', style: TextStyle(fontSize: 16, color: Colors.indigo))),
-                                          ],
-                                        ),
-                                      if ((scheme['similarity_score'] ?? '').toString().isNotEmpty)
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Icon(Icons.score, color: Colors.deepOrange, size: 20),
-                                            SizedBox(width: 8),
-                                            Expanded(child: Text('Match Score: ${scheme['similarity_score']?.toStringAsFixed(2) ?? ''}', style: TextStyle(fontSize: 16))),
-                                          ],
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                          ));
-                          },
-                        ),
-              ),
-              if (pageSchemes.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(totalPages, (i) {
-                      final pageNum = i + 1;
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: OutlinedButton(
-                          onPressed: () {
-                            setState(() {
-                              currentPage = pageNum;
-                            });
-                          },
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.blueAccent),
-                            backgroundColor: currentPage == pageNum
-                                ? Colors.blue.shade50
-                                : Colors.white,
-                          ),
-                          child: Text('$pageNum'),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: pageSchemes.length,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 0.9,
+                ),
+                itemBuilder: (context, index) {
+                  final scheme = pageSchemes[index];
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => SchemeDetailScreen(schemeName: scheme['scheme_name'] ?? ''),
                         ),
                       );
-                    }),
-                  ),
-                ),
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.auto_graph, color: Colors.pinkAccent, size: 28),
+                          SizedBox(height: 10),
+                          Text(
+                            scheme['scheme_name'] ?? '',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          SizedBox(height: 6),
+                          if (scheme['total_returns'] != null)
+                            Text('Return: ${scheme['total_returns']}', style: TextStyle(fontSize: 13)),
+                          if (scheme['risk'] != null)
+                            Text('Risk: ${scheme['risk']}', style: TextStyle(fontSize: 13)),
+                          if (scheme['time_duration'] != null)
+                            Text('Term: ${scheme['time_duration']}', style: TextStyle(fontSize: 13)),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         ),
       );
     }
 
-    Widget _buildSupportContent() {
-      return Center(child: Text('Support page coming soon!', style: TextStyle(fontSize: 18)));
-    }
-    Widget _buildProfileContent() {
-      // Show AccountPage directly in the tab
-      return AccountPage();
-    }
-    Widget _buildMicroLoansContent() {
-      return Center(child: Text('Micro Loans page coming soon!', style: TextStyle(fontSize: 18)));
-    }
-    Widget _buildCommunityContent() {
-      return Center(child: Text('Community page coming soon!', style: TextStyle(fontSize: 18)));
-    }
-
     List<Widget> _tabContents = [
       _buildHomeContent(),
-      _buildSupportContent(),
-      _buildProfileContent(),
-      _buildMicroLoansContent(),
-      _buildCommunityContent(),
+      Center(child: Text('Support page coming soon!', style: TextStyle(fontSize: 18))),
+      MySchemesPage(),
+      Center(child: Text('Micro Loans page coming soon!', style: TextStyle(fontSize: 18))),
+      Center(child: Text('Community page coming soon!', style: TextStyle(fontSize: 18))),
     ];
 
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFe3f0ff), Color(0xFFf7fbff)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: Color(0xFFF8F9FC),
         ),
         child: _tabContents[_selectedIndex],
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
-        selectedItemColor: Colors.blueAccent,
+        selectedItemColor: Colors.pinkAccent,
         unselectedItemColor: Colors.grey,
         currentIndex: _selectedIndex,
         onTap: (index) {
@@ -402,26 +282,11 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
           });
         },
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.support_agent),
-            label: 'Support',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet),
-            label: 'Micro Loans',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'Community',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.support_agent), label: 'Support'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet), label: 'Micro Loans'),
+          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Community'),
         ],
       ),
     );
