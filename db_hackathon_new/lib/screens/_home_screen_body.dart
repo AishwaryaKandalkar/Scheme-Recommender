@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'scheme_detail_screen.dart';
 import 'account_page.dart';
-
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
-void _logout(BuildContext context) async {
-  await _auth.signOut();
-  Navigator.pushReplacementNamed(context, '/login');
-}
 
 Future<Map<String, dynamic>?> _fetchProfile() async {
   final user = _auth.currentUser;
@@ -48,6 +44,38 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
   bool loading = false;
   String error = '';
   Map<String, dynamic>? profile;
+
+  // Voice feature fields
+  final FlutterTts flutterTts = FlutterTts();
+  late stt.SpeechToText speech;
+  bool isListening = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Automatically fetch eligible schemes on home page load
+    fetchSchemes();
+    speech = stt.SpeechToText();
+  }
+
+  Future<void> _speak(String text) async {
+    await flutterTts.speak(text);
+  }
+
+  void _listen(TextEditingController controller) async {
+    if (!isListening) {
+      bool available = await speech.initialize();
+      if (available) {
+        setState(() => isListening = true);
+        speech.listen(onResult: (result) {
+          controller.text = result.recognizedWords;
+        });
+      }
+    } else {
+      setState(() => isListening = false);
+      speech.stop();
+    }
+  }
 
   Future<void> fetchSchemes({String? customGoal}) async {
     setState(() {
@@ -89,12 +117,6 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    // Automatically fetch eligible schemes on home page load
-    fetchSchemes();
-  }
 
   @override
   void dispose() {
@@ -120,15 +142,26 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: 24, left: 24, right: 24, bottom: 8),
-                child: Text(
-                  'Recommended Schemes',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade900,
-                    letterSpacing: 0.5,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Recommended Schemes',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue.shade900,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.volume_up, color: Colors.blueAccent),
+                      onPressed: () => _speak('Recommended Schemes'),
+                    ),
+                  ],
                 ),
               ),
               Padding(
@@ -143,6 +176,10 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                           prefixIcon: Icon(Icons.search, color: Colors.blueAccent),
                           contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                          suffixIcon: IconButton(
+                            icon: Icon(isListening ? Icons.mic : Icons.mic_none, color: Colors.blueAccent),
+                            onPressed: () => _listen(goalController),
+                          ),
                         ),
                         minLines: 1,
                         maxLines: 2,
@@ -176,7 +213,15 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
               if (error.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 12, left: 24, right: 24),
-                  child: Text(error, style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                  child: Row(
+                    children: [
+                      Expanded(child: Text(error, style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
+                      IconButton(
+                        icon: Icon(Icons.volume_up, color: Colors.red),
+                        onPressed: () => _speak(error),
+                      ),
+                    ],
+                  ),
                 ),
               SizedBox(height: 10),
               Container(
@@ -188,7 +233,16 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                           children: [
                             Icon(Icons.info_outline, color: Colors.grey, size: 48),
                             SizedBox(height: 10),
-                            Text('No eligible recommendations found.', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('No eligible recommendations found.', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                                IconButton(
+                                  icon: Icon(Icons.volume_up, color: Colors.grey),
+                                  onPressed: () => _speak('No eligible recommendations found.'),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       )
@@ -248,15 +302,25 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                                           ),
                                           SizedBox(width: 12),
                                           Expanded(
-                                            child: Text(
-                                              scheme['scheme_name'] ?? '',
-                                              style: TextStyle(
-                                                fontSize: 21,
-                                                fontWeight: FontWeight.w700,
-                                                color: Colors.blue.shade800,
-                                                decoration: TextDecoration.underline,
-                                                letterSpacing: 0.2,
-                                              ),
+                                            child: Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    scheme['scheme_name'] ?? '',
+                                                    style: TextStyle(
+                                                      fontSize: 21,
+                                                      fontWeight: FontWeight.w700,
+                                                      color: Colors.blue.shade800,
+                                                      decoration: TextDecoration.underline,
+                                                      letterSpacing: 0.2,
+                                                    ),
+                                                  ),
+                                                ),
+                                                IconButton(
+                                                  icon: Icon(Icons.volume_up, color: Colors.blueAccent),
+                                                  onPressed: () => _speak(scheme['scheme_name'] ?? ''),
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ],
@@ -268,7 +332,17 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                                           children: [
                                             Icon(Icons.flag, color: Colors.green, size: 20),
                                             SizedBox(width: 8),
-                                            Expanded(child: Text('Goal: ${scheme['scheme_goal']}', style: TextStyle(fontSize: 16))),
+                                            Expanded(
+                                              child: Row(
+                                                children: [
+                                                  Expanded(child: Text('Goal: ${scheme['scheme_goal']}', style: TextStyle(fontSize: 16))),
+                                                  IconButton(
+                                                    icon: Icon(Icons.volume_up, color: Colors.green),
+                                                    onPressed: () => _speak('Goal: ${scheme['scheme_goal']}'),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       if ((scheme['benefits'] ?? '').toString().isNotEmpty)
@@ -277,7 +351,17 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                                           children: [
                                             Icon(Icons.thumb_up, color: Colors.blueAccent, size: 20),
                                             SizedBox(width: 8),
-                                            Expanded(child: Text('Benefits: ${scheme['benefits']}', style: TextStyle(fontSize: 16))),
+                                            Expanded(
+                                              child: Row(
+                                                children: [
+                                                  Expanded(child: Text('Benefits: ${scheme['benefits']}', style: TextStyle(fontSize: 16))),
+                                                  IconButton(
+                                                    icon: Icon(Icons.volume_up, color: Colors.blueAccent),
+                                                    onPressed: () => _speak('Benefits: ${scheme['benefits']}'),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       if ((scheme['total_returns'] ?? '').toString().isNotEmpty)
@@ -286,7 +370,17 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                                           children: [
                                             Icon(Icons.trending_up, color: Colors.purple, size: 20),
                                             SizedBox(width: 8),
-                                            Expanded(child: Text('Returns: ${scheme['total_returns']}', style: TextStyle(fontSize: 16))),
+                                            Expanded(
+                                              child: Row(
+                                                children: [
+                                                  Expanded(child: Text('Returns: ${scheme['total_returns']}', style: TextStyle(fontSize: 16))),
+                                                  IconButton(
+                                                    icon: Icon(Icons.volume_up, color: Colors.purple),
+                                                    onPressed: () => _speak('Returns: ${scheme['total_returns']}'),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       if ((scheme['time_duration'] ?? '').toString().isNotEmpty)
@@ -295,7 +389,17 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                                           children: [
                                             Icon(Icons.timer, color: Colors.teal, size: 20),
                                             SizedBox(width: 8),
-                                            Expanded(child: Text('Duration: ${scheme['time_duration']}', style: TextStyle(fontSize: 16))),
+                                            Expanded(
+                                              child: Row(
+                                                children: [
+                                                  Expanded(child: Text('Duration: ${scheme['time_duration']}', style: TextStyle(fontSize: 16))),
+                                                  IconButton(
+                                                    icon: Icon(Icons.volume_up, color: Colors.teal),
+                                                    onPressed: () => _speak('Duration: ${scheme['time_duration']}'),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       if ((scheme['scheme_website'] ?? '').toString().isNotEmpty)
@@ -304,7 +408,17 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                                           children: [
                                             Icon(Icons.link, color: Colors.indigo, size: 20),
                                             SizedBox(width: 8),
-                                            Expanded(child: Text('Website: ${scheme['scheme_website']}', style: TextStyle(fontSize: 16, color: Colors.indigo))),
+                                            Expanded(
+                                              child: Row(
+                                                children: [
+                                                  Expanded(child: Text('Website: ${scheme['scheme_website']}', style: TextStyle(fontSize: 16, color: Colors.indigo))),
+                                                  IconButton(
+                                                    icon: Icon(Icons.volume_up, color: Colors.indigo),
+                                                    onPressed: () => _speak('Website: ${scheme['scheme_website']}'),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       if ((scheme['similarity_score'] ?? '').toString().isNotEmpty)
@@ -313,7 +427,17 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                                           children: [
                                             Icon(Icons.score, color: Colors.deepOrange, size: 20),
                                             SizedBox(width: 8),
-                                            Expanded(child: Text('Match Score: ${scheme['similarity_score']?.toStringAsFixed(2) ?? ''}', style: TextStyle(fontSize: 16))),
+                                            Expanded(
+                                              child: Row(
+                                                children: [
+                                                  Expanded(child: Text('Match Score: ${scheme['similarity_score']?.toStringAsFixed(2) ?? ''}', style: TextStyle(fontSize: 16))),
+                                                  IconButton(
+                                                    icon: Icon(Icons.volume_up, color: Colors.deepOrange),
+                                                    onPressed: () => _speak('Match Score: ${scheme['similarity_score']?.toStringAsFixed(2) ?? ''}'),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
                                           ],
                                         ),
                                     ],
