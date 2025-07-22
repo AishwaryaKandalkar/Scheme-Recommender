@@ -292,6 +292,57 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
                           ),
                         ),
                       _buildPredictionInfo(),
+                      if (schemeData?['similar_investments'] != null &&
+                          schemeData!['similar_investments'] is List) ...[
+                        SizedBox(height: 24),
+                        Text(
+                          '📊 Similar Investments',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(height: 8),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: List.generate(schemeData!['similar_investments'].length, (index) {
+                              final sim = schemeData!['similar_investments'][index];
+                              final simName = sim['investment_name'] ?? 'Unnamed';
+                              final returns = sim['total_returns'] ?? 'N/A';
+                              final duration = sim['time_duration'] ?? 'N/A';
+
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => SchemeDetailScreen(schemeName: simName),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  width: 200,
+                                  margin: EdgeInsets.symmetric(horizontal: 8),
+                                  padding: EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade100,
+                                    border: Border.all(color: Colors.blueGrey.shade100),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(simName,
+                                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                      SizedBox(height: 6),
+                                      Text("Returns: $returns"),
+                                      Text("Duration: $duration"),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }),
+                          ),
+                        ),
+                      ],
                       Divider(height: 32, thickness: 1.5),
                       TextField(
                         controller: amountController,
