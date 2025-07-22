@@ -54,7 +54,7 @@
   "nameRequired": "Name is required",
   "emailRequired": "Email is required",
   "passwordLength": "Password must be at least 6 characters",
-  "chatbot": "Chatbot",
+  "chatbot": "Continue as Guest",
   "yourFinances": "Your Finances",
   "aboutYou": "About You",
   "incomeGroup1Lakh": "<1 Lakh",

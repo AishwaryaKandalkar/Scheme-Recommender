@@ -111,6 +111,30 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: Text(loc.chatbot, style: TextStyle(color: Colors.white)),
                 ),
+                SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: () => Navigator.pushNamed(context, '/agent-login'),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: Size(double.infinity, 45),
+                    backgroundColor: Colors.orange,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text('Agent Login', style: TextStyle(color: Colors.white)),
+                ),
+                SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: () => Navigator.pushNamed(context, '/agent-register'),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: Size(double.infinity, 45),
+                    backgroundColor: Colors.deepPurple,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text('Register as Agent', style: TextStyle(color: Colors.white)),
+                ),
               ],
             ),
           ),

@@ -427,7 +427,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatbot.
   ///
   /// In en, this message translates to:
-  /// **'Chatbot'**
+  /// **'Continue as Guest'**
   String get chatbot;
 
   /// No description provided for @yourFinances.

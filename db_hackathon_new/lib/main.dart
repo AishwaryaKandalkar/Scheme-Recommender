@@ -11,6 +11,8 @@ import 'screens/language_selection_screen.dart';
 import 'screens/chatbot_screen.dart';
 import 'screens/account_page.dart';
 import 'screens/my_schemes_page.dart';
+import 'screens/agent_login_screen.dart';
+import 'screens/agent_register_screen.dart';
 import 'providers/language_provider.dart';
 import 'package:provider/provider.dart';
 import '../gen_l10n/app_localizations.dart';
@@ -55,6 +57,8 @@ class SchemeFinderApp extends StatelessWidget {
                   '/account': (_) => AccountPage(),
                   '/edit_profile': (_) => ProfileCreationScreen(),
                   '/my_schemes': (_) => MySchemesPage(),
+                  '/agent-login': (_) => AgentLoginScreen(),
+                  '/agent-register': (_) => AgentRegisterScreen(),
             },
           );
         },

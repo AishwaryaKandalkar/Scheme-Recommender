@@ -175,7 +175,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passwordLength => 'Password must be at least 6 characters';
 
   @override
-  String get chatbot => 'Chatbot';
+  String get chatbot => 'Continue as Guest';
 
   @override
   String get yourFinances => 'Your Finances';
