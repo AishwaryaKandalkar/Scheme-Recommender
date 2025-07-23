@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter/services.dart';
 
 class SchemeDetailScreen extends StatefulWidget {
   final String schemeName;
@@ -18,6 +20,8 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
   Map<String, dynamic>? schemeData;
   bool loading = true;
   String? error;
+  FlutterTts? _flutterTts;
+  static const MethodChannel _voiceChannel = MethodChannel('voice_channel');
 
   final TextEditingController amountController = TextEditingController();
   DateTime? registrationDate;
@@ -33,13 +37,83 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _initTts();
     fetchSchemeDetail();
     fetchPrediction();
   }
 
+  @override
+  void dispose() {
+    _flutterTts?.stop();
+    super.dispose();
+  }
+
+  void _initTts() async {
+    _flutterTts = FlutterTts();
+    await _flutterTts?.setLanguage("en-US");
+    await _flutterTts?.setSpeechRate(0.5);
+    await _flutterTts?.setVolume(1.0);
+    await _flutterTts?.setPitch(1.0);
+  }
+
+  Future<void> _speak(String text) async {
+    await _flutterTts?.speak(text);
+  }
+
+  Future<void> _startListening() async {
+    try {
+      await _speak("Please speak the amount you want to pay");
+      final result = await _voiceChannel.invokeMethod('startListening');
+      if (result != null && result.isNotEmpty) {
+        // Extract numbers from speech
+        final RegExp numberRegex = RegExp(r'\d+');
+        final matches = numberRegex.allMatches(result);
+        if (matches.isNotEmpty) {
+          final amount = matches.first.group(0);
+          setState(() {
+            amountController.text = amount ?? '';
+          });
+          await _speak("Amount set to $amount rupees");
+        } else {
+          await _speak("Could not understand the amount. Please try again.");
+        }
+      }
+    } catch (e) {
+      await _speak("Voice input failed. Please type manually.");
+    }
+  }
+
+  void _speakSchemeDetails() {
+    if (schemeData == null) return;
+    
+    String details = "Scheme Details for ${widget.schemeName}. ";
+    
+    if (schemeData!["scheme_goal"] != null) {
+      details += "Goal: ${schemeData!["scheme_goal"]}. ";
+    }
+    
+    if (schemeData!["benefits"] != null) {
+      details += "Benefits: ${schemeData!["benefits"]}. ";
+    }
+    
+    if (schemeData!["total_returns"] != null) {
+      details += "Returns: ${schemeData!["total_returns"]}. ";
+    }
+    
+    if (schemeData!["time_duration"] != null) {
+      details += "Duration: ${schemeData!["time_duration"]}. ";
+    }
+    
+    if (predictedAmount != null) {
+      details += "AI suggests an amount of ${predictedAmount!.toStringAsFixed(0)} rupees. ";
+    }
+    
+    _speak(details);
+  }
+
   Future<void> fetchSchemeDetail() async {
     final url = Uri.parse(
-        'http://192.168.1.2:5000/scheme_detail?name=${Uri.encodeComponent(widget.schemeName)}');
+        'http://192.168.1.4:5000/scheme_detail?name=${Uri.encodeComponent(widget.schemeName)}');
 
     try {
       final response = await http.get(url);
@@ -49,23 +123,26 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
           schemeData = json.decode(response.body);
           loading = false;
         });
+        await _speak("Scheme details loaded successfully. ${widget.schemeName} information is now available.");
       } else {
         setState(() {
           error = json.decode(response.body)['error'] ?? 'Unknown error';
           loading = false;
         });
+        await _speak("Failed to load scheme details. Please try again.");
       }
     } catch (e) {
       setState(() {
         error = 'Failed to load scheme: $e';
         loading = false;
       });
+      await _speak("Network error occurred while loading scheme details.");
     }
   }
 
   Future<void> fetchPrediction() async {
     final url = Uri.parse(
-        'http://192.168.1.2:5000/predict_limits?scheme_name=${Uri.encodeComponent(widget.schemeName)}');
+        'http://192.168.1.4:5000/predict_limits?scheme_name=${Uri.encodeComponent(widget.schemeName)}');
 
     try {
       final response = await http.get(url);
@@ -114,12 +191,15 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
       amountError = null;
     });
 
+    await _speak("Processing your registration...");
+
     final amount = amountController.text.trim();
     if (amount.isEmpty) {
       setState(() {
         amountError = 'Please enter an amount.';
         registering = false;
       });
+      await _speak("Please enter an amount to continue.");
       return;
     }
 
@@ -134,6 +214,7 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
               'Amount must be within ±20% of ₹${predictedAmount!.toStringAsFixed(0)}';
           registering = false;
         });
+        await _speak("Amount is outside the recommended range. Please adjust your amount.");
         return;
       }
     }
@@ -143,6 +224,7 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
         registerMsg = 'Please select a registration date.';
         registering = false;
       });
+      await _speak("Please select a registration date first.");
       return;
     }
 
@@ -153,6 +235,7 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
           registerMsg = 'Not logged in.';
           registering = false;
         });
+        await _speak("You need to log in first.");
         return;
       }
 
@@ -168,6 +251,7 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
           registerMsg = 'Already registered for this scheme.';
           registering = false;
         });
+        await _speak("You are already registered for this scheme.");
         return;
       }
 
@@ -184,11 +268,13 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
         registerMsg = 'Registered successfully!';
         registering = false;
       });
+      await _speak("Congratulations! You have successfully registered for ${widget.schemeName} with amount $amount rupees.");
     } catch (e) {
       setState(() {
         registerMsg = 'Error: $e';
         registering = false;
       });
+      await _speak("Registration failed due to an error. Please try again.");
     }
   }
 
@@ -203,16 +289,26 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
     if (value == null || value.isEmpty || value == "N/A") return SizedBox();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: RichText(
-        text: TextSpan(
-          style: TextStyle(color: Colors.black87),
-          children: [
-            TextSpan(
-                text: "$title: ",
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            TextSpan(text: value),
-          ],
-        ),
+      child: Row(
+        children: [
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                style: TextStyle(color: Colors.black87),
+                children: [
+                  TextSpan(
+                      text: "$title: ",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  TextSpan(text: value),
+                ],
+              ),
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.volume_up, color: Colors.deepPurple, size: 18),
+            onPressed: () => _speak("$title: $value"),
+          ),
+        ],
       ),
     );
   }
@@ -238,9 +334,29 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "🔍 Suggested by AI:",
-            style: TextStyle(fontWeight: FontWeight.bold),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  "🔍 Suggested by AI:",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.volume_up, color: Colors.blue),
+                onPressed: () {
+                  String aiInfo = "AI Suggestions: ";
+                  if (predictedAmount != null) {
+                    aiInfo += "Recommended amount is ${predictedAmount!.toStringAsFixed(0)} rupees with 20 percent flexibility. ";
+                  }
+                  if (predictedDuration != null) {
+                    aiInfo += "Expected duration is $predictedDuration months. ";
+                  }
+                  aiInfo += "These predictions are generated using artificial intelligence and machine learning.";
+                  _speak(aiInfo);
+                },
+              ),
+            ],
           ),
           if (amtText != null) Text(amtText),
           if (durationText != null) Text(durationText),
@@ -255,6 +371,16 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.schemeName),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.volume_up),
+            onPressed: () => _speakSchemeDetails(),
+          ),
+          IconButton(
+            icon: Icon(Icons.help_outline),
+            onPressed: () => _speak("This screen shows detailed information about ${widget.schemeName}. You can listen to any section by tapping the speaker icon next to it, and register for the scheme at the bottom."),
+          ),
+        ],
       ),
       body: loading
           ? Center(child: CircularProgressIndicator())
@@ -295,9 +421,28 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
                       if (schemeData?['similar_investments'] != null &&
                           schemeData!['similar_investments'] is List) ...[
                         SizedBox(height: 24),
-                        Text(
-                          '📊 Similar Investments',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                '📊 Similar Investments',
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.volume_up, color: Colors.deepPurple),
+                              onPressed: () {
+                                final simList = schemeData!['similar_investments'] as List;
+                                String similar = "Similar Investments: ";
+                                for (var sim in simList) {
+                                  final name = sim['investment_name'] ?? 'Unnamed';
+                                  final returns = sim['total_returns'] ?? 'N/A';
+                                  similar += "$name with returns $returns. ";
+                                }
+                                _speak(similar);
+                              },
+                            ),
+                          ],
                         ),
                         SizedBox(height: 8),
                         SingleChildScrollView(
@@ -330,8 +475,18 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(simName,
-                                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(simName,
+                                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                          ),
+                                          IconButton(
+                                            icon: Icon(Icons.volume_up, color: Colors.grey.shade600, size: 16),
+                                            onPressed: () => _speak("$simName. Returns: $returns. Duration: $duration"),
+                                          ),
+                                        ],
+                                      ),
                                       SizedBox(height: 6),
                                       Text("Returns: $returns"),
                                       Text("Duration: $duration"),
@@ -344,6 +499,21 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
                         ),
                       ],
                       Divider(height: 32, thickness: 1.5),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              "Registration Form",
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.volume_up, color: Colors.deepPurple),
+                            onPressed: () => _speak("Registration form. Enter your investment amount, select a registration date, and click register to join this scheme."),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8),
                       TextField(
                         controller: amountController,
                         keyboardType: TextInputType.number,
@@ -351,6 +521,10 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
                           labelText: 'Amount you want to pay',
                           border: OutlineInputBorder(),
                           errorText: amountError,
+                          suffixIcon: IconButton(
+                            icon: Icon(Icons.mic, color: Colors.deepPurple),
+                            onPressed: _startListening,
+                          ),
                         ),
                         onChanged: (val) {
                           if (predictedAmount != null) {
@@ -382,6 +556,7 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
                           SizedBox(width: 8),
                           ElevatedButton(
                             onPressed: () async {
+                              await _speak("Opening date picker");
                               final picked = await showDatePicker(
                                 context: context,
                                 initialDate: registrationDate ?? DateTime.now(),
@@ -393,25 +568,57 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
                                   registrationDate = picked;
                                 });
                                 calculateDueDate();
+                                await _speak("Registration date set to ${picked.day}-${picked.month}-${picked.year}");
                               }
                             },
                             child: Text('Pick Date'),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.volume_up, color: Colors.deepPurple),
+                            onPressed: () {
+                              if (registrationDate != null) {
+                                _speak("Registration date is set to ${registrationDate!.day}-${registrationDate!.month}-${registrationDate!.year}");
+                              } else {
+                                _speak("No registration date selected yet. Please pick a date.");
+                              }
+                            },
                           ),
                         ],
                       ),
                       SizedBox(height: 8),
                       if (dueDate != null)
-                        Text(
-                          'Next due date: ${dueDate!.toLocal()}'.split(' ')[0],
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Next due date: ${dueDate!.toLocal()}'.split(' ')[0],
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.volume_up, color: Colors.deepPurple),
+                              onPressed: () => _speak("Next due date is ${dueDate!.day}-${dueDate!.month}-${dueDate!.year}"),
+                            ),
+                          ],
                         ),
                       SizedBox(height: 16),
-                      ElevatedButton.icon(
-                        icon: Icon(Icons.how_to_reg),
-                        label: registering
-                            ? Text('Registering...')
-                            : Text('Register for this Scheme'),
-                        onPressed: registering ? null : registerForScheme,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              icon: Icon(Icons.how_to_reg),
+                              label: registering
+                                  ? Text('Registering...')
+                                  : Text('Register for this Scheme'),
+                              onPressed: registering ? null : registerForScheme,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          IconButton(
+                            icon: Icon(Icons.volume_up, color: Colors.deepPurple),
+                            onPressed: () => _speak("Tap the register button to complete your registration for ${widget.schemeName}"),
+                          ),
+                        ],
                       ),
                       if (registerMsg != null) ...[
                         SizedBox(height: 12),

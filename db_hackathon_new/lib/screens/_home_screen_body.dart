@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter/services.dart';
 
 import 'scheme_detail_screen.dart';
 import 'account_page.dart';
@@ -23,7 +25,7 @@ Future<Map<String, dynamic>?> _fetchProfile() async {
 }
 
 Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile) async {
-  final url = Uri.parse('http://192.168.1.2:5000/recommend');
+  final url = Uri.parse('http://192.168.1.4:5000/recommend');
   final response = await http.post(
     url,
     body: jsonEncode(profile),
@@ -33,6 +35,21 @@ Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile) async {
   if (response.statusCode == 200) {
     final data = jsonDecode(response.body);
     return data['recommended_schemes'] ?? [];
+  }
+  return null;
+}
+
+Future<List<dynamic>?> _fetchEligibleSchemes(Map<String, dynamic> profile) async {
+  final url = Uri.parse('http://192.168.1.4:5000/eligible_schemes');
+  final response = await http.post(
+    url,
+    body: jsonEncode(profile),
+    headers: {'Content-Type': 'application/json'},
+  );
+
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+    return data['eligible_schemes'] ?? [];
   }
   return null;
 }
@@ -50,6 +67,13 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
   String error = '';
   Map<String, dynamic>? profile;
   String? userName;
+
+  // Voice feature fields
+  FlutterTts? flutterTts;
+  bool isListening = false;
+  static const platform = MethodChannel('voice_channel');
+
+  bool isAiSearch = false; // Track if current results are from AI search
 
   Future<void> fetchSchemes({String? customGoal}) async {
     setState(() {
@@ -70,24 +94,50 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
       userName = profile?['name'] ?? 'User';
     });
 
+    // Prepare payload for API call
     final payload = {
-      'situation': customGoal ?? (profile?['situation'] ?? 'Looking for investment schemes'),
-      'income_group': profile?['income_group'] ?? profile?['annual_income'] ?? '',
-      'social_category': profile?['social_category'] ?? profile?['category'] ?? '',
-      'gender': profile?['gender'] ?? '',
       'age': profile?['age']?.toString() ?? '',
+      'gender': profile?['gender'] ?? '',
+      'social_category': profile?['social_category'] ?? profile?['category'] ?? '',
+      'income_group': profile?['income_group'] ?? profile?['annual_income'] ?? '',
       'location': profile?['location'] ?? '',
     };
 
-    final result = await _fetchSchemes(payload);
+    List<dynamic>? result;
+
+    if (customGoal != null && customGoal.trim().isNotEmpty) {
+      // User provided specific search text - use ML-powered recommendation
+      setState(() {
+        isAiSearch = true;
+      });
+      await _speak("Searching for schemes related to: $customGoal");
+      payload['situation'] = customGoal;
+      result = await _fetchSchemes(payload);
+    } else {
+      // Initial load without search text - use fast rule-based filtering
+      setState(() {
+        isAiSearch = false;
+      });
+      await _speak("Loading your eligible schemes");
+      result = await _fetchEligibleSchemes(payload);
+    }
+
     if (result != null) {
       setState(() {
-        schemes = result;
+        schemes = result!;
       });
+      
+      // Voice feedback based on results
+      if (customGoal != null && customGoal.trim().isNotEmpty) {
+        await _speak("Found ${result.length} schemes matching your search for $customGoal");
+      } else {
+        await _speak("Loaded ${result.length} schemes you're eligible for");
+      }
     } else {
       setState(() {
         error = 'No data received from backend.';
       });
+      await _speak("Failed to load schemes. Please try again.");
     }
 
     setState(() {
@@ -95,15 +145,88 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
     });
   }
 
+  Future<void> _speak(String text) async {
+    if (flutterTts != null) {
+      await flutterTts!.speak(text);
+    }
+  }
+
+  Future<void> _listen(TextEditingController controller) async {
+    if (!isListening) {
+      setState(() => isListening = true);
+      try {
+        final String result = await platform.invokeMethod('startVoiceInput');
+        controller.text = result;
+      } catch (e) {
+        print('Error starting speech recognition: $e');
+      } finally {
+        setState(() => isListening = false);
+      }
+    }
+  }
+
+  List<Widget> _buildPageNumbers() {
+    int totalPages = ((schemes.length - 1) ~/ 10) + 1;
+    List<Widget> pageNumbers = [];
+    
+    // Show page numbers around current page
+    int start = (currentPage - 2).clamp(1, totalPages);
+    int end = (currentPage + 2).clamp(1, totalPages);
+    
+    // Ensure we show at least 5 pages when possible
+    if (end - start < 4) {
+      if (start == 1) {
+        end = (start + 4).clamp(1, totalPages);
+      } else if (end == totalPages) {
+        start = (end - 4).clamp(1, totalPages);
+      }
+    }
+    
+    for (int i = start; i <= end; i++) {
+      pageNumbers.add(
+        Container(
+          margin: EdgeInsets.symmetric(horizontal: 2),
+          child: ElevatedButton(
+            onPressed: () async {
+              setState(() {
+                currentPage = i;
+              });
+              await _speak("Page $i");
+            },
+            child: Text('$i'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: currentPage == i ? Colors.pinkAccent : Colors.grey[300],
+              foregroundColor: currentPage == i ? Colors.white : Colors.black87,
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: Size(40, 36),
+            ),
+          ),
+        ),
+      );
+    }
+    
+    return pageNumbers;
+  }
+
   @override
   void initState() {
     super.initState();
-    fetchSchemes();
+    
+    // Initialize FlutterTts
+    flutterTts = FlutterTts();
+    
+    // Use optimized initial load
+    fetchSchemes(); // This will use rule-based filtering for fast initial load
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _speak("Welcome to Scheme Recommender! Loading your eligible schemes quickly.");
+    });
   }
 
   @override
   void dispose() {
     goalController.dispose();
+    flutterTts?.stop();
     super.dispose();
   }
 
@@ -111,7 +234,6 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
 
   @override
   Widget build(BuildContext context) {
-    int totalPages = (schemes.length / 10).ceil();
     int startIdx = (currentPage - 1) * 10;
     int endIdx = (startIdx + 10).clamp(0, schemes.length);
     List<dynamic> pageSchemes = schemes.sublist(startIdx, endIdx);
@@ -161,6 +283,26 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                           hintText: 'Search your goal or need',
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
                           prefixIcon: Icon(Icons.search, color: Colors.pinkAccent),
+                          suffixIcon: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  isListening ? Icons.mic : Icons.mic_none,
+                                  color: isListening ? Colors.red : Colors.pinkAccent,
+                                ),
+                                onPressed: () => _listen(goalController),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.volume_up, color: Colors.pinkAccent),
+                                onPressed: () {
+                                  if (goalController.text.isNotEmpty) {
+                                    _speak(goalController.text);
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
                           contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                           filled: true,
                           fillColor: Colors.white,
@@ -175,14 +317,24 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                           ? null
                           : () async {
                               currentPage = 1;
-                              await fetchSchemes(customGoal: goalController.text.isNotEmpty ? goalController.text : null);
+                              String searchText = goalController.text.trim();
+                              if (searchText.isNotEmpty) {
+                                // Voice feedback for AI-powered search
+                                await _speak("Using AI to find the best schemes for: $searchText");
+                              } else {
+                                // Voice feedback for refreshing eligible schemes
+                                await _speak("Refreshing your eligible schemes");
+                              }
+                              await fetchSchemes(customGoal: searchText.isNotEmpty ? searchText : null);
                             },
                       icon: loading
                           ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : Icon(Icons.search, color: Colors.white),
-                      label: loading ? Text('') : Text('Find', style: TextStyle(color: Colors.white)),
+                          : Icon(goalController.text.trim().isNotEmpty ? Icons.psychology : Icons.refresh, color: Colors.white),
+                      label: loading 
+                          ? Text('') 
+                          : Text(goalController.text.trim().isNotEmpty ? 'AI Search' : 'Refresh', style: TextStyle(color: Colors.white)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.pinkAccent,
+                        backgroundColor: goalController.text.trim().isNotEmpty ? Colors.deepPurple : Colors.pinkAccent,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                       ),
@@ -196,6 +348,57 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                   child: Text(error, style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                 ),
               SizedBox(height: 10),
+              
+              // Search mode indicator
+              if (schemes.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isAiSearch ? Colors.deepPurple.withOpacity(0.1) : Colors.blue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isAiSearch ? Colors.deepPurple : Colors.blue,
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isAiSearch ? Icons.psychology : Icons.filter_list,
+                              size: 16,
+                              color: isAiSearch ? Colors.deepPurple : Colors.blue,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              isAiSearch ? 'AI Recommendations' : 'Eligible Schemes',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: isAiSearch ? Colors.deepPurple : Colors.blue,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Spacer(),
+                      IconButton(
+                        icon: Icon(Icons.volume_up, color: Colors.pinkAccent, size: 20),
+                        onPressed: () {
+                          String modeText = isAiSearch 
+                              ? "Showing AI-powered recommendations based on your search" 
+                              : "Showing schemes you're eligible for based on your profile";
+                          _speak("$modeText. Found ${schemes.length} schemes.");
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              
               GridView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
@@ -228,7 +431,30 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.auto_graph, color: Colors.pinkAccent, size: 28),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Icon(Icons.auto_graph, color: Colors.pinkAccent, size: 28),
+                              IconButton(
+                                icon: Icon(Icons.volume_up, color: Colors.pinkAccent, size: 20),
+                                onPressed: () {
+                                  String schemeInfo = scheme['scheme_name'] ?? '';
+                                  if (scheme['total_returns'] != null) {
+                                    schemeInfo += '. Return: ${scheme['total_returns']}';
+                                  }
+                                  if (scheme['risk'] != null) {
+                                    schemeInfo += '. Risk: ${scheme['risk']}';
+                                  }
+                                  if (scheme['time_duration'] != null) {
+                                    schemeInfo += '. Term: ${scheme['time_duration']}';
+                                  }
+                                  _speak(schemeInfo);
+                                },
+                                padding: EdgeInsets.zero,
+                                constraints: BoxConstraints(),
+                              ),
+                            ],
+                          ),
                           SizedBox(height: 10),
                           Text(
                             scheme['scheme_name'] ?? '',
@@ -249,6 +475,93 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                   );
                 },
               ),
+              
+              // Pagination Controls
+              if (schemes.isNotEmpty) ...[
+                SizedBox(height: 20),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Column(
+                    children: [
+                      // Page info and total schemes count
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Page $currentPage of ${((schemes.length - 1) ~/ 10) + 1}',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                          ),
+                          Row(
+                            children: [
+                              Text(
+                                '${schemes.length} schemes',
+                                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.volume_up, color: Colors.pinkAccent, size: 18),
+                                onPressed: () {
+                                  int totalPages = ((schemes.length - 1) ~/ 10) + 1;
+                                  _speak("Page $currentPage of $totalPages. Total ${schemes.length} schemes found.");
+                                },
+                                padding: EdgeInsets.zero,
+                                constraints: BoxConstraints(),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 12),
+                      // Pagination buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Previous button
+                          ElevatedButton.icon(
+                            onPressed: currentPage > 1
+                                ? () async {
+                                    setState(() {
+                                      currentPage--;
+                                    });
+                                    await _speak("Page $currentPage");
+                                  }
+                                : null,
+                            icon: Icon(Icons.chevron_left, size: 18),
+                            label: Text('Previous'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: currentPage > 1 ? Colors.pinkAccent : Colors.grey,
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            ),
+                          ),
+                          SizedBox(width: 16),
+                          // Page numbers (show current and adjacent pages)
+                          ..._buildPageNumbers(),
+                          SizedBox(width: 16),
+                          // Next button
+                          ElevatedButton.icon(
+                            onPressed: currentPage < ((schemes.length - 1) ~/ 10) + 1
+                                ? () async {
+                                    setState(() {
+                                      currentPage++;
+                                    });
+                                    await _speak("Page $currentPage");
+                                  }
+                                : null,
+                            icon: Icon(Icons.chevron_right, size: 18),
+                            label: Text('Next'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: currentPage < ((schemes.length - 1) ~/ 10) + 1 ? Colors.pinkAccent : Colors.grey,
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 20),
+              ],
             ],
           ),
         ),
