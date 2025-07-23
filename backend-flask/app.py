@@ -10,7 +10,7 @@ from datetime import timedelta
 app = Flask(__name__)
 
 # Load schemes dataset
-df_schemes = pd.read_csv("C:/Users/USER/Documents/projects/Scheme-Recommender/datasets/financial_inclusion_schemes_1000_v3.csv")
+df_schemes = pd.read_csv("datasets/financial_inclusion_schemes_1000_v3.csv")
 df_schemes['text_blob'] = (
     df_schemes['scheme_goal'].fillna('') + ". " +
     df_schemes['eligibility'].fillna('') + ". " +
@@ -21,7 +21,7 @@ df_schemes['text_blob'] = (
 model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 
 # Load investment data
-df_investments = pd.read_csv("C:/Users/USER/Documents/projects/Scheme-Recommender/datasets/user_investments.csv")
+df_investments = pd.read_csv("datasets/user_investments.csv")
 
 def normalize_duration(text):
     text = str(text).lower()
@@ -179,8 +179,8 @@ def chatbot():
         answer += "\n"
     return jsonify({"answer": answer.strip()})
 
-amount_model = pickle.load(open("C:/Users/USER/Documents/projects/Scheme-Recommender/models/amount_prediction_model.pkl", "rb"))
-duration_model = pickle.load(open("C:/Users/USER/Documents/projects/Scheme-Recommender/models/duration_prediction_model.pkl", "rb"))
+amount_model = pickle.load(open("models/amount_prediction_model.pkl", "rb"))
+duration_model = pickle.load(open("models/duration_prediction_model.pkl", "rb"))
 
 @app.route("/scheme_detail", methods=["GET"])
 def scheme_detail():

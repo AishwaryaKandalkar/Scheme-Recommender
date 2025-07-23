@@ -41,9 +41,12 @@ dependencies:
     sdk: flutter
   url_launcher: ^6.2.5
   flutter_tts: ^3.8.5
-  speech_to_text: ^6.6.2
+  speech_to_text: ^6.4.1  # or latest
+  avatar_glow: ^3.0.1
+  clipboard: ^0.1.3
   cupertino_icons: ^1.0.2
   http: ^1.4.0
+  permission_handler: ^11.3.0
 
 dev_dependencies:
   flutter_test:

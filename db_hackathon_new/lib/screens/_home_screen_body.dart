@@ -8,6 +8,7 @@ import 'account_page.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'my_schemes_page.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -20,7 +21,7 @@ Future<Map<String, dynamic>?> _fetchProfile() async {
 }
 
 Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile) async {
-  final url = Uri.parse('http://192.168.1.2:5000/recommend');
+  final url = Uri.parse('http://192.168.1.4:5000/recommend');
   final response = await http.post(
     url,
     body: jsonEncode(profile),
@@ -55,9 +56,13 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
   @override
   void initState() {
     super.initState();
-    // Automatically fetch eligible schemes on home page load
     fetchSchemes();
     speech = stt.SpeechToText();
+      _requestMicPermission();
+    
+  }
+  void _requestMicPermission() async {
+    await Permission.microphone.request();
   }
 
   Future<void> _speak(String text) async {
@@ -124,11 +129,6 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    fetchSchemes();
-  }
 
   @override
   void dispose() {
