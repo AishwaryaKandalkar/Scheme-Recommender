@@ -54,13 +54,6 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Check if user is already logged in
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        Navigator.pushReplacementNamed(context, '/home');
-      }
-    });
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(

@@ -7,6 +7,8 @@ import 'scheme_detail_screen.dart';
 import 'account_page.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'my_schemes_page.dart';
+
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
 
@@ -18,7 +20,7 @@ Future<Map<String, dynamic>?> _fetchProfile() async {
 }
 
 Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile) async {
-  final url = Uri.parse('http://192.168.1.4:5000/recommend');
+  final url = Uri.parse('http://192.168.1.2:5000/recommend');
   final response = await http.post(
     url,
     body: jsonEncode(profile),
@@ -76,6 +78,7 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
       speech.stop();
     }
   }
+  String? userName;
 
   Future<void> fetchSchemes({String? customGoal}) async {
     setState(() {
@@ -91,6 +94,10 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
       });
       return;
     }
+
+    setState(() {
+      userName = profile?['name'] ?? 'User';
+    });
 
     final payload = {
       'situation': customGoal ?? (profile?['situation'] ?? 'Looking for investment schemes'),
@@ -117,6 +124,11 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
     });
   }
 
+  @override
+  void initState() {
+    super.initState();
+    fetchSchemes();
+  }
 
   @override
   void dispose() {
@@ -140,42 +152,47 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 24, left: 24, right: 24, bottom: 8),
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
+                color: Colors.white,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: Text(
-                        'Recommended Schemes',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue.shade900,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
+                    Icon(Icons.menu, color: Colors.black87),
+                    Text(
+                      'Welcome, ${userName ?? 'User'}!',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black),
                     ),
-                    IconButton(
-                      icon: Icon(Icons.volume_up, color: Colors.blueAccent),
-                      onPressed: () => _speak('Recommended Schemes'),
+                    Row(
+                      children: [
+                        Icon(Icons.notifications_none, color: Colors.black54),
+                        SizedBox(width: 8),
+                        CircleAvatar(
+                          backgroundColor: Colors.grey.shade400,
+                          child: Text(
+                            userName != null ? userName![0].toUpperCase() : '',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   children: [
                     Expanded(
                       child: TextFormField(
                         controller: goalController,
                         decoration: InputDecoration(
-                          hintText: 'Type your goal or need (optional)',
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          prefixIcon: Icon(Icons.search, color: Colors.blueAccent),
+                          hintText: 'Search your goal or need',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+                          prefixIcon: Icon(Icons.search, color: Colors.pinkAccent),
                           contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                          filled: true,
+                          fillColor: Colors.white,
                           suffixIcon: IconButton(
                             icon: Icon(isListening ? Icons.mic : Icons.mic_none, color: Colors.blueAccent),
                             onPressed: () => _listen(goalController),
@@ -194,17 +211,13 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                               await fetchSchemes(customGoal: goalController.text.isNotEmpty ? goalController.text : null);
                             },
                       icon: loading
-                          ? SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2))
-                          : Icon(Icons.search),
-                      label: loading ? Text('') : Text('Find'),
+                          ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : Icon(Icons.search, color: Colors.white),
+                      label: loading ? Text('') : Text('Find', style: TextStyle(color: Colors.white)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        padding: EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                        backgroundColor: Colors.pinkAccent,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                       ),
                     ),
                   ],
@@ -481,43 +494,25 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
       );
     }
 
-    Widget _buildSupportContent() {
-      return Center(child: Text('Support page coming soon!', style: TextStyle(fontSize: 18)));
-    }
-    Widget _buildProfileContent() {
-      // Show AccountPage directly in the tab
-      return AccountPage();
-    }
-    Widget _buildMicroLoansContent() {
-      return Center(child: Text('Micro Loans page coming soon!', style: TextStyle(fontSize: 18)));
-    }
-    Widget _buildCommunityContent() {
-      return Center(child: Text('Community page coming soon!', style: TextStyle(fontSize: 18)));
-    }
-
     List<Widget> _tabContents = [
       _buildHomeContent(),
-      _buildSupportContent(),
-      _buildProfileContent(),
-      _buildMicroLoansContent(),
-      _buildCommunityContent(),
+      Center(child: Text('Support page coming soon!', style: TextStyle(fontSize: 18))),
+      MySchemesPage(),
+      Center(child: Text('Micro Loans page coming soon!', style: TextStyle(fontSize: 18))),
+      Center(child: Text('Community page coming soon!', style: TextStyle(fontSize: 18))),
     ];
 
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFe3f0ff), Color(0xFFf7fbff)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: Color(0xFFF8F9FC),
         ),
         child: _tabContents[_selectedIndex],
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
-        selectedItemColor: Colors.blueAccent,
+        selectedItemColor: Colors.pinkAccent,
         unselectedItemColor: Colors.grey,
         currentIndex: _selectedIndex,
         onTap: (index) {
@@ -526,26 +521,11 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
           });
         },
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.support_agent),
-            label: 'Support',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet),
-            label: 'Micro Loans',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'Community',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.support_agent), label: 'Support'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet), label: 'Micro Loans'),
+          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Community'),
         ],
       ),
     );

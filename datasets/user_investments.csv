@@ -1,0 +1,101 @@
+investment_type,investment_name,investment_amount,total_returns,time_duration,current_value
+SIP,Daily Spark SIP,100.0,Interest rate 10-12%,3 years,18000.0
+Mutual Fund,Growth Plus MF,100.0,Interest rate 8-10%,5 years,65000.0
+Stock,Tech Innovators Ltd,25000.0,N/A,2 years,30000.0
+Equity,Global Equity Fund,40000.0,Interest rate 12-15%,4 years,55000.0
+SIP,Healthy Living SIP,10000.0,Interest rate 9-11%,2 years,12000.0
+Mutual Fund,Silver Arrow MF,60000.0,Interest rate 7-9%,6 years,72000.0
+Stock,Auto Major Inc,30000.0,N/A,3 years,33000.0
+Equity,Emerging Markets ETF,100.0,Interest rate 11-14%,5 years,58000.0
+SIP,Eco Friendly SIP,8000.0,Interest rate 10-12%,1 year,9000.0
+Mutual Fund,Retirement Secure MF,70000.0,Interest rate 6-8%,7 years,77000.0
+SIP,ABC Growth SIP,15000.0,Interest rate 10-12%,3 years,18000.0
+Mutual Fund,XYZ Equity Fund,50000.0,Interest rate 8-10%,5 years,55000.0
+Stock,Tata Motors,20000.0,N/A,2 years,25000.0
+Equity,Reliance Industries,30000.0,Interest rate 15-20%,4 years,36000.0
+SIP,DEF Income SIP,10000.0,Interest rate 9-11%,1 year,11000.0
+Mutual Fund,LMN Balanced Fund,75000.0,Interest rate 7-9%,6 years,82000.0
+Stock,HDFC Bank,25000.0,N/A,3 years,27000.0
+Equity,Infosys Technologies,35000.0,Interest rate 12-15%,2.5 years,40000.0
+SIP,GHI Growth SIP,100.0,Interest rate 11-13%,4 years,25000.0
+Mutual Fund,PQR Flexi Cap Fund,60000.0,Interest rate 6-8%,7 years,65000.0
+SIP,Sampoorn SIP Plan,5000.0,Interest rate 10-12%,3 years,72000.0
+Mutual Fund,Bluechip Growth Fund,15000.0,Interest rate 12-15%,5 years,245000.0
+Stock,Tata Motors Ltd.,1200.0,N/A,2 years,2500.0
+Equity,Reliance Industries,2500.0,Interest rate 14-18%,4 years,43000.0
+SIP,HealthFocus SIP,100.0,Interest rate 9-11%,2 years,38000.0
+Mutual Fund,Emerald Equity Fund,20000.0,Interest rate 11-14%,6 years,320000.0
+Stock,HDFC Bank Ltd.,2500.0,N/A,1 year,2900.0
+Equity,Infosys Technologies,1800.0,Interest rate 13-16%,3 years,30000.0
+SIP,EcoGrowth SIP,4000.0,Interest rate 10-13%,4 years,55000.0
+Mutual Fund,Sunrise Bond Fund,10000.0,Interest rate 8-10%,7 years,120000.0
+Mutual Fund,Horizon Growth Fund,50000.0,Interest rate 10-12%,3 years,56000.0
+Stock,Reliance Industries Ltd,150000.0,N/A,2 years,180000.0
+SIP,SBI Bluechip SIP,20000.0,Interest rate 12-15%,4 years,29000.0
+Equity,Nifty Index,80000.0,N/A,1 year,82000.0
+Mutual Fund,Sunrise Equity Fund,30000.0,Interest rate 11-14%,2.5 years,35000.0
+Stock,Tata Motors Ltd,100000.0,N/A,3 years,130000.0
+SIP,ICICI Flexi SIP,15000.0,Interest rate 13-16%,5 years,25000.0
+Equity,BSE Sensex,60000.0,N/A,1 year,61000.0
+Mutual Fund,Fortune Growth Fund,40000.0,Interest rate 9-11%,4 years,46000.0
+Stock,HDFC Bank Ltd,90000.0,N/A,2 years,95000.0
+SIP,SIP Growth Plan 2022,15000.0,Interest rate 10-12%,3 years,18000.0
+Mutual Fund,Bluechip Equity Fund,25000.0,Interest rate 8-10%,5 years,33000.0
+Stock,Reliance Industries Ltd,5000.0,N/A,2 years,6000.0
+Equity,Nifty 50 Index,20000.0,Interest rate 9-11%,4 years,23000.0
+SIP,Education Fund SIP 2021,100.0,Interest rate 11-13%,2 years,11500.0
+Mutual Fund,Flexible Income Fund,30000.0,Interest rate 7-9%,6 years,39000.0
+Stock,HDFC Bank Ltd,7000.0,N/A,1 year,7500.0
+Equity,BSE Sensex Index,15000.0,Interest rate 10-12%,3 years,17000.0
+SIP,Retirement Planning SIP,20000.0,Interest rate 12-14%,4 years,24000.0
+Mutual Fund,Midcap Growth Fund,22000.0,Interest rate 9-11%,5 years,25500.0
+SIP,Reliance SIP Growth Plan,15000.0,Interest rate 10-12%,3 years,19500.0
+Mutual Fund,HDFC Large Cap Fund,50000.0,Interest rate 14-18%,5 years,87000.0
+Stock,TCS Ltd,25000.0,N/A,2 years,33000.0
+Equity,NIFTY Index,100000.0,Interest rate 8-10%,7 years,150000.0
+SIP,ICICI Prudential SIP,20000.0,Interest rate 9-11%,4 years,27300.0
+Mutual Fund,SBI Small Cap Fund,30000.0,Interest rate 15-20%,3 years,39000.0
+Stock,Reliance Industries,40000.0,N/A,1 year,42000.0
+Equity,BSE Sensex,200000.0,Interest rate 7-9%,10 years,300000.0
+SIP,Kotak Mahindra SIP,10000.0,Interest rate 10-13%,2 years,13000.0
+Mutual Fund,Aditya Birla Midcap Fund,45000.0,Interest rate 12-15%,4 years,58000.0
+SIP,Axis SIP Flexi,5000.0,Interest rate 12-15%,3 years,75000.0
+Mutual Fund,HDFC Bluechip Fund,25000.0,Interest rate 10-12%,5 years,37000.0
+Stock,Tata Motors,15000.0,N/A,2 years,18000.0
+Equity,NIFTY Index,100000.0,Interest rate 8-10%,1 year,105000.0
+SIP,SBI Sip Plan,4000.0,Interest rate 11-13%,4 years,60000.0
+Mutual Fund,ICICI Prudent Balanced,100.0,Interest rate 9-11%,3 years,22000.0
+Stock,Reliance Industries,25000.0,N/A,1 year,27000.0
+Equity,BSE Sensex,300000.0,Interest rate 7-9%,2 years,315000.0
+SIP,ICICI SIP Growth,6000.0,Interest rate 13-16%,5 years,90000.0
+Mutual Fund,Franklin India Tax Saver,15000.0,Interest rate 10-12%,3 years,18000.0
+SIP,Axis SIP Growth Fund,5000.0,Interest rate 12-15%,3 years,6500.0
+Mutual Fund,HDFC Equity Diversified,100.0,Interest rate 10-12%,5 years,28000.0
+Stock,TCS Ltd,1500.0,N/A,2 years,3200.0
+Equity,Reliance Industries,10000.0,Interest rate 8-10%,4 years,12500.0
+SIP,ICICI Prudential Bluechip Fund,3000.0,Interest rate 11-14%,2 years,3400.0
+Mutual Fund,SBI Small Cap Fund,25000.0,Interest rate 9-11%,3 years,29000.0
+Stock,HDFC Bank,2000.0,N/A,1 year,2100.0
+Equity,Bharti Airtel,8000.0,Interest rate 7-9%,4 years,8700.0
+SIP,Kotak Small Cap Fund,4000.0,Interest rate 10-13%,2 years,4600.0
+Mutual Fund,Aditya Birla Sun Life Tax Relief 96,100.0,Interest rate 8-10%,5 years,16500.0
+SIP,HDFC SIP Plan,15000.0,Interest rate 10-12%,3 years,18300.0
+Mutual Fund,ABC Growth Fund,50000.0,Interest rate 8-10%,5 years,60000.0
+Stock,Tata Motors,20000.0,N/A,2 years,22000.0
+Equity,Reliance Equity,75000.0,Interest rate 15-20%,4 years,90000.0
+SIP,ICICI Direct SIP,10000.0,Interest rate 9-11%,1.5 years,11050.0
+Mutual Fund,XYZ Income Fund,100.0,Interest rate 7-9%,3.5 years,33000.0
+Stock,Infosys,25000.0,N/A,1 year,25500.0
+Equity,Tata Steel Equity,60000.0,Interest rate 12-16%,4.5 years,72000.0
+SIP,Kotak SIP Plan,20000.0,Interest rate 11-13%,2 years,23000.0
+Mutual Fund,DEF Balanced Fund,45000.0,Interest rate 6-8%,6 years,48000.0
+SIP,EcoGrowth SIP,15000.0,Interest rate 12-15%,3 years,19000.0
+Mutual Fund,Sunrise Equity Fund,25000.0,Interest rate 10-14%,5 years,38000.0
+Stock,Reliance Industries Ltd,2000.0,N/A,1 year,2200.0
+Equity,Tech Innovators,10000.0,Interest rate 20-25%,2 years,12500.0
+SIP,GreenEnergy SIP,8000.0,Interest rate 13-16%,4 years,11500.0
+Mutual Fund,Goldman Bluechip Fund,30000.0,Interest rate 11-13%,6 years,49000.0
+Stock,Tata Motors Ltd,3500.0,N/A,1 year,3700.0
+Equity,HealthTech Innovators,12000.0,Interest rate 18-22%,3 years,15500.0
+SIP,Urban Infrastructure SIP,10000.0,Interest rate 14-17%,5 years,15000.0
+Mutual Fund,Vanguard Growth Fund,25000.0,Interest rate 9-12%,4 years,29000.0
