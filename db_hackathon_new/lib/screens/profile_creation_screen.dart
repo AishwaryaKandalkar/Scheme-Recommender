@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter/services.dart';
 import '../widgets/step_indicator.dart';
 import '../gen_l10n/app_localizations.dart';
 
@@ -13,6 +15,8 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
   final _formKey = GlobalKey<FormState>();
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
+  FlutterTts? _flutterTts;
+  static const MethodChannel _voiceChannel = MethodChannel('voice_channel');
 
   int _currentStep = 0;
 
@@ -27,22 +31,95 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
   final List<String> _genders = ['Male', 'Female', 'Other'];
   final List<String> _categories = ['General', 'OBC', 'SC', 'ST'];
 
+  @override
+  void initState() {
+    super.initState();
+    _initTts();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _speak("Welcome to profile creation. Let's set up your account in 3 simple steps.");
+    });
+  }
+
+  @override
+  void dispose() {
+    _flutterTts?.stop();
+    super.dispose();
+  }
+
+  void _initTts() async {
+    _flutterTts = FlutterTts();
+    await _flutterTts?.setLanguage("en-US");
+    await _flutterTts?.setSpeechRate(0.5);
+    await _flutterTts?.setVolume(1.0);
+    await _flutterTts?.setPitch(1.0);
+  }
+
+  Future<void> _speak(String text) async {
+    await _flutterTts?.speak(text);
+  }
+
+  Future<void> _startListening(TextEditingController controller, String fieldName) async {
+    try {
+      await _speak("Please speak your $fieldName");
+      final result = await _voiceChannel.invokeMethod('startListening');
+      if (result != null && result.isNotEmpty) {
+        setState(() {
+          controller.text = result;
+        });
+        await _speak("You said: $result");
+      }
+    } catch (e) {
+      await _speak("Voice input failed. Please type manually.");
+    }
+  }
+
   void _nextStep() {
     if (_currentStep == 2) {
       _submit();
     } else if (_formKey.currentState!.validate()) {
       setState(() => _currentStep++);
+      _announceStep();
     }
   }
 
   void _prevStep() {
     if (_currentStep > 0) {
       setState(() => _currentStep--);
+      _announceStep();
+    }
+  }
+
+  void _announceStep() {
+    switch (_currentStep) {
+      case 0:
+        _speak("Step 1 of 3: Account Setup. Please enter your name, email, and password.");
+        break;
+      case 1:
+        _speak("Step 2 of 3: Financial Information. Please enter your annual income and current savings.");
+        break;
+      case 2:
+        _speak("Step 3 of 3: Personal Details. Please select your gender and category.");
+        break;
+    }
+  }
+
+  String _getStepDescription() {
+    switch (_currentStep) {
+      case 0:
+        return "Account Setup - Enter your personal credentials";
+      case 1:
+        return "Financial Information - Tell us about your finances";
+      case 2:
+        return "Personal Details - Complete your profile";
+      default:
+        return "Profile Creation";
     }
   }
 
   void _submit() async {
     try {
+      await _speak("Creating your account, please wait...");
+      
       UserCredential userCred = await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
@@ -58,8 +135,10 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
         'category': _category,
       });
 
+      await _speak("Account created successfully! Welcome to Scheme Recommender!");
       Navigator.pushReplacementNamed(context, '/home');
     } catch (e) {
+      await _speak("Account creation failed. Please try again.");
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
     }
   }
@@ -76,7 +155,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
     );
   }
 
-  Widget _styledTextField(TextEditingController controller, String label, IconData icon, Color fillColor, {bool isObscure = false, FormFieldValidator<String>? validator}) {
+  Widget _styledTextField(TextEditingController controller, String label, IconData icon, Color fillColor, {bool isObscure = false, FormFieldValidator<String>? validator, String? voiceLabel}) {
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
       child: TextFormField(
@@ -86,6 +165,10 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon),
+          suffixIcon: voiceLabel != null && !isObscure ? IconButton(
+            icon: Icon(Icons.mic, color: Colors.deepPurple),
+            onPressed: () => _startListening(controller, voiceLabel),
+          ) : null,
           filled: true,
           fillColor: fillColor,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -94,20 +177,33 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
     );
   }
 
-  Widget _styledDropdown(String value, List<String> items, String label, IconData icon, Color fillColor, ValueChanged<String?> onChanged) {
+  Widget _styledDropdown(String value, List<String> items, String label, IconData icon, Color fillColor, ValueChanged<String?> onChanged, {String? voiceLabel}) {
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
-      child: DropdownButtonFormField<String>(
-        value: value,
-        onChanged: onChanged,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon),
-          filled: true,
-          fillColor: fillColor,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-        items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
+      child: Row(
+        children: [
+          Expanded(
+            child: DropdownButtonFormField<String>(
+              value: value,
+              onChanged: onChanged,
+              decoration: InputDecoration(
+                labelText: label,
+                prefixIcon: Icon(icon),
+                filled: true,
+                fillColor: fillColor,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
+            ),
+          ),
+          if (voiceLabel != null) ...[
+            SizedBox(width: 8),
+            IconButton(
+              icon: Icon(Icons.volume_up, color: Colors.deepPurple),
+              onPressed: () => _speak("Current $voiceLabel is $value. Available options are: ${items.join(', ')}"),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -119,26 +215,58 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
     List<Widget> _buildStepContent() {
       return [
         _buildCardContent([
-          Icon(Icons.lock_outline, color: Colors.blue, size: 48),
+          Row(
+            children: [
+              Icon(Icons.lock_outline, color: Colors.blue, size: 48),
+              Spacer(),
+              IconButton(
+                icon: Icon(Icons.volume_up, color: Colors.blue),
+                onPressed: () => _speak("Step 1: Account Setup. Please enter your full name, email address, and create a secure password of at least 6 characters."),
+              ),
+            ],
+          ),
           SizedBox(height: 12),
           Text(loc.welcomeMessage, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          _styledTextField(_nameController, loc.name, Icons.account_circle_outlined, Colors.blue.shade50, validator: (val) => val!.isEmpty ? loc.nameRequired : null),
-          _styledTextField(_emailController, loc.email, Icons.email_outlined, Colors.purple.shade50, validator: (val) => val!.isEmpty ? loc.emailRequired : null),
-          _styledTextField(_passwordController, loc.password, Icons.lock_outline, Colors.orange.shade50, isObscure: true, validator: (val) => val!.length < 6 ? loc.passwordLength : null),
+          _styledTextField(_nameController, loc.name, Icons.account_circle_outlined, Colors.blue.shade50, 
+            validator: (val) => val!.isEmpty ? loc.nameRequired : null, voiceLabel: "full name"),
+          _styledTextField(_emailController, loc.email, Icons.email_outlined, Colors.purple.shade50, 
+            validator: (val) => val!.isEmpty ? loc.emailRequired : null, voiceLabel: "email address"),
+          _styledTextField(_passwordController, loc.password, Icons.lock_outline, Colors.orange.shade50, 
+            isObscure: true, validator: (val) => val!.length < 6 ? loc.passwordLength : null),
         ]),
         _buildCardContent([
-          Icon(Icons.attach_money, color: Colors.green, size: 48),
+          Row(
+            children: [
+              Icon(Icons.attach_money, color: Colors.green, size: 48),
+              Spacer(),
+              IconButton(
+                icon: Icon(Icons.volume_up, color: Colors.green),
+                onPressed: () => _speak("Step 2: Financial Information. Please enter your annual income and current savings amount. This helps us recommend suitable schemes for you."),
+              ),
+            ],
+          ),
           SizedBox(height: 12),
-          Text(loc.yourFinances ?? 'Your Finances', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          _styledTextField(_incomeController, loc.annualIncome, Icons.trending_up, Colors.green.shade50),
-          _styledTextField(_savingsController, loc.savings, Icons.savings_outlined, Colors.yellow.shade50),
+          Text(loc.yourFinances, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          _styledTextField(_incomeController, loc.annualIncome, Icons.trending_up, Colors.green.shade50, voiceLabel: "annual income"),
+          _styledTextField(_savingsController, loc.savings, Icons.savings_outlined, Colors.yellow.shade50, voiceLabel: "current savings"),
         ]),
         _buildCardContent([
-          Icon(Icons.people_alt, color: Colors.pink, size: 48),
+          Row(
+            children: [
+              Icon(Icons.people_alt, color: Colors.pink, size: 48),
+              Spacer(),
+              IconButton(
+                icon: Icon(Icons.volume_up, color: Colors.pink),
+                onPressed: () => _speak("Step 3: Personal Details. Please select your gender and category. This information helps us provide targeted scheme recommendations."),
+              ),
+            ],
+          ),
           SizedBox(height: 12),
-          Text(loc.aboutYou ?? 'About You', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          _styledDropdown(_gender, _genders, loc.gender, Icons.wc, Colors.pink.shade50, (val) => setState(() => _gender = val!)),
-          _styledDropdown(_category, _categories, loc.category, Icons.category_outlined, Colors.deepPurple.shade50, (val) => setState(() => _category = val!)),
+          Text(loc.aboutYou, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          _styledDropdown(_gender, _genders, loc.gender, Icons.wc, Colors.pink.shade50, 
+            (val) => setState(() => _gender = val!), voiceLabel: "gender"),
+          _styledDropdown(_category, _categories, loc.category, Icons.category_outlined, Colors.deepPurple.shade50, 
+            (val) => setState(() => _category = val!), voiceLabel: "category"),
         ]),
       ];
     }
@@ -147,6 +275,24 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
 
     return Scaffold(
       backgroundColor: Color(0xFFF4F6FD),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.deepPurple),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.volume_up, color: Colors.deepPurple),
+            onPressed: () => _speak("Profile Creation - Step ${_currentStep + 1} of 3. ${_getStepDescription()}"),
+          ),
+          IconButton(
+            icon: Icon(Icons.help_outline, color: Colors.deepPurple),
+            onPressed: () => _speak("This is a 3-step profile creation process. Fill in your account details, financial information, and personal details to get personalized scheme recommendations."),
+          ),
+        ],
+      ),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -184,7 +330,10 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
                     children: [
                       if (_currentStep > 0)
                         TextButton(
-                          onPressed: _prevStep,
+                          onPressed: () {
+                            _speak("Going back to previous step");
+                            _prevStep();
+                          },
                           child: Row(
                             children: [
                               Icon(Icons.arrow_back_ios, size: 18, color: Colors.deepPurple),
@@ -193,21 +342,37 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
                             ],
                           ),
                         ),
-                      ElevatedButton(
-                        onPressed: _nextStep,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.deepPurpleAccent,
-                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          elevation: 2,
-                        ),
-                        child: Row(
-                          children: [
-                            Text(_currentStep == 2 ? loc.finish : loc.next, style: TextStyle(fontSize: 16)),
-                            const SizedBox(width: 6),
-                            Icon(_currentStep == 2 ? Icons.check_circle_outline : Icons.arrow_forward_ios, size: 18),
-                          ],
-                        ),
+                      Row(
+                        children: [
+                          if (_currentStep < 2)
+                            IconButton(
+                              icon: Icon(Icons.volume_up, color: Colors.deepPurple),
+                              onPressed: () => _speak("Tap next to continue to step ${_currentStep + 2}"),
+                            ),
+                          ElevatedButton(
+                            onPressed: () {
+                              if (_currentStep == 2) {
+                                _speak("Creating your account");
+                              } else {
+                                _speak("Moving to next step");
+                              }
+                              _nextStep();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.deepPurpleAccent,
+                              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                              elevation: 2,
+                            ),
+                            child: Row(
+                              children: [
+                                Text(_currentStep == 2 ? loc.finish : loc.next, style: TextStyle(fontSize: 16)),
+                                const SizedBox(width: 6),
+                                Icon(_currentStep == 2 ? Icons.check_circle_outline : Icons.arrow_forward_ios, size: 18),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

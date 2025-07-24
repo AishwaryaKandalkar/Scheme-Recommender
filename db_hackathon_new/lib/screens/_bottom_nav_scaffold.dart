@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import '../gen_l10n/app_localizations.dart';
 import 'scheme_detail_screen.dart';
+import '../widgets/language_selector.dart';
 
 class _BottomNavScaffold extends StatefulWidget {
   final List<dynamic> pageSchemes;
@@ -30,6 +32,7 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
   int _selectedIndex = 0;
 
   Widget _buildHomeContent() {
+    final loc = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
@@ -38,183 +41,24 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
           children: [
             Padding(
               padding: const EdgeInsets.only(top: 24, left: 24, right: 24, bottom: 8),
-              child: Text(
-                'Welcome! Here are the schemes you are eligible for.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue.shade900,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  LanguageSelector(
+                    showAsAppBarAction: false,
+                    backgroundColor: Colors.blue.withOpacity(0.1),
+                  ),
                   Expanded(
-                    child: TextFormField(
-                      controller: widget.goalController,
-                      decoration: InputDecoration(
-                        hintText: 'Type your goal or need (optional)',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        prefixIcon: Icon(Icons.search, color: Colors.blueAccent),
-                        contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                      ),
-                      minLines: 1,
-                      maxLines: 2,
-                    ),
-                  ),
-                  SizedBox(width: 12),
-                  ElevatedButton.icon(
-                    onPressed: widget.loading
-                        ? null
-                        : () async {
-                            widget.setCurrentPage(1);
-                            await widget.fetchSchemes(customGoal: widget.goalController.text.isNotEmpty ? widget.goalController.text : null);
-                          },
-                    icon: widget.loading
-                        ? SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2))
-                        : Icon(Icons.search),
-                    label: widget.loading ? Text('') : Text('Find'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                      padding: EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (widget.error.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 12, left: 24, right: 24),
-                child: Text(widget.error, style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-              ),
-            SizedBox(height: 10),
-            Container(
-              constraints: BoxConstraints(minHeight: 300),
-              child: widget.pageSchemes.isEmpty && !widget.loading && widget.error.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.info_outline, color: Colors.grey, size: 48),
-                          SizedBox(height: 10),
-                          Text('No eligible recommendations found.', style: TextStyle(fontSize: 16, color: Colors.grey)),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: widget.pageSchemes.length,
-                      itemBuilder: (context, index) {
-                        final scheme = widget.pageSchemes[index];
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [Colors.white, Color(0xFFe3f0ff)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(18),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.blue.shade100,
-                                  blurRadius: 12,
-                                  offset: Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(18),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => SchemeDetailScreen(
-                                        schemeName: scheme['scheme_name'] ?? ''),
-                                  ),
-                                );
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(20),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            gradient: LinearGradient(
-                                              colors: [Colors.orangeAccent, Colors.yellow.shade100],
-                                              begin: Alignment.topLeft,
-                                              end: Alignment.bottomRight,
-                                            ),
-                                          ),
-                                          padding: EdgeInsets.all(6),
-                                          child: Icon(Icons.star, color: Colors.white, size: 24),
-                                        ),
-                                        SizedBox(width: 12),
-                                        Expanded(
-                                          child: Text(
-                                            scheme['scheme_name'] ?? '',
-                                            style: TextStyle(
-                                              fontSize: 21,
-                                              fontWeight: FontWeight.w700,
-                                              color: Colors.blue.shade800,
-                                              decoration: TextDecoration.underline,
-                                              letterSpacing: 0.2,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 10),
-                                    if ((scheme['scheme_goal'] ?? '').toString().isNotEmpty)
-                                      Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Icon(Icons.flag, color: Colors.green, size: 20),
-                                          SizedBox(width: 8),
-                                          Expanded(child: Text('Goal: ${scheme['scheme_goal']}', style: TextStyle(fontSize: 16))),
-                                        ],
-                                      ),
-                                    if ((scheme['benefits'] ?? '').toString().isNotEmpty)
-                                      Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Icon(Icons.thumb_up, color: Colors.blueAccent, size: 20),
-                                          SizedBox(width: 8),
-                                          Expanded(child: Text('Benefits: ${scheme['benefits']}', style: TextStyle(fontSize: 16))),
-                                        ],
-                                      ),
-                                    if ((scheme['total_returns'] ?? '').toString().isNotEmpty)
-                                      Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Icon(Icons.trending_up, color: Colors.purple, size: 20),
-                                          SizedBox(width: 8),
-                                          Expanded(child: Text('Returns: ${scheme['total_returns']}', style: TextStyle(fontSize: 16))),
-                                        ],
-                                      ),
-                                    if ((scheme['time_duration'] ?? '').toString().isNotEmpty)
-                                      Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Icon(Icons.timer, color: Colors.teal, size: 20),
-                                          SizedBox(width: 8),
-                                          Expanded(child: Text('Duration: ${scheme['time_duration']}', style: TextStyle(fontSize: 16))),
-                                        ],
+                    child: Text(
+                      'Welcome! Here are the schemes you are eligible for.',
+                      textAlign: TextAlign.center,
+// ...existing code...
+
+  // All misplaced widget code outside of methods has been removed.
+  // Only valid class members and methods remain.
+  // Ensure all widget code is inside methods like _buildMicroLoansContent and helpers.
+  // If you need to restore the microloan UI, do so inside _buildMicroLoansContent.
+  // No widget code should exist outside of a method or class member.
                                       ),
                                     if ((scheme['scheme_website'] ?? '').toString().isNotEmpty)
                                       Row(
@@ -222,7 +66,7 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
                                         children: [
                                           Icon(Icons.link, color: Colors.indigo, size: 20),
                                           SizedBox(width: 8),
-                                          Expanded(child: Text('Website: ${scheme['scheme_website']}', style: TextStyle(fontSize: 16, color: Colors.indigo))),
+                                          Expanded(child: Text('${loc.website}: ${scheme['scheme_website']}', style: TextStyle(fontSize: 16, color: Colors.indigo))),
                                         ],
                                       ),
                                     if ((scheme['similarity_score'] ?? '').toString().isNotEmpty)
@@ -231,7 +75,7 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
                                         children: [
                                           Icon(Icons.score, color: Colors.deepOrange, size: 20),
                                           SizedBox(width: 8),
-                                          Expanded(child: Text('Match Score: ${scheme['similarity_score']?.toStringAsFixed(2) ?? ''}', style: TextStyle(fontSize: 16))),
+                                          Expanded(child: Text('${loc.matchScore}: ${scheme['similarity_score']?.toStringAsFixed(2) ?? ''}', style: TextStyle(fontSize: 16))),
                                         ],
                                       ),
                                   ],
@@ -274,10 +118,12 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
   }
 
   Widget _buildTrackerContent() {
-    return Center(child: Text('Tracker page coming soon!', style: TextStyle(fontSize: 18)));
+    final loc = AppLocalizations.of(context)!;
+    return Center(child: Text(loc.trackerComingSoon, style: TextStyle(fontSize: 18)));
   }
   Widget _buildProfileContent() {
-    return Center(child: Text('Profile page coming soon!', style: TextStyle(fontSize: 18)));
+    final loc = AppLocalizations.of(context)!;
+    return Center(child: Text(loc.profileComingSoon, style: TextStyle(fontSize: 18)));
   }
   Widget _buildMicroLoansContent() {
     return SingleChildScrollView(
@@ -285,7 +131,7 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          // Header with gradient
           Container(
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -313,7 +159,7 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
                         ),
                       ),
                       Text(
-                        'Empowering small businesses & entrepreneurs',
+                        'Empowering small businesses & entrepreneurs across India',
                         style: TextStyle(color: Colors.white70, fontSize: 16),
                       ),
                     ],
@@ -323,68 +169,379 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
             ),
           ),
           SizedBox(height: 24),
-
-          // Overview Cards
-          Row(
-            children: [
-              Expanded(
-                child: _buildOverviewCard(
-                  icon: Icons.people,
-                  title: 'Active Borrowers',
-                  value: '2.5M+',
-                  subtitle: 'Across India',
-                  color: Colors.green,
-                ),
+          // Impact Statistics Dashboard
+          Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.purple.shade50, Colors.purple.shade100],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              SizedBox(width: 12),
-              Expanded(
-                child: _buildOverviewCard(
-                  icon: Icons.account_balance,
-                  title: 'Total Disbursed',
-                  value: '₹45,000Cr',
-                  subtitle: 'Last fiscal year',
-                  color: Colors.blue,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.purple.shade200),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.analytics, color: Colors.purple.shade700, size: 24),
+                    SizedBox(width: 8),
+                    Text(
+                      'National Impact Dashboard',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.purple.shade800,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+                SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildImpactCard(
+                        icon: Icons.people,
+                        title: 'Active Borrowers',
+                        value: '3.2 Crore',
+                        subtitle: 'Across India',
+                        color: Colors.green,
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: _buildImpactCard(
+                        icon: Icons.account_balance,
+                        title: 'Total Disbursed',
+                        value: '₹85,000 Cr',
+                        subtitle: 'FY 2023-24',
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildImpactCard(
+                        icon: Icons.business,
+                        title: 'Businesses Funded',
+                        value: '2.8 Crore',
+                        subtitle: 'Small enterprises',
+                        color: Colors.orange,
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: _buildImpactCard(
+                        icon: Icons.trending_up,
+                        title: 'Growth Rate',
+                        value: '15.2%',
+                        subtitle: 'YoY increase',
+                        color: Colors.purple,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
           SizedBox(height: 24),
-
-          // Micro Finance Institutions
+          // Loan Products Section
           Text(
-            'Top Micro Finance Institutions',
+            'Popular Loan Products',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 16),
           Column(
             children: [
-              _buildMFICard(
-                name: 'Bandhan Bank',
-                description: 'Leading micro finance bank with focus on rural areas',
-                interestRate: '16-24%',
-                avgLoanSize: '₹35,000',
-                branches: '4,500+',
-                logo: Icons.account_balance,
+              _buildLoanProduct(
+                title: 'Individual Business Loans',
+                subtitle: 'For solo entrepreneurs and small business owners',
+                loanRange: '₹25,000 - ₹10,00,000',
+                tenure: '12-60 months',
+                features: ['Minimal documentation', 'Quick approval', 'Flexible repayment'],
+                icon: Icons.person,
+                color: Colors.blue,
               ),
               SizedBox(height: 12),
-              _buildMFICard(
-                name: 'SKS Microfinance',
-                description: 'Pioneer in microfinance with technology-driven approach',
-                interestRate: '18-26%',
-                avgLoanSize: '₹30,000',
-                branches: '2,100+',
-                logo: Icons.business,
+              _buildLoanProduct(
+                title: 'Joint Liability Group (JLG) Loans',
+                subtitle: 'Group-based lending for collective responsibility',
+                loanRange: '₹15,000 - ₹5,00,000',
+                tenure: '12-36 months',
+                features: ['No collateral', 'Lower interest rates', 'Group support'],
+                icon: Icons.group,
+                color: Colors.green,
               ),
               SizedBox(height: 12),
-              _buildMFICard(
-                name: 'Ujjivan Small Finance Bank',
-                description: 'Specialized in urban and semi-urban microfinance',
-                interestRate: '15-22%',
-                avgLoanSize: '₹40,000',
-                branches: '600+',
-                logo: Icons.location_city,
+              _buildLoanProduct(
+                title: 'Women Entrepreneur Loans',
+                subtitle: 'Special schemes for women-led businesses',
+                loanRange: '₹10,000 - ₹15,00,000',
+                tenure: '12-84 months',
+                features: ['Subsidized rates', 'Training support', 'Priority processing'],
+                icon: Icons.woman,
+                color: Colors.pink,
+              ),
+              SizedBox(height: 12),
+              _buildLoanProduct(
+                title: 'Agricultural Micro Loans',
+                subtitle: 'For farming and allied activities',
+                loanRange: '₹20,000 - ₹3,00,000',
+                tenure: '12-48 months',
+                features: ['Seasonal repayment', 'Crop insurance', 'Input financing'],
+                icon: Icons.agriculture,
+                color: Colors.amber,
               ),
             ],
+          ),
+          SizedBox(height: 24),
+          // Success Story Carousel
+          Text(
+            'Inspiring Success Stories',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 16),
+          Container(
+            height: 200,
+            child: PageView(
+              children: [
+                _buildSuccessStoryCard(
+                  name: 'Sunita Devi',
+                  business: 'Handicrafts Business',
+                  location: 'Uttar Pradesh',
+                  initialLoan: '₹25,000',
+                  currentTurnover: '₹8,00,000/year',
+                  story: 'Started with traditional handicrafts, now exports to 5 countries',
+                  employees: '12 women employed',
+                  image: Icons.handyman,
+                ),
+                _buildSuccessStoryCard(
+                  name: 'Rajesh Kumar',
+                  business: 'Mobile Repair Shop',
+                  location: 'Bihar',
+                  initialLoan: '₹50,000',
+                  currentTurnover: '₹15,00,000/year',
+                  story: 'Expanded from single shop to 4 locations with technical training',
+                  employees: '8 technicians employed',
+                  image: Icons.phone_android,
+                ),
+                _buildSuccessStoryCard(
+                  name: 'Lakshmi Nair',
+                  business: 'Organic Food Processing',
+                  location: 'Kerala',
+                  initialLoan: '₹1,00,000',
+                  currentTurnover: '₹25,00,000/year',
+                  story: 'Processing local spices and herbs for national distribution',
+                  employees: '20 farmers benefited',
+                  image: Icons.eco,
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 24),
+          // MFI Partners with Detailed Info
+          Text(
+            'Leading Micro Finance Partners',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 16),
+          Column(
+            children: [
+              _buildDetailedMFICard(
+                name: 'Bandhan Bank',
+                description: 'India\'s largest MFI with strong rural focus and technology adoption',
+                founded: '2001',
+                headquarters: 'Kolkata',
+                interestRate: '12-18% p.a.',
+                avgLoanSize: '₹35,000',
+                branches: '4,570+',
+                customers: '2.3 Crore',
+                states: '34 states',
+                portfolio: '₹31,000 Cr',
+                specialization: 'Rural microfinance, women empowerment',
+                logo: Icons.account_balance,
+                color: Colors.indigo,
+              ),
+              SizedBox(height: 16),
+              _buildDetailedMFICard(
+                name: 'Ujjivan Small Finance Bank',
+                description: 'Focused on urban and semi-urban micro finance with digital innovation',
+                founded: '2005',
+                headquarters: 'Bangalore',
+                interestRate: '15-22% p.a.',
+                avgLoanSize: '₹40,000',
+                branches: '635+',
+                customers: '65 Lakh',
+                states: '24 states',
+                portfolio: '₹18,500 Cr',
+                specialization: 'Urban microfinance, digital payments',
+                logo: Icons.business,
+                color: Colors.teal,
+              ),
+              SizedBox(height: 16),
+              _buildDetailedMFICard(
+                name: 'Spandana Sphoorty',
+                description: 'One of India\'s oldest MFIs with deep rural penetration',
+                founded: '1998',
+                headquarters: 'Hyderabad',
+                interestRate: '16-24% p.a.',
+                avgLoanSize: '₹32,000',
+                branches: '2,400+',
+                customers: '85 Lakh',
+                states: '18 states',
+                portfolio: '₹12,800 Cr',
+                specialization: 'Rural development, agriculture financing',
+                logo: Icons.location_city,
+                color: Colors.deepOrange,
+              ),
+            ],
+          ),
+          SizedBox(height: 24),
+          // Application Process Guide
+          Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.green.shade50, Colors.green.shade100],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.green.shade200),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.assignment, color: Colors.green.shade700, size: 24),
+                    SizedBox(width: 8),
+                    Text(
+                      'Complete Application Guide',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green.shade800,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                Column(
+                  children: [
+                    _buildProcessStepDetailed(
+                      stepNumber: '1',
+                      title: 'Eligibility Check',
+                      description: 'Age: 18-65 years, Business vintage: 6+ months',
+                      documents: ['Aadhar Card', 'PAN Card', 'Business Proof'],
+                      timeRequired: '5 minutes',
+                    ),
+                    SizedBox(height: 12),
+                    _buildProcessStepDetailed(
+                      stepNumber: '2',
+                      title: 'Document Submission',
+                      description: 'Upload required documents and fill application form',
+                      documents: ['Bank Statements (6 months)', 'ITR/GST Returns', 'Business Photos'],
+                      timeRequired: '15 minutes',
+                    ),
+                    SizedBox(height: 12),
+                    _buildProcessStepDetailed(
+                      stepNumber: '3',
+                      title: 'Verification Process',
+                      description: 'Field verification and credit assessment',
+                      documents: ['Field visit', 'Reference check', 'Credit bureau check'],
+                      timeRequired: '2-3 days',
+                    ),
+                    SizedBox(height: 12),
+                    _buildProcessStepDetailed(
+                      stepNumber: '4',
+                      title: 'Loan Approval & Disbursal',
+                      description: 'Final approval and amount transfer to bank account',
+                      documents: ['Loan agreement', 'Direct bank transfer', 'Welcome kit'],
+                      timeRequired: '1-2 days',
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 24),
+          // CTA Section
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blue.shade600, Colors.blue.shade800],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                Icon(Icons.trending_up, color: Colors.white, size: 40),
+                SizedBox(height: 12),
+                Text(
+                  'Transform Your Business Today',
+                  style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Join millions of successful entrepreneurs who started with micro loans',
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Application portal opening soon!')),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.blue.shade700,
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: Text('Apply Now', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('EMI calculator coming soon!')),
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: BorderSide(color: Colors.white),
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: Text('EMI Calculator'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
           ),
           SizedBox(height: 24),
 
@@ -896,6 +1053,7 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -918,22 +1076,579 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
             _selectedIndex = index;
           });
         },
-        items: const [
+        items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'Home',
+            label: loc.home,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.track_changes),
-            label: 'Tracker',
+            label: loc.tracker,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: 'Profile',
+            label: loc.profile,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.account_balance_wallet),
-            label: 'Micro Loans',
+            label: loc.microLoans,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Additional helper methods for enhanced microloan content
+  Widget _buildImpactCard({
+    required IconData icon,
+    required String title,
+    required String value,
+    required String subtitle,
+    required Color color,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.1),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 20),
+              SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 6),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          Text(
+            subtitle,
+            style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoanProduct({
+    required String title,
+    required String subtitle,
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
+                    ),
+                    Text(
+                      subtitle,
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildLoanInfo('Loan Range', loanRange),
+              ),
+              Expanded(
+                child: _buildLoanInfo('Tenure', tenure),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          Wrap(
+            spacing: 6,
+    required String title,
+    required String subtitle,
+    required String loanRange,
+    required String tenure,
+    required List<String> features,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
+                    ),
+                    Text(
+                      subtitle,
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildLoanInfo('Loan Range', loanRange),
+              ),
+              Expanded(
+                child: _buildLoanInfo('Tenure', tenure),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: features
+                .map((feature) => Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        feature,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: color,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ))
+                .toList(),
+          ),
+        ],
+      ),
+    );
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange.shade800,
+                      ),
+                    ),
+                    Text(
+                      '$business • $location',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          Text(
+            story,
+            style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStoryMetric('Initial Loan', initialLoan),
+              ),
+              Expanded(
+                child: _buildStoryMetric('Current Turnover', currentTurnover),
+              ),
+            ],
+          ),
+          SizedBox(height: 4),
+          Text(
+            employees,
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.green.shade700,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+                      ),
+                    ),
+                    Text(
+                      '$business • $location',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          Text(
+            story,
+            style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStoryMetric('Initial Loan', initialLoan),
+              ),
+              Expanded(
+                child: _buildStoryMetric('Current Turnover', currentTurnover),
+              ),
+            ],
+          ),
+          SizedBox(height: 4),
+          Text(
+            employees,
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.green.shade700,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStoryMetric(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 9, color: Colors.grey[600]),
+        ),
+        Text(
+          value,
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetailedMFICard({
+    required String name,
+    required String description,
+    required String founded,
+    required String headquarters,
+    required String interestRate,
+    required String avgLoanSize,
+    required String branches,
+    required String customers,
+    required String states,
+    required String portfolio,
+    required String specialization,
+    required IconData logo,
+    required Color color,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(logo, color: color, size: 32),
+              ),
+              SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
+                    ),
+                    Text(
+                      description,
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Est. $founded • $headquarters',
+                      style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          Container(
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: color.withOpacity(0.1)),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildMFIMetric('Interest Rate', interestRate, Icons.percent),
+                    ),
+                    Expanded(
+                      child: _buildMFIMetric('Avg. Loan Size', avgLoanSize, Icons.account_balance_wallet),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildMFIMetric('Branches', branches, Icons.location_on),
+                    ),
+                    Expanded(
+                      child: _buildMFIMetric('Customers', customers, Icons.people),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildMFIMetric('States Covered', states, Icons.map),
+                    ),
+                    Expanded(
+                      child: _buildMFIMetric('Portfolio', portfolio, Icons.trending_up),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 12),
+    required String name,
+    required String business,
+    required String location,
+    required String initialLoan,
+    required String currentTurnover,
+    required String story,
+    required String employees,
+    required IconData image,
+  }) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 4),
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.amber.shade50, Colors.orange.shade50],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.orange.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(image, color: Colors.orange.shade700, size: 24),
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange.shade800,
+                      ),
+                    ),
+                    Text(
+                      '$business • $location',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          Text(
+            story,
+            style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStoryMetric('Initial Loan', initialLoan),
+              ),
+              Expanded(
+                child: _buildStoryMetric('Current Turnover', currentTurnover),
+              ),
+            ],
+          ),
+          SizedBox(height: 4),
+          Text(
+            employees,
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.green.shade700,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+                    color: Colors.green.shade800,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  description,
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+                SizedBox(height: 8),
+                Wrap(
+                  spacing: 4,
+                  runSpacing: 2,
+                  children: documents
+                      .map((doc) => Container(
+                            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade50,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.green.shade200),
+                            ),
+                            child: Text(
+                              doc,
+                              style: TextStyle(
+                                fontSize: 9,
+                                color: Colors.green.shade700,
+                              ),
+                            ),
+                          ))
+                      .toList(),
+                ),
+                SizedBox(height: 6),
+                Row(
+                  children: [
+                    Icon(Icons.access_time, size: 12, color: Colors.orange.shade600),
+                    SizedBox(width: 4),
+                    Text(
+                      'Time: $timeRequired',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.orange.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),

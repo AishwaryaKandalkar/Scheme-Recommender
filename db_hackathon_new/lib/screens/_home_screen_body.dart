@@ -3,9 +3,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter/services.dart';
+import '../gen_l10n/app_localizations.dart';
 
 import 'scheme_detail_screen.dart';
 import 'account_page.dart';
+import 'my_schemes_page.dart';
+import 'community_page.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -16,8 +21,26 @@ Future<Map<String, dynamic>?> _fetchProfile() async {
   return doc.data();
 }
 
-Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile) async {
-  final url = Uri.parse('http://192.168.1.4:5000/recommend');
+Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile, String lang) async {
+  final url = Uri.parse('http://10.166.220.251:5000/recommend');
+  final payload = Map<String, dynamic>.from(profile);
+  payload['lang'] = lang; // Pass language to backend
+
+  final response = await http.post(
+    url,
+    body: jsonEncode(payload),
+    headers: {'Content-Type': 'application/json'},
+  );
+
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+    return data['recommended_schemes'] ?? [];
+  }
+  return null;
+}
+
+Future<List<dynamic>?> _fetchEligibleSchemes(Map<String, dynamic> profile) async {
+  final url = Uri.parse('http://10.166.220.251:5000/eligible_schemes');
   final response = await http.post(
     url,
     body: jsonEncode(profile),
@@ -26,7 +49,7 @@ Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile) async {
 
   if (response.statusCode == 200) {
     final data = jsonDecode(response.body);
-    return data['recommended_schemes'] ?? [];
+    return data['eligible_schemes'] ?? [];
   }
   return null;
 }
@@ -43,6 +66,14 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
   bool loading = false;
   String error = '';
   Map<String, dynamic>? profile;
+  String? userName;
+
+  // Voice feature fields
+  FlutterTts? flutterTts;
+  bool isListening = false;
+  static const platform = MethodChannel('voice_channel');
+
+  bool isAiSearch = false; // Track if current results are from AI search
 
   Future<void> fetchSchemes({String? customGoal}) async {
     setState(() {
@@ -59,24 +90,56 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
       return;
     }
 
+    setState(() {
+      userName = profile?['name'] ?? 'User';
+    });
+
+    // Prepare payload for API call
     final payload = {
-      'situation': customGoal ?? (profile?['situation'] ?? 'Looking for investment schemes'),
-      'income_group': profile?['income_group'] ?? profile?['annual_income'] ?? '',
-      'social_category': profile?['social_category'] ?? profile?['category'] ?? '',
-      'gender': profile?['gender'] ?? '',
       'age': profile?['age']?.toString() ?? '',
+      'gender': profile?['gender'] ?? '',
+      'social_category': profile?['social_category'] ?? profile?['category'] ?? '',
+      'income_group': profile?['income_group'] ?? profile?['annual_income'] ?? '',
       'location': profile?['location'] ?? '',
     };
 
-    final result = await _fetchSchemes(payload);
+    final lang = Localizations.localeOf(context).languageCode; 
+    print(lang);// 'en', 'hi', 'mr'
+    List<dynamic>? result;
+
+    if (customGoal != null && customGoal.trim().isNotEmpty) {
+      // User provided specific search text - use ML-powered recommendation
+      setState(() {
+        isAiSearch = true;
+      });
+      await _speak("Searching for schemes related to: $customGoal");
+      payload['situation'] = customGoal;
+      result = await _fetchSchemes(payload, lang);
+    } else {
+      // Initial load without search text - use fast rule-based filtering
+      setState(() {
+        isAiSearch = false;
+      });
+      await _speak("Loading your eligible schemes");
+      result = await _fetchEligibleSchemes(payload);
+    }
+
     if (result != null) {
       setState(() {
-        schemes = result;
+        schemes = result!;
       });
+      
+      // Voice feedback based on results
+      if (customGoal != null && customGoal.trim().isNotEmpty) {
+        await _speak("Found ${result.length} schemes matching your search for $customGoal");
+      } else {
+        await _speak("Loaded ${result.length} schemes you're eligible for");
+      }
     } else {
       setState(() {
         error = 'No data received from backend.';
       });
+      await _speak("Failed to load schemes. Please try again.");
     }
 
     setState(() {
@@ -84,16 +147,88 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
     });
   }
 
+  Future<void> _speak(String text) async {
+    if (flutterTts != null) {
+      await flutterTts!.speak(text);
+    }
+  }
+
+  Future<void> _listen(TextEditingController controller) async {
+    if (!isListening) {
+      setState(() => isListening = true);
+      try {
+        final String result = await platform.invokeMethod('startVoiceInput');
+        controller.text = result;
+      } catch (e) {
+        print('Error starting speech recognition: $e');
+      } finally {
+        setState(() => isListening = false);
+      }
+    }
+  }
+
+  List<Widget> _buildPageNumbers() {
+    int totalPages = ((schemes.length - 1) ~/ 10) + 1;
+    List<Widget> pageNumbers = [];
+    
+    // Show page numbers around current page
+    int start = (currentPage - 2).clamp(1, totalPages);
+    int end = (currentPage + 2).clamp(1, totalPages);
+    
+    // Ensure we show at least 5 pages when possible
+    if (end - start < 4) {
+      if (start == 1) {
+        end = (start + 4).clamp(1, totalPages);
+      } else if (end == totalPages) {
+        start = (end - 4).clamp(1, totalPages);
+      }
+    }
+    
+    for (int i = start; i <= end; i++) {
+      pageNumbers.add(
+        Container(
+          margin: EdgeInsets.symmetric(horizontal: 2),
+          child: ElevatedButton(
+            onPressed: () async {
+              setState(() {
+                currentPage = i;
+              });
+              await _speak("Page $i");
+            },
+            child: Text('$i'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: currentPage == i ? Colors.pinkAccent : Colors.grey[300],
+              foregroundColor: currentPage == i ? Colors.white : Colors.black87,
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: Size(40, 36),
+            ),
+          ),
+        ),
+      );
+    }
+    
+    return pageNumbers;
+  }
+
   @override
   void initState() {
     super.initState();
-    // Automatically fetch eligible schemes on home page load
-    fetchSchemes();
+    
+    // Initialize FlutterTts
+    flutterTts = FlutterTts();
+    
+    // Use optimized initial load
+    fetchSchemes(); // This will use rule-based filtering for fast initial load
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _speak("Welcome to Scheme Recommender! Loading your eligible schemes quickly.");
+    });
   }
 
   @override
   void dispose() {
     goalController.dispose();
+    flutterTts?.stop();
     super.dispose();
   }
 
@@ -101,6 +236,7 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     int totalPages = (schemes.length / 10).ceil();
     int startIdx = (currentPage - 1) * 10;
     int endIdx = (startIdx + 10).clamp(0, schemes.length);
@@ -113,30 +249,57 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 24, left: 24, right: 24, bottom: 8),
-                child: Text(
-                  'Recommended Schemes',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade900,
-                    letterSpacing: 0.5,
-                  ),
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SizedBox(width: 32),
+                    Text(
+                      loc.welcomeUser(userName ?? loc.user),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black),
+                    ),
+                    CircleAvatar(
+                      backgroundColor: Colors.grey.shade400,
+                      child: Text(
+                        userName != null ? userName![0].toUpperCase() : '',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   children: [
                     Expanded(
                       child: TextFormField(
                         controller: goalController,
                         decoration: InputDecoration(
-                          hintText: 'Type your goal or need (optional)',
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          prefixIcon: Icon(Icons.search, color: Colors.blueAccent),
+                          hintText: loc.searchGoalOrNeed,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+                          prefixIcon: Icon(Icons.search, color: Colors.pinkAccent),
+                          suffixIcon: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  isListening ? Icons.mic : Icons.mic_none,
+                                  color: isListening ? Colors.red : Colors.pinkAccent,
+                                ),
+                                onPressed: () => _listen(goalController),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.volume_up, color: Colors.pinkAccent),
+                                onPressed: () {
+                                  if (goalController.text.isNotEmpty) {
+                                    _speak(goalController.text);
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
                           contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                         ),
                         minLines: 1,
@@ -149,20 +312,30 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                           ? null
                           : () async {
                               currentPage = 1;
-                              await fetchSchemes(customGoal: goalController.text.isNotEmpty ? goalController.text : null);
+                              String searchText = goalController.text.trim();
+                              if (searchText.isNotEmpty) {
+                                // Voice feedback for AI-powered search
+                                await _speak("Using AI to find the best schemes for: $searchText");
+                              } else {
+                                // Voice feedback for refreshing eligible schemes
+                                await _speak("Refreshing your eligible schemes");
+                              }
+                              await fetchSchemes(customGoal: searchText.isNotEmpty ? searchText : null);
                             },
                       icon: loading
-                          ? SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2))
-                          : Icon(Icons.search),
-                      label: loading ? Text('') : Text('Find'),
+                          ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : (goalController.text.trim().isNotEmpty
+                              ? Icon(Icons.psychology, color: Colors.white)
+                              : Icon(Icons.refresh, color: Colors.white)),
+                      label: loading
+                          ? Text('')
+                          : (goalController.text.trim().isNotEmpty
+                              ? Text('AI Search', style: TextStyle(color: Colors.white))
+                              : Text('Refresh', style: TextStyle(color: Colors.white))),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        padding: EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                        backgroundColor: goalController.text.trim().isNotEmpty ? Colors.deepPurple : Colors.pinkAccent,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                       ),
                     ),
                   ],
@@ -174,178 +347,227 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                   child: Text(error, style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                 ),
               SizedBox(height: 10),
-              Container(
-                constraints: BoxConstraints(minHeight: 300),
-                child: pageSchemes.isEmpty && !loading && error.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+              
+              // Search mode indicator
+              if (schemes.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isAiSearch ? Colors.deepPurple.withOpacity(0.1) : Colors.blue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isAiSearch ? Colors.deepPurple : Colors.blue,
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.info_outline, color: Colors.grey, size: 48),
-                            SizedBox(height: 10),
-                            Text('No eligible recommendations found.', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                            Icon(
+                              isAiSearch ? Icons.psychology : Icons.filter_list,
+                              size: 16,
+                              color: isAiSearch ? Colors.deepPurple : Colors.blue,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              isAiSearch ? 'AI Recommendations' : 'Eligible Schemes',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: isAiSearch ? Colors.deepPurple : Colors.blue,
+                              ),
+                            ),
                           ],
                         ),
-                      )
-                    : ListView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: pageSchemes.length,
-                        itemBuilder: (context, index) {
-                          final scheme = pageSchemes[index];
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [Colors.white, Color(0xFFe3f0ff)],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(18),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.blue.shade100,
-                                    blurRadius: 12,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(18),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => SchemeDetailScreen(
-                                          schemeName: scheme['scheme_name'] ?? ''),
-                                    ),
-                                  );
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Container(
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              gradient: LinearGradient(
-                                                colors: [Colors.orangeAccent, Colors.yellow.shade100],
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
-                                              ),
-                                            ),
-                                            padding: EdgeInsets.all(6),
-                                            child: Icon(Icons.star, color: Colors.white, size: 24),
-                                          ),
-                                          SizedBox(width: 12),
-                                          Expanded(
-                                            child: Text(
-                                              scheme['scheme_name'] ?? '',
-                                              style: TextStyle(
-                                                fontSize: 21,
-                                                fontWeight: FontWeight.w700,
-                                                color: Colors.blue.shade800,
-                                                decoration: TextDecoration.underline,
-                                                letterSpacing: 0.2,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(height: 10),
-                                      if ((scheme['scheme_goal'] ?? '').toString().isNotEmpty)
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Icon(Icons.flag, color: Colors.green, size: 20),
-                                            SizedBox(width: 8),
-                                            Expanded(child: Text('Goal: ${scheme['scheme_goal']}', style: TextStyle(fontSize: 16))),
-                                          ],
-                                        ),
-                                      if ((scheme['benefits'] ?? '').toString().isNotEmpty)
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Icon(Icons.thumb_up, color: Colors.blueAccent, size: 20),
-                                            SizedBox(width: 8),
-                                            Expanded(child: Text('Benefits: ${scheme['benefits']}', style: TextStyle(fontSize: 16))),
-                                          ],
-                                        ),
-                                      if ((scheme['total_returns'] ?? '').toString().isNotEmpty)
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Icon(Icons.trending_up, color: Colors.purple, size: 20),
-                                            SizedBox(width: 8),
-                                            Expanded(child: Text('Returns: ${scheme['total_returns']}', style: TextStyle(fontSize: 16))),
-                                          ],
-                                        ),
-                                      if ((scheme['time_duration'] ?? '').toString().isNotEmpty)
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Icon(Icons.timer, color: Colors.teal, size: 20),
-                                            SizedBox(width: 8),
-                                            Expanded(child: Text('Duration: ${scheme['time_duration']}', style: TextStyle(fontSize: 16))),
-                                          ],
-                                        ),
-                                      if ((scheme['scheme_website'] ?? '').toString().isNotEmpty)
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Icon(Icons.link, color: Colors.indigo, size: 20),
-                                            SizedBox(width: 8),
-                                            Expanded(child: Text('Website: ${scheme['scheme_website']}', style: TextStyle(fontSize: 16, color: Colors.indigo))),
-                                          ],
-                                        ),
-                                      if ((scheme['similarity_score'] ?? '').toString().isNotEmpty)
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Icon(Icons.score, color: Colors.deepOrange, size: 20),
-                                            SizedBox(width: 8),
-                                            Expanded(child: Text('Match Score: ${scheme['similarity_score']?.toStringAsFixed(2) ?? ''}', style: TextStyle(fontSize: 16))),
-                                          ],
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                          ));
-                          },
-                        ),
-              ),
-              if (pageSchemes.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(totalPages, (i) {
-                      final pageNum = i + 1;
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: OutlinedButton(
-                          onPressed: () {
-                            setState(() {
-                              currentPage = pageNum;
-                            });
-                          },
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.blueAccent),
-                            backgroundColor: currentPage == pageNum
-                                ? Colors.blue.shade50
-                                : Colors.white,
-                          ),
-                          child: Text('$pageNum'),
-                        ),
-                      );
-                    }),
+                      ),
+                      Spacer(),
+                      IconButton(
+                        icon: Icon(Icons.volume_up, color: Colors.pinkAccent, size: 20),
+                        onPressed: () {
+                          String modeText = isAiSearch 
+                              ? "Showing AI-powered recommendations based on your search" 
+                              : "Showing schemes you're eligible for based on your profile";
+                          _speak("$modeText. Found ${schemes.length} schemes.");
+                        },
+                      ),
+                    ],
                   ),
                 ),
+              
+              Container(
+                color: Colors.transparent,
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: pageSchemes.length,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 0.9,
+                  ),
+                  itemBuilder: (context, index) {
+                    final scheme = pageSchemes[index];
+                    return GestureDetector(
+                      onTap: () {
+                        final lang = Localizations.localeOf(context).languageCode; // 'en', 'hi', 'mr'
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => SchemeDetailScreen(
+                              schemeName: scheme['scheme_name'] ?? '',
+                              lang: lang, // Pass the language to the detail screen
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Icon(Icons.auto_graph, color: Colors.pinkAccent, size: 28),
+                              IconButton(
+                                icon: Icon(Icons.volume_up, color: Colors.pinkAccent, size: 20),
+                                onPressed: () {
+                                  String schemeInfo = scheme['scheme_name'] ?? '';
+                                  if (scheme['total_returns'] != null) {
+                                    schemeInfo += '. Return: ${scheme['total_returns']}';
+                                  }
+                                  if (scheme['risk'] != null) {
+                                    schemeInfo += '. Risk: ${scheme['risk']}';
+                                  }
+                                  if (scheme['time_duration'] != null) {
+                                    schemeInfo += '. Term: ${scheme['time_duration']}';
+                                  }
+                                  _speak(schemeInfo);
+                                },
+                                padding: EdgeInsets.zero,
+                                constraints: BoxConstraints(),
+                              ),
+                            ],
+                          ),
+                            SizedBox(height: 10),
+                            Text(
+                              scheme['scheme_name'] ?? '',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            SizedBox(height: 6),
+                            if (scheme['total_returns'] != null)
+                              Text('${loc.returns}: ${scheme['total_returns']}', style: TextStyle(fontSize: 13)),
+                            if (scheme['risk'] != null)
+                              Text('${loc.risk}: ${scheme['risk']}', style: TextStyle(fontSize: 13)),
+                            if (scheme['time_duration'] != null)
+                              Text('${loc.term}: ${scheme['time_duration']}', style: TextStyle(fontSize: 13)),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              
+              // Pagination Controls
+              if (schemes.isNotEmpty) ...[
+                SizedBox(height: 20),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Column(
+                    children: [
+                      // Page info and total schemes count
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Page $currentPage of ${((schemes.length - 1) ~/ 10) + 1}',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                          ),
+                          Row(
+                            children: [
+                              Text(
+                                '${schemes.length} schemes',
+                                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.volume_up, color: Colors.pinkAccent, size: 18),
+                                onPressed: () {
+                                  int totalPages = ((schemes.length - 1) ~/ 10) + 1;
+                                  _speak("Page $currentPage of $totalPages. Total ${schemes.length} schemes found.");
+                                },
+                                padding: EdgeInsets.zero,
+                                constraints: BoxConstraints(),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 12),
+                      // Pagination buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Previous button
+                          ElevatedButton.icon(
+                            onPressed: currentPage > 1
+                                ? () async {
+                                    setState(() {
+                                      currentPage--;
+                                    });
+                                    await _speak("Page $currentPage");
+                                  }
+                                : null,
+                            icon: Icon(Icons.chevron_left, size: 18),
+                            label: Text('Previous'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: currentPage > 1 ? Colors.pinkAccent : Colors.grey,
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            ),
+                          ),
+                          SizedBox(width: 16),
+                          // Page numbers (show current and adjacent pages)
+                          ..._buildPageNumbers(),
+                          SizedBox(width: 16),
+                          // Next button
+                          ElevatedButton.icon(
+                            onPressed: currentPage < ((schemes.length - 1) ~/ 10) + 1
+                                ? () async {
+                                    setState(() {
+                                      currentPage++;
+                                    });
+                                    await _speak("Page $currentPage");
+                                  }
+                                : null,
+                            icon: Icon(Icons.chevron_right, size: 18),
+                            label: Text('Next'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: currentPage < ((schemes.length - 1) ~/ 10) + 1 ? Colors.pinkAccent : Colors.grey,
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 20),
+              ],
             ],
           ),
         ),
@@ -360,240 +582,7 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
       return AccountPage();
     }
     Widget _buildMicroLoansContent() {
-      return SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Container(
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.account_balance_wallet, color: Colors.white, size: 40),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Micro Loans',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          'Small loans for big dreams',
-                          style: TextStyle(color: Colors.white70, fontSize: 16),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 24),
-
-            // Quick Stats
-            Row(
-              children: [
-                Expanded(
-                  child: _buildStatCard(
-                    icon: Icons.trending_up,
-                    title: 'Approval Rate',
-                    value: '94%',
-                    color: Colors.green,
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: _buildStatCard(
-                    icon: Icons.schedule,
-                    title: 'Avg. Processing',
-                    value: '24hrs',
-                    color: Colors.blue,
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: _buildStatCard(
-                    icon: Icons.percent,
-                    title: 'Interest Rate',
-                    value: 'From 12%',
-                    color: Colors.orange,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 24),
-
-            // Loan Categories
-            Text(
-              'Loan Categories',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 16),
-            GridView.count(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 1.2,
-              children: [
-                _buildLoanCategory(
-                  icon: Icons.business,
-                  title: 'Business Loans',
-                  subtitle: '₹10K - ₹5L',
-                  description: 'For small business ventures',
-                  color: Colors.purple,
-                ),
-                _buildLoanCategory(
-                  icon: Icons.agriculture,
-                  title: 'Agriculture Loans',
-                  subtitle: '₹5K - ₹2L',
-                  description: 'For farming activities',
-                  color: Colors.green,
-                ),
-                _buildLoanCategory(
-                  icon: Icons.school,
-                  title: 'Education Loans',
-                  subtitle: '₹15K - ₹3L',
-                  description: 'For skill development',
-                  color: Colors.blue,
-                ),
-                _buildLoanCategory(
-                  icon: Icons.health_and_safety,
-                  title: 'Healthcare Loans',
-                  subtitle: '₹5K - ₹1L',
-                  description: 'For medical emergencies',
-                  color: Colors.red,
-                ),
-              ],
-            ),
-            SizedBox(height: 24),
-
-            // Featured Micro Loan Schemes
-            Text(
-              'Featured Micro Loan Schemes',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 16),
-            Column(
-              children: [
-                _buildLoanSchemeCard(
-                  schemeName: 'Pradhan Mantri Mudra Yojana',
-                  loanAmount: '₹10,000 - ₹10,00,000',
-                  interestRate: '7.5% - 12%',
-                  tenure: '5 Years',
-                  description: 'Loans to non-corporate, non-farm small/micro enterprises',
-                  eligibilityHighlights: ['No collateral required', 'For business activities', 'Income proof required'],
-                ),
-                SizedBox(height: 16),
-                _buildLoanSchemeCard(
-                  schemeName: 'Stand-Up India Scheme',
-                  loanAmount: '₹10,00,000 - ₹1,00,00,000',
-                  interestRate: '9% - 14%',
-                  tenure: '7 Years',
-                  description: 'Bank loans for SC/ST and women entrepreneurs',
-                  eligibilityHighlights: ['For SC/ST/Women', '18-65 years age', 'First-time entrepreneur'],
-                ),
-                SizedBox(height: 16),
-                _buildLoanSchemeCard(
-                  schemeName: 'Kisan Credit Card',
-                  loanAmount: '₹3,00,000',
-                  interestRate: '4% (with subsidy)',
-                  tenure: 'Revolving',
-                  description: 'Short-term credit for agriculture and allied activities',
-                  eligibilityHighlights: ['For farmers', 'Land ownership', 'Crop cultivation'],
-                ),
-                SizedBox(height: 16),
-                _buildLoanSchemeCard(
-                  schemeName: 'Mahila Udyam Nidhi Scheme',
-                  loanAmount: '₹10,000 - ₹10,00,000',
-                  interestRate: '0.5% - 1% above bank rate',
-                  tenure: '10 Years',
-                  description: 'Soft loan scheme for women entrepreneurs',
-                  eligibilityHighlights: ['Women only', 'Above 18 years', 'Small scale industry'],
-                ),
-              ],
-            ),
-            SizedBox(height: 24),
-
-            // Application Process
-            Container(
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.blue.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.info_outline, color: Colors.blue, size: 24),
-                      SizedBox(width: 8),
-                      Text(
-                        'How to Apply',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue.shade800,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                  _buildProcessStep('1', 'Choose Loan Type', 'Select the category that fits your needs'),
-                  _buildProcessStep('2', 'Check Eligibility', 'Review requirements and ensure you qualify'),
-                  _buildProcessStep('3', 'Prepare Documents', 'Gather required documents and forms'),
-                  _buildProcessStep('4', 'Submit Application', 'Apply through bank/financial institution'),
-                  _buildProcessStep('5', 'Get Approval', 'Receive funds after verification'),
-                ],
-              ),
-            ),
-            SizedBox(height: 24),
-
-            // Quick Apply Button
-            Container(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Redirecting to loan application portal...'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF2E7D32),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Text(
-                  'Find Suitable Loan Schemes',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
+      return Center(child: Text('Micro Loans page coming soon!', style: TextStyle(fontSize: 18)));
     }
     Widget _buildCommunityContent() {
       return Center(child: Text('Community page coming soon!', style: TextStyle(fontSize: 18)));
@@ -601,27 +590,21 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
 
     List<Widget> _tabContents = [
       _buildHomeContent(),
-      _buildSupportContent(),
-      _buildProfileContent(),
-      _buildMicroLoansContent(),
-      _buildCommunityContent(),
+      Center(child: Text(loc.supportComingSoon, style: TextStyle(fontSize: 18))),
+      MySchemesPage(),
+      Center(child: Text(loc.microLoansComingSoon, style: TextStyle(fontSize: 18))),
+      CommunityPage(),
     ];
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFe3f0ff), Color(0xFFf7fbff)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+        color: Colors.white,
         child: _tabContents[_selectedIndex],
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
-        selectedItemColor: Colors.blueAccent,
+        selectedItemColor: Colors.pinkAccent,
         unselectedItemColor: Colors.grey,
         currentIndex: _selectedIndex,
         onTap: (index) {
@@ -629,305 +612,12 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
             _selectedIndex = index;
           });
         },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.support_agent),
-            label: 'Support',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet),
-            label: 'Micro Loans',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'Community',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard({
-    required IconData icon,
-    required String title,
-    required String value,
-    required Color color,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 28),
-          SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLoanCategory({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required String description,
-    required Color color,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: color, size: 32),
-          SizedBox(height: 12),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: 14,
-              color: color,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: 4),
-          Text(
-            description,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLoanSchemeCard({
-    required String schemeName,
-    required String loanAmount,
-    required String interestRate,
-    required String tenure,
-    required String description,
-    required List<String> eligibilityHighlights,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            schemeName,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue.shade800,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            description,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade700,
-            ),
-          ),
-          SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildLoanDetail('Amount', loanAmount, Icons.monetization_on),
-              ),
-              Expanded(
-                child: _buildLoanDetail('Interest', interestRate, Icons.percent),
-              ),
-              Expanded(
-                child: _buildLoanDetail('Tenure', tenure, Icons.schedule),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          Text(
-            'Key Eligibility:',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 4,
-            children: eligibilityHighlights.map((highlight) => Container(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.green.shade200),
-              ),
-              child: Text(
-                highlight,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.green.shade700,
-                ),
-              ),
-            )).toList(),
-          ),
-          SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/scheme_detail', arguments: schemeName);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue.shade600,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: Text(
-                'Learn More',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLoanDetail(String title, String value, IconData icon) {
-    return Column(
-      children: [
-        Icon(icon, size: 20, color: Colors.blue),
-        SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProcessStep(String step, String title, String description) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: Colors.blue,
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                step,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  description,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade700,
-                  ),
-                ),
-              ],
-            ),
-          ),
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: loc.home),
+          BottomNavigationBarItem(icon: Icon(Icons.support_agent), label: loc.support),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: loc.profile),
+          BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet), label: loc.microLoans),
+          BottomNavigationBarItem(icon: Icon(Icons.people), label: loc.community),
         ],
       ),
     );
