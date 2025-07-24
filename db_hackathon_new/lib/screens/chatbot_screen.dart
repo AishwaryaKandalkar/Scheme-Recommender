@@ -2,9 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter/services.dart';
 
 // TODO: Move to config or env for production
-const String chatbotApiUrl = 'http://10.146.241.105:5000/chatbot';
+const String chatbotApiUrl = 'http://10.166.220.251:5000/chatbot';
 
 class ChatbotScreen extends StatefulWidget {
   @override
@@ -15,6 +17,47 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   final TextEditingController _controller = TextEditingController();
   final List<Map<String, String>> _messages = [];
   bool _isLoading = false;
+
+  // Voice feature fields
+  FlutterTts? flutterTts;
+  bool isListening = false;
+  static const platform = MethodChannel('voice_channel');
+
+  @override
+  void initState() {
+    super.initState();
+    flutterTts = FlutterTts();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _speak("Welcome to the Schemes Chatbot! You can ask questions about investment schemes using voice or text.");
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    flutterTts?.stop();
+    super.dispose();
+  }
+
+  Future<void> _speak(String text) async {
+    if (flutterTts != null) {
+      await flutterTts!.speak(text);
+    }
+  }
+
+  Future<void> _listen() async {
+    if (!isListening) {
+      setState(() => isListening = true);
+      try {
+        final String result = await platform.invokeMethod('startVoiceInput');
+        _controller.text = result;
+      } catch (e) {
+        print('Error starting speech recognition: $e');
+      } finally {
+        setState(() => isListening = false);
+      }
+    }
+  }
 
   Future<void> _sendMessage() async {
     final userMessage = _controller.text.trim();
@@ -32,18 +75,25 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        final botResponse = data['answer'] ?? 'No response.';
         setState(() {
-          _messages.add({'role': 'bot', 'text': data['answer'] ?? 'No response.'});
+          _messages.add({'role': 'bot', 'text': botResponse});
         });
+        // Automatically speak the bot response
+        _speak(botResponse);
       } else {
+        final errorMessage = 'Error: Could not get response from server.';
         setState(() {
-          _messages.add({'role': 'bot', 'text': 'Error: Could not get response from server.'});
+          _messages.add({'role': 'bot', 'text': errorMessage});
         });
+        _speak(errorMessage);
       }
     } catch (e) {
+      final errorMessage = 'Network error: $e';
       setState(() {
-        _messages.add({'role': 'bot', 'text': 'Network error: $e'});
+        _messages.add({'role': 'bot', 'text': errorMessage});
       });
+      _speak(errorMessage);
     } finally {
       setState(() {
         _isLoading = false;
@@ -54,7 +104,15 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Schemes Chatbot')),
+      appBar: AppBar(
+        title: Text('Schemes Chatbot'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.volume_up, color: Colors.blue),
+            onPressed: () => _speak("Schemes Chatbot. You can ask questions about investment schemes using voice or text."),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Expanded(
@@ -73,7 +131,25 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                       color: isUser ? Colors.blue.shade100 : Colors.grey.shade200,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(msg['text'] ?? '', style: TextStyle(fontSize: 16)),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(msg['text'] ?? '', style: TextStyle(fontSize: 16)),
+                        ),
+                        if (!isUser) ...[
+                          SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () => _speak(msg['text'] ?? ''),
+                            child: Icon(
+                              Icons.volume_up,
+                              size: 20,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 );
               },
@@ -81,7 +157,14 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           ),
           if (_isLoading) Padding(
             padding: EdgeInsets.all(8),
-            child: CircularProgressIndicator(),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 8),
+                Text('Bot is thinking...'),
+              ],
+            ),
           ),
           Padding(
             padding: EdgeInsets.all(8),
@@ -92,7 +175,29 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                     controller: _controller,
                     onSubmitted: (_) => _sendMessage(),
                     decoration: InputDecoration(
-                      hintText: 'Ask about any scheme...'
+                      hintText: 'Ask about any scheme...',
+                      suffixIcon: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              isListening ? Icons.mic : Icons.mic_none,
+                              color: isListening ? Colors.red : Colors.blue,
+                            ),
+                            onPressed: _listen,
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.volume_up, color: Colors.blue),
+                            onPressed: () {
+                              if (_controller.text.isNotEmpty) {
+                                _speak(_controller.text);
+                              } else {
+                                _speak("Message field is empty");
+                              }
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

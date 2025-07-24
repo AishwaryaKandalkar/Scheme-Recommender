@@ -1,11 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 const Color kAppPink = Color(0xFFE91E63); // Main pink color
 
-class MySchemesPage extends StatelessWidget {
+class MySchemesPage extends StatefulWidget {
   const MySchemesPage({Key? key}) : super(key: key);
+
+  @override
+  State<MySchemesPage> createState() => _MySchemesPageState();
+}
+
+class _MySchemesPageState extends State<MySchemesPage> {
+  FlutterTts? flutterTts;
+
+  @override
+  void initState() {
+    super.initState();
+    flutterTts = FlutterTts();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _speak("My Profile page. View your personal information, financial summary, and active schemes.");
+    });
+  }
+
+  @override
+  void dispose() {
+    flutterTts?.stop();
+    super.dispose();
+  }
+
+  Future<void> _speak(String text) async {
+    if (flutterTts != null) {
+      await flutterTts!.speak(text);
+    }
+  }
 
   Future<Map<String, dynamic>?> fetchUserProfile() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -31,9 +60,14 @@ class MySchemesPage extends StatelessWidget {
         title: Text('My Profile'),
         actions: [
           IconButton(
+            icon: Icon(Icons.volume_up, color: Colors.white),
+            onPressed: () => _speak("My Profile page. View your personal information, financial summary, and active schemes."),
+          ),
+          IconButton(
             icon: Icon(Icons.edit),
             tooltip: 'Edit Profile',
             onPressed: () {
+              _speak("Edit Profile");
               Navigator.pushNamed(context, '/profile');
             },
           ),
@@ -41,6 +75,7 @@ class MySchemesPage extends StatelessWidget {
             icon: Icon(Icons.logout),
             tooltip: 'Logout',
             onPressed: () async {
+              _speak("Logging out");
               await FirebaseAuth.instance.signOut();
               Navigator.pushReplacementNamed(context, '/login');
             },
@@ -91,7 +126,13 @@ class MySchemesPage extends StatelessWidget {
                           ],
                         ),
                       ),
-                      Icon(Icons.settings, color: Colors.grey[400]),
+                      IconButton(
+                        icon: Icon(Icons.volume_up, color: kAppPink),
+                        onPressed: () {
+                          String userName = user?['name'] ?? 'User';
+                          _speak("Profile: $userName, Active User");
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -106,13 +147,31 @@ class MySchemesPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Contact Information', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Row(
+                        children: [
+                          Text('Contact Information', style: TextStyle(fontWeight: FontWeight.bold)),
+                          SizedBox(width: 8),
+                          IconButton(
+                            icon: Icon(Icons.volume_up, color: kAppPink, size: 20),
+                            onPressed: () {
+                              String email = user?['email'] ?? 'No email';
+                              String phone = user?['phone'] ?? 'No phone';
+                              String location = user?['location'] ?? 'No location';
+                              _speak("Contact Information. Email: $email. Phone: $phone. Location: $location.");
+                            },
+                          ),
+                        ],
+                      ),
                       SizedBox(height: 10),
                       Row(
                         children: [
                           Icon(Icons.email_outlined, size: 20, color: kAppPink),
                           SizedBox(width: 8),
-                          Text(user?['email'] ?? 'No email'),
+                          Expanded(child: Text(user?['email'] ?? 'No email')),
+                          IconButton(
+                            icon: Icon(Icons.volume_up, color: kAppPink, size: 16),
+                            onPressed: () => _speak("Email: ${user?['email'] ?? 'No email'}"),
+                          ),
                         ],
                       ),
                       SizedBox(height: 8),
@@ -120,7 +179,11 @@ class MySchemesPage extends StatelessWidget {
                         children: [
                           Icon(Icons.phone_outlined, size: 20, color: kAppPink),
                           SizedBox(width: 8),
-                          Text(user?['phone'] ?? 'No phone'),
+                          Expanded(child: Text(user?['phone'] ?? 'No phone')),
+                          IconButton(
+                            icon: Icon(Icons.volume_up, color: kAppPink, size: 16),
+                            onPressed: () => _speak("Phone: ${user?['phone'] ?? 'No phone'}"),
+                          ),
                         ],
                       ),
                       SizedBox(height: 8),
@@ -128,7 +191,11 @@ class MySchemesPage extends StatelessWidget {
                         children: [
                           Icon(Icons.location_on_outlined, size: 20, color: kAppPink),
                           SizedBox(width: 8),
-                          Text(user?['location'] ?? 'No location'),
+                          Expanded(child: Text(user?['location'] ?? 'No location')),
+                          IconButton(
+                            icon: Icon(Icons.volume_up, color: kAppPink, size: 16),
+                            onPressed: () => _speak("Location: ${user?['location'] ?? 'No location'}"),
+                          ),
                         ],
                       ),
                     ],
@@ -145,32 +212,53 @@ class MySchemesPage extends StatelessWidget {
                     final investmentReturns = user?['returns']?.toString() ?? '+0';
                     final goalsAchieved = user?['goals']?.toString() ?? '0';
 
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    return Column(
                       children: [
-                        _snapshotCard(
-                          icon: Icons.savings_outlined,
-                          title: 'Total Savings',
-                          value: '₹$totalSavings',
-                          subtitle: '+1.2% this month',
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Financial Summary',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.volume_up, color: kAppPink),
+                              onPressed: () {
+                                _speak("Financial Summary. Total Savings: $totalSavings rupees. Active Schemes: $activeSchemes. Investment Returns: $investmentReturns rupees. Goals Achieved: $goalsAchieved");
+                              },
+                            ),
+                          ],
                         ),
-                        _snapshotCard(
-                          icon: Icons.assignment_turned_in_outlined,
-                          title: 'Active Schemes',
-                          value: '$activeSchemes',
-                          subtitle: 'Joined ${activeSchemes > 0 ? '1 new' : 'none'}',
-                        ),
-                        _snapshotCard(
-                          icon: Icons.trending_up,
-                          title: 'Investment Returns',
-                          value: '₹$investmentReturns',
-                          subtitle: '+5% last quarter',
-                        ),
-                        _snapshotCard(
-                          icon: Icons.flag_outlined,
-                          title: 'Goals Achieved',
-                          value: '$goalsAchieved',
-                          subtitle: 'On track for 3 more',
+                        SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _snapshotCard(
+                              icon: Icons.savings_outlined,
+                              title: 'Total Savings',
+                              value: '₹$totalSavings',
+                              subtitle: '+1.2% this month',
+                            ),
+                            _snapshotCard(
+                              icon: Icons.assignment_turned_in_outlined,
+                              title: 'Active Schemes',
+                              value: '$activeSchemes',
+                              subtitle: 'Joined ${activeSchemes > 0 ? '1 new' : 'none'}',
+                            ),
+                            _snapshotCard(
+                              icon: Icons.trending_up,
+                              title: 'Investment Returns',
+                              value: '₹$investmentReturns',
+                              subtitle: '+5% last quarter',
+                            ),
+                            _snapshotCard(
+                              icon: Icons.flag_outlined,
+                              title: 'Goals Achieved',
+                              value: '$goalsAchieved',
+                              subtitle: 'On track for 3 more',
+                            ),
+                          ],
                         ),
                       ],
                     );
@@ -178,12 +266,22 @@ class MySchemesPage extends StatelessWidget {
                 ),
                 SizedBox(height: 24),
                 // Schemes List
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Recent Activities & Tips',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Recent Activities & Tips',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.volume_up, color: kAppPink),
+                      onPressed: () => _speak("Recent Activities and Tips section"),
+                    ),
+                  ],
                 ),
                 SizedBox(height: 8),
                 FutureBuilder<List<Map<String, dynamic>>>(
@@ -191,7 +289,16 @@ class MySchemesPage extends StatelessWidget {
                   builder: (context, snapshot) {
                     final schemes = snapshot.data ?? [];
                     if (schemes.isEmpty) {
-                      return Center(child: Text('No schemes registered yet.'));
+                      return Column(
+                        children: [
+                          Center(child: Text('No schemes registered yet.')),
+                          SizedBox(height: 8),
+                          IconButton(
+                            icon: Icon(Icons.volume_up, color: kAppPink),
+                            onPressed: () => _speak("No schemes registered yet. You can explore new schemes from the home page."),
+                          ),
+                        ],
+                      );
                     }
                     return ListView.builder(
                       shrinkWrap: true,
@@ -211,15 +318,31 @@ class MySchemesPage extends StatelessWidget {
                           ),
                           margin: EdgeInsets.symmetric(vertical: 8),
                           padding: const EdgeInsets.all(12.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Row(
                             children: [
-                              Text(name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: kAppPink)),
-                              if (amount != null) Text('Amount: ₹$amount'),
-                              if (regDate != null)
-                                Text('Registered on: ${regDate.toLocal().toString().split(' ')[0]}'),
-                              if (dueDate != null)
-                                Text('Next Due Date: ${dueDate.toLocal().toString().split(' ')[0]}'),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: kAppPink)),
+                                    if (amount != null) Text('Amount: ₹$amount'),
+                                    if (regDate != null)
+                                      Text('Registered on: ${regDate.toLocal().toString().split(' ')[0]}'),
+                                    if (dueDate != null)
+                                      Text('Next Due Date: ${dueDate.toLocal().toString().split(' ')[0]}'),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.volume_up, color: kAppPink),
+                                onPressed: () {
+                                  String schemeInfo = "Scheme: $name";
+                                  if (amount != null) schemeInfo += ". Amount: $amount rupees";
+                                  if (regDate != null) schemeInfo += ". Registered on: ${regDate.toLocal().toString().split(' ')[0]}";
+                                  if (dueDate != null) schemeInfo += ". Next due date: ${dueDate.toLocal().toString().split(' ')[0]}";
+                                  _speak(schemeInfo);
+                                },
+                              ),
                             ],
                           ),
                         );
@@ -242,22 +365,27 @@ class MySchemesPage extends StatelessWidget {
     required String subtitle,
   }) {
     return Expanded(
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 8),
-        child: Column(
-          children: [
-            Icon(icon, size: 28, color: kAppPink),
-            SizedBox(height: 8),
-            Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 4),
-            Text(title, style: TextStyle(fontSize: 13, color: Colors.grey[700])),
-            SizedBox(height: 4),
-            Text(subtitle, style: TextStyle(fontSize: 11, color: Colors.green)),
-          ],
+      child: GestureDetector(
+        onTap: () => _speak("$title: $value. $subtitle"),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 8),
+          child: Column(
+            children: [
+              Icon(icon, size: 28, color: kAppPink),
+              SizedBox(height: 8),
+              Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              SizedBox(height: 4),
+              Text(title, style: TextStyle(fontSize: 13, color: Colors.grey[700])),
+              SizedBox(height: 4),
+              Text(subtitle, style: TextStyle(fontSize: 11, color: Colors.green)),
+              SizedBox(height: 4),
+              Icon(Icons.volume_up, color: kAppPink, size: 16),
+            ],
+          ),
         ),
       ),
     );
