@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, send_file
 import pandas as pd
 import numpy as np
+import requests
 import os
 from sentence_transformers import SentenceTransformer, util
 from io import StringIO
@@ -9,6 +10,8 @@ from datetime import timedelta
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 app = Flask(__name__)
+
+NEWS_API_KEY = os.environ.get("NEWS_API_KEY", "bd41b46be0bb4d559e6b643558cefed9")
 
 # Load schemes dataset
 df_schemes = pd.read_csv("datasets/financial_inclusion_schemes_translated_final.csv")
@@ -549,6 +552,34 @@ def register_scheme():
         "details": response
     }), 200
 
+def fetch_trending_news():
+    # Example: Fetch top headlines about government schemes in India
+    url = (
+        "https://newsapi.org/v2/everything?"
+        "q=government%20scheme%20OR%20yojana%20OR%20subsidy%20OR%20loan%20OR%20financial%20inclusion"
+        "&language=en"
+        "&sortBy=publishedAt"
+        "&pageSize=10"
+        "&apiKey=" + NEWS_API_KEY
+    )
+    response = requests.get(url)
+    if response.status_code != 200:
+        return []
+    articles = response.json().get("articles", [])
+    news_list = []
+    for article in articles:
+        news_list.append({
+            "headline": article.get("title"),
+            "summary": article.get("description"),
+            "link": article.get("url"),
+            "views": 0  # You can implement view tracking if needed
+        })
+    return news_list
+
+@app.route("/news", methods=["GET"])
+def get_news():
+    news = fetch_trending_news()
+    return jsonify({"news": news})
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
