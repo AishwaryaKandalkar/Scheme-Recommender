@@ -11,7 +11,7 @@ import 'scheme_detail_screen.dart';
 import 'account_page.dart';
 import 'my_schemes_page.dart';
 import 'community_page.dart';
-
+import 'support_page.dart';
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
 void _logout(BuildContext context) async {
@@ -27,7 +27,7 @@ Future<Map<String, dynamic>?> _fetchProfile() async {
 }
 
 Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile, String lang) async {
-  final url = Uri.parse('http://10.166.220.251:5000/recommend');
+  final url = Uri.parse('http://192.168.1.6:5000/recommend');
   final payload = Map<String, dynamic>.from(profile);
   payload['lang'] = lang; // Pass language to backend
 
@@ -44,11 +44,13 @@ Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile, String lang) 
   return null;
 }
 
-Future<List<dynamic>?> _fetchEligibleSchemes(Map<String, dynamic> profile) async {
-  final url = Uri.parse('http://10.166.220.251:5000/eligible_schemes');
+Future<List<dynamic>?> _fetchEligibleSchemes(Map<String, dynamic> profile, String lang) async {
+  final url = Uri.parse('http://192.168.1.6:5000/eligible_schemes');
+  final payload = Map<String, dynamic>.from(profile);
+  payload['lang'] = lang;
   final response = await http.post(
     url,
-    body: jsonEncode(profile),
+    body: jsonEncode(payload),
     headers: {'Content-Type': 'application/json'},
   );
 
@@ -126,7 +128,7 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
         isAiSearch = false;
       });
       await _speak("Loading your eligible schemes");
-      result = await _fetchEligibleSchemes(payload);
+      result = await _fetchEligibleSchemes(payload, lang);
     }
 
     if (result != null) {
@@ -581,7 +583,7 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
 
     List<Widget> _tabContents = [
       _buildHomeContent(),
-      Center(child: Text(loc.supportComingSoon, style: TextStyle(fontSize: 18))),
+      SupportPage(),
       MySchemesPage(),
       Center(child: Text(loc.microLoansComingSoon, style: TextStyle(fontSize: 18))),
       CommunityPage(),

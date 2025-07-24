@@ -16,7 +16,7 @@ import 'screens/agent_register_screen.dart';
 import 'providers/language_provider.dart';
 import 'package:provider/provider.dart';
 import '../gen_l10n/app_localizations.dart';
-
+import 'screens/support_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -59,6 +59,7 @@ class SchemeFinderApp extends StatelessWidget {
                   '/my_schemes': (_) => MySchemesPage(),
                   '/agent-login': (_) => AgentLoginScreen(),
                   '/agent-register': (_) => AgentRegisterScreen(),
+                  '/support': (context) => SupportPage(),
             },
           );
         },

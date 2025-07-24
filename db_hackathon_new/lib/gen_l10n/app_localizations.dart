@@ -603,6 +603,630 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Support'**
   String get support;
+
+  /// No description provided for @myProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'My Profile'**
+  String get myProfile;
+
+  /// No description provided for @profilePageTts.
+  ///
+  /// In en, this message translates to:
+  /// **'My Profile page. View your personal information, financial summary, and active schemes.'**
+  String get profilePageTts;
+
+  /// No description provided for @editProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfile;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get logout;
+
+  /// No description provided for @loggingOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Logging out'**
+  String get loggingOut;
+
+  /// No description provided for @contactInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Information'**
+  String get contactInfo;
+
+  /// No description provided for @noEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'No email'**
+  String get noEmail;
+
+  /// No description provided for @noPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'No phone'**
+  String get noPhone;
+
+  /// No description provided for @noLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'No location'**
+  String get noLocation;
+
+  /// No description provided for @phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get phone;
+
+  /// No description provided for @location.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get location;
+
+  /// No description provided for @financialSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Financial Summary'**
+  String get financialSummary;
+
+  /// No description provided for @totalSavings.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Savings'**
+  String get totalSavings;
+
+  /// No description provided for @activeSchemes.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Schemes'**
+  String get activeSchemes;
+
+  /// No description provided for @investmentReturns.
+  ///
+  /// In en, this message translates to:
+  /// **'Investment Returns'**
+  String get investmentReturns;
+
+  /// No description provided for @goalsAchieved.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals Achieved'**
+  String get goalsAchieved;
+
+  /// No description provided for @rupees.
+  ///
+  /// In en, this message translates to:
+  /// **'rupees'**
+  String get rupees;
+
+  /// No description provided for @savingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'+1.2% this month'**
+  String get savingsSubtitle;
+
+  /// No description provided for @activeSchemesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined {count, plural, =0{none} other{1 new}}'**
+  String activeSchemesSubtitle(num count);
+
+  /// No description provided for @returnsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'+5% last quarter'**
+  String get returnsSubtitle;
+
+  /// No description provided for @goalsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'On track for 3 more'**
+  String get goalsSubtitle;
+
+  /// No description provided for @recentActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Activities & Tips'**
+  String get recentActivities;
+
+  /// No description provided for @recentActivitiesTts.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Activities and Tips section'**
+  String get recentActivitiesTts;
+
+  /// No description provided for @noSchemes.
+  ///
+  /// In en, this message translates to:
+  /// **'No schemes registered yet.'**
+  String get noSchemes;
+
+  /// No description provided for @noSchemesTts.
+  ///
+  /// In en, this message translates to:
+  /// **'No schemes registered yet. You can explore new schemes from the home page.'**
+  String get noSchemesTts;
+
+  /// No description provided for @unnamedScheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Unnamed Scheme'**
+  String get unnamedScheme;
+
+  /// No description provided for @amount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get amount;
+
+  /// No description provided for @registeredOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Registered on'**
+  String get registeredOn;
+
+  /// No description provided for @nextDueDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Next Due Date'**
+  String get nextDueDate;
+
+  /// No description provided for @scheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheme'**
+  String get scheme;
+
+  /// No description provided for @financeInclude.
+  ///
+  /// In en, this message translates to:
+  /// **'FinanceInclude'**
+  String get financeInclude;
+
+  /// No description provided for @pathToFinancialSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Path to Financial Success'**
+  String get pathToFinancialSuccess;
+
+  /// No description provided for @financialToolsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Simple, visual tools to help you manage money and access financial services'**
+  String get financialToolsDescription;
+
+  /// No description provided for @alreadyHaveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already Have Account'**
+  String get alreadyHaveAccount;
+
+  /// No description provided for @voiceAssistant.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice Assistant'**
+  String get voiceAssistant;
+
+  /// No description provided for @voiceAssistantDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Get personalized recommendations to improve your financial situation'**
+  String get voiceAssistantDescription;
+
+  /// No description provided for @unsureWhatYouNeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsure of what you need?'**
+  String get unsureWhatYouNeed;
+
+  /// No description provided for @browseSchemes.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse through our schemes'**
+  String get browseSchemes;
+
+  /// No description provided for @continueAsGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue as Guest'**
+  String get continueAsGuest;
+
+  /// No description provided for @welcomeToSchemeRecommender.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Scheme Recommender! Your AI-powered financial companion for discovering government schemes.'**
+  String get welcomeToSchemeRecommender;
+
+  /// No description provided for @loginToFinWise.
+  ///
+  /// In en, this message translates to:
+  /// **'Login to FinWise'**
+  String get loginToFinWise;
+
+  /// No description provided for @welcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome Back!'**
+  String get welcomeBack;
+
+  /// No description provided for @loginDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover your personalized financial recommendations and track your progress'**
+  String get loginDescription;
+
+  /// No description provided for @emailOrUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'Email or Username'**
+  String get emailOrUsername;
+
+  /// No description provided for @forgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot Password?'**
+  String get forgotPassword;
+
+  /// No description provided for @logInSecurely.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in Securely'**
+  String get logInSecurely;
+
+  /// No description provided for @continueWithChatbot.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Chatbot'**
+  String get continueWithChatbot;
+
+  /// No description provided for @continueAsAgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue as Agent'**
+  String get continueAsAgent;
+
+  /// No description provided for @registerAsAgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Register as Agent'**
+  String get registerAsAgent;
+
+  /// No description provided for @dontHaveAccountRegister.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account?'**
+  String get dontHaveAccountRegister;
+
+  /// No description provided for @registerAsNewUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Register as a New User'**
+  String get registerAsNewUser;
+
+  /// No description provided for @loggingIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Logging in'**
+  String get loggingIn;
+
+  /// No description provided for @loginSuccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Login successful! Redirecting to home screen.'**
+  String get loginSuccessMessage;
+
+  /// No description provided for @loginFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Login failed. Please check your credentials and try again.'**
+  String get loginFailedMessage;
+
+  /// No description provided for @welcomeLoginMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Scheme Recommender Login. Enter your credentials to access your account, or explore other options like chatbot or agent services.'**
+  String get welcomeLoginMessage;
+
+  /// No description provided for @emailFieldEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Email field is empty'**
+  String get emailFieldEmpty;
+
+  /// No description provided for @passwordFieldEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Password field is empty'**
+  String get passwordFieldEmpty;
+
+  /// No description provided for @passwordEntered.
+  ///
+  /// In en, this message translates to:
+  /// **'Password entered'**
+  String get passwordEntered;
+
+  /// No description provided for @loginButtonDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Login button. Tap to sign in to your account.'**
+  String get loginButtonDescription;
+
+  /// No description provided for @openingChatbot.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening chatbot'**
+  String get openingChatbot;
+
+  /// No description provided for @openingAgentLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening agent login'**
+  String get openingAgentLogin;
+
+  /// No description provided for @openingAgentRegistration.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening agent registration'**
+  String get openingAgentRegistration;
+
+  /// No description provided for @createNewProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account? Create profile'**
+  String get createNewProfile;
+
+  /// No description provided for @createNewProfileDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account? Create a new profile to get started.'**
+  String get createNewProfileDescription;
+
+  /// No description provided for @or.
+  ///
+  /// In en, this message translates to:
+  /// **'OR'**
+  String get or;
+
+  /// No description provided for @createFinWiseAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Your FinWise Account'**
+  String get createFinWiseAccount;
+
+  /// No description provided for @personalInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal\nInfo'**
+  String get personalInfo;
+
+  /// No description provided for @financialOccupational.
+  ///
+  /// In en, this message translates to:
+  /// **'Financial &\nOccupational'**
+  String get financialOccupational;
+
+  /// No description provided for @demographicsBank.
+  ///
+  /// In en, this message translates to:
+  /// **'Demographics\n& Bank'**
+  String get demographicsBank;
+
+  /// No description provided for @fullName.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Name'**
+  String get fullName;
+
+  /// No description provided for @emailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Address'**
+  String get emailAddress;
+
+  /// No description provided for @confirmPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Password'**
+  String get confirmPassword;
+
+  /// No description provided for @enterFullName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your full name'**
+  String get enterFullName;
+
+  /// No description provided for @enterEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email'**
+  String get enterEmail;
+
+  /// No description provided for @createPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a password'**
+  String get createPassword;
+
+  /// No description provided for @reenterPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-enter your password'**
+  String get reenterPassword;
+
+  /// No description provided for @doBankAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you have a bank account?'**
+  String get doBankAccount;
+
+  /// No description provided for @yes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get yes;
+
+  /// No description provided for @no.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get no;
+
+  /// No description provided for @bankAccountRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'You need a bank account to access most schemes. We\'ll help you connect with support.'**
+  String get bankAccountRequired;
+
+  /// No description provided for @welcomeProfileCreation.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to profile creation. Let\'s set up your account in 3 simple steps.'**
+  String get welcomeProfileCreation;
+
+  /// No description provided for @step1Description.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 1 of 3: Account Setup. Please enter your name, email, and password.'**
+  String get step1Description;
+
+  /// No description provided for @step2Description.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 2 of 3: Financial Information. Please enter your annual income and current savings.'**
+  String get step2Description;
+
+  /// No description provided for @step3Description.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 3 of 3: Personal Details. Please select your gender and category.'**
+  String get step3Description;
+
+  /// No description provided for @goingBackStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Going back to previous step'**
+  String get goingBackStep;
+
+  /// No description provided for @movingNextStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Moving to next step'**
+  String get movingNextStep;
+
+  /// No description provided for @creatingAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating your account'**
+  String get creatingAccount;
+
+  /// No description provided for @selectBankAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select if you have a bank account.'**
+  String get selectBankAccount;
+
+  /// No description provided for @creatingAccountWait.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating your account, please wait...'**
+  String get creatingAccountWait;
+
+  /// No description provided for @accountCreatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Account created successfully! Welcome to Scheme Recommender!'**
+  String get accountCreatedSuccess;
+
+  /// No description provided for @accountCreationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Account creation failed. Please try again.'**
+  String get accountCreationFailed;
+
+  /// No description provided for @pleaseSpeakField.
+  ///
+  /// In en, this message translates to:
+  /// **'Please speak your'**
+  String get pleaseSpeakField;
+
+  /// No description provided for @youSaid.
+  ///
+  /// In en, this message translates to:
+  /// **'You said:'**
+  String get youSaid;
+
+  /// No description provided for @voiceInputFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice input failed. Please type manually.'**
+  String get voiceInputFailed;
+
+  /// No description provided for @currentGenderIs.
+  ///
+  /// In en, this message translates to:
+  /// **'Current gender is'**
+  String get currentGenderIs;
+
+  /// No description provided for @availableOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Available options are:'**
+  String get availableOptions;
+
+  /// No description provided for @currentCategoryIs.
+  ///
+  /// In en, this message translates to:
+  /// **'Current category is'**
+  String get currentCategoryIs;
+
+  /// No description provided for @profileCreation.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile Creation'**
+  String get profileCreation;
+
+  /// No description provided for @fullNameVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'full name'**
+  String get fullNameVoice;
+
+  /// No description provided for @emailAddressVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'email address'**
+  String get emailAddressVoice;
+
+  /// No description provided for @annualIncomeVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'annual income'**
+  String get annualIncomeVoice;
+
+  /// No description provided for @savingsVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'current savings'**
+  String get savingsVoice;
+
+  /// No description provided for @needBankAccountSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'You need a bank account to access most schemes. We\'ll help you connect with support.'**
+  String get needBankAccountSupport;
+
+  /// No description provided for @goingBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Going back to previous step'**
+  String get goingBack;
 }
 
 class _AppLocalizationsDelegate

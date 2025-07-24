@@ -20,7 +20,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     super.initState();
     _initTts();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _speak("Welcome to Scheme Recommender! Your AI-powered financial companion for discovering government schemes.");
+      _speak(AppLocalizations.of(context)!.welcomeToSchemeRecommender);
     });
   }
 
@@ -76,10 +76,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   static List<Map<String, dynamic>> features(BuildContext context) => [
         {
-          'icon': Icons.location_on,
-          'title': AppLocalizations.of(context)!.locationBased,
-          'description': AppLocalizations.of(context)!.locationBasedDescription,
-          'color': Colors.blue,
+          'icon': Icons.mic,
+          'title': AppLocalizations.of(context)!.voiceAssistant,
+          'description': AppLocalizations.of(context)!.voiceAssistantDescription,
+          'color': Color(0xFF1A237E),
         },
         {
           'icon': Icons.support_agent,
@@ -123,39 +123,45 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.white,
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.volume_up, color: Colors.white),
-            onPressed: () => _speakAppOverview(),
-          ),
-          IconButton(
-            icon: Icon(Icons.mic, color: Colors.white),
-            onPressed: () => _startVoiceNavigation(),
-          ),
-          IconButton(
-            icon: Icon(Icons.help_outline, color: Colors.white),
-            onPressed: () => _speak("Welcome to Scheme Recommender! Use voice navigation by tapping the microphone, or explore features and tap the action buttons below."),
-          ),
-        ],
-      ),
-      extendBodyBehindAppBar: true,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF6A85B6), Color(0xFFbac8e0)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: Color(0xFF1A237E),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Icon(Icons.trending_up, color: Colors.white, size: 16),
+            ),
+            SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                loc.financeInclude,
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Roboto',
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            child: _WelcomeScreenContent(parent: this),
-          ),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: _WelcomeScreenContent(parent: this),
         ),
       ),
     );
@@ -175,161 +181,215 @@ class _WelcomeScreenContent extends StatelessWidget {
 
     return Column(
       children: [
-        const SizedBox(height: 32),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                loc.appTitle,
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2C3E50),
-                  letterSpacing: 1.2,
-                  shadows: [Shadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 2))],
-                ),
-              ),
-            ),
-            IconButton(
-              icon: Icon(Icons.volume_up, color: Color(0xFF2C3E50)),
-              onPressed: () => parent._speak("${loc.appTitle}. ${loc.appSubtitle}"),
-            ),
-          ],
+        const SizedBox(height: 20),
+        // Main logo and title section
+        Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            color: Color(0xFF1A237E),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(Icons.trending_up, color: Colors.white, size: 30),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 16),
         Text(
-          loc.appSubtitle,
+          loc.pathToFinancialSuccess,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+            fontFamily: 'Roboto',
+          ),
           textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 17,
-            color: Color(0xFF34495E),
-            fontWeight: FontWeight.w500,
+        ),
+        const SizedBox(height: 8),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            loc.financialToolsDescription,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+              fontFamily: 'Roboto',
+            ),
+            textAlign: TextAlign.center,
           ),
         ),
-        const SizedBox(height: 18),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: () => parent._speak("Secure and Trusted platform"),
-              child: Chip(
-                avatar: const Icon(Icons.shield, color: Colors.green, size: 18),
-                label: Text(loc.secureTrusted, style: const TextStyle(color: Colors.green)),
-                backgroundColor: Colors.white,
-                elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        const SizedBox(height: 20),
+        // Action buttons
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    parent._speak("Opening registration form");
+                    Navigator.pushNamed(context, '/profile');
+                  },
+                  icon: Icon(Icons.play_arrow, color: Colors.white, size: 18),
+                  label: Text(
+                    loc.register,
+                    style: TextStyle(color: Colors.white, fontFamily: 'Roboto', fontSize: 16),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF1A237E),
+                    padding: EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            GestureDetector(
-              onTap: () => parent._speak("AI Powered recommendations"),
-              child: Chip(
-                avatar: const Icon(Icons.auto_graph, color: Colors.blue, size: 18),
-                label: Text(loc.aiPowered, style: const TextStyle(color: Colors.blue)),
-                backgroundColor: Colors.white,
-                elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    parent._speak("Opening login screen");
+                    Navigator.pushNamed(context, '/login');
+                  },
+                  icon: Icon(Icons.person_outline, color: Colors.grey[700], size: 18),
+                  label: Text(
+                    loc.alreadyHaveAccount,
+                    style: TextStyle(color: Colors.grey[700], fontFamily: 'Roboto', fontSize: 16),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    side: BorderSide(color: Colors.grey[300]!),
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(height: 32),
-        Expanded(
-          child: ListView.separated(
-            itemCount: features.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 24),
-            itemBuilder: (context, index) {
-              final feature = features[index];
-              return GestureDetector(
-                onTap: () => parent._speakFeature(feature),
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: const [
-                      BoxShadow(color: Color(0x336A85B6), blurRadius: 16, offset: Offset(0, 6)),
-                    ],
-                  ),
+        // Features section
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: features.map((feature) {
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () => parent._speakFeature(feature),
                   child: Column(
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: LinearGradient(
-                                  colors: [feature['color'], Colors.white],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                              ),
-                              padding: const EdgeInsets.all(12),
-                              child: Icon(feature['icon'], size: 48, color: feature['color']),
-                            ),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.volume_up, color: feature['color']),
-                            onPressed: () => parent._speakFeature(feature),
-                          ),
-                        ],
+                      Container(
+                        width: 65,
+                        height: 65,
+                        decoration: BoxDecoration(
+                          color: feature['color'].withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          feature['icon'],
+                          color: feature['color'],
+                          size: 32,
+                        ),
                       ),
-                      const SizedBox(height: 14),
+                      SizedBox(height: 12),
                       Text(
                         feature['title'],
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50)),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        feature['description'],
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                          fontFamily: 'Roboto',
+                        ),
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: Color(0xFF7F8C8D), fontSize: 15),
+                      ),
+                      SizedBox(height: 6),
+                      Container(
+                        height: 60, // Fixed height for description
+                        child: Text(
+                          feature['description'],
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[600],
+                            fontFamily: 'Roboto',
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 4,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
                 ),
               );
-            },
+            }).toList(),
           ),
         ),
-        const SizedBox(height: 18),
-        Wrap(
-          spacing: 16,
-          runSpacing: 16,
-          alignment: WrapAlignment.center,
-          children: [
-            parent._buildActionButton(
-              context: context,
-              label: loc.login,
-              color: Color(0xFF27ae60),
-              onPressed: () {
-                parent._speak("Opening login screen");
-                Navigator.pushNamed(context, '/login');
-              },
+        const SizedBox(height: 16),
+        // Bottom CTA section - Expanded to fill remaining space
+        Expanded(
+          child: Container(
+            width: double.infinity,
+            margin: EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF1A237E), Color(0xFF50C878)],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
             ),
-            parent._buildActionButton(
-              context: context,
-              label: loc.register,
-              color: Color(0xFF2980b9),
-              onPressed: () {
-                parent._speak("Opening registration form");
-                Navigator.pushNamed(context, '/profile');
-              },
+            padding: EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.settings, color: Colors.white, size: 28),
+                SizedBox(height: 10),
+                Text(
+                  loc.unsureWhatYouNeed,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontFamily: 'Roboto',
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 6),
+                Text(
+                  loc.browseSchemes,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white.withOpacity(0.9),
+                    fontFamily: 'Roboto',
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 12),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    parent._speak("Opening AI chatbot");
+                    Navigator.pushNamed(context, '/chatbot');
+                  },
+                  icon: Icon(Icons.person_outline, color: Colors.black87, size: 18),
+                  label: Text(
+                    loc.continueAsGuest,
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Roboto',
+                      fontSize: 15,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                ),
+              ],
             ),
-            parent._buildActionButton(
-              context: context,
-              label: loc.chatbot,
-              color: Color(0xFF8e44ad),
-              icon: Icons.chat_bubble_outline,
-              onPressed: () {
-                parent._speak("Opening AI chatbot");
-                Navigator.pushNamed(context, '/chatbot');
-              },
-            ),
-          ],
+          ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 16),
       ],
     );
   }

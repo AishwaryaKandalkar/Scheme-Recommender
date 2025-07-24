@@ -11,7 +11,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 app = Flask(__name__)
 
 # Load schemes dataset
-df_schemes = pd.read_csv("datasets/financial_inclusion_schemes_translated_final.csv")
+df_schemes = pd.read_csv("datasets/financial_inclusion_schemes_translated_final_updated.csv")
 print("Available columns in schemes dataset:", df_schemes.columns.tolist())
 df_schemes['text_blob'] = (
     df_schemes['scheme_goal'].fillna('') + ". " +
@@ -22,12 +22,10 @@ df_schemes['text_blob'] = (
 )
 model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 def get_col(col, lang):
-    print("HERE")
     if lang == "hi" and f"{col}_hi" in df_schemes.columns:
-        print("here")
-        print(f"{col}_hi")
         return f"{col}_hi"
     elif lang == "mr" and f"{col}_mr" in df_schemes.columns:
+        print(f"Using Marathi column: {col}_mr")
         return f"{col}_mr"
     return col
 
@@ -137,8 +135,6 @@ def filter_eligible_schemes(user, df):
     
     return df[age_filter & gender_filter & social_filter & income_filter & location_filter].reset_index(drop=True)
 
-def recommend_schemes(user_profile, user_text_description, top_k=None):
-    """Return eligible schemes sorted by similarity score (eligibility filtering + AI ranking)"""
 def recommend_schemes(user_profile, user_text_description, lang="en", top_k=3):
     filtered_df = filter_by_profile(user_profile, df_schemes)
     user_embedding = model.encode(user_text_description, convert_to_tensor=True)
@@ -186,12 +182,6 @@ def recommend_schemes(user_profile, user_text_description, lang="en", top_k=3):
     # Only keep columns that exist in the DataFrame
     columns = [col for col in columns if col in recommended.columns]
     return recommended[columns]
-    # Select available columns safely
-    base_columns = ["scheme_name", "scheme_goal", "benefits", "total_returns", "time_duration", "scheme_website"]
-    available_columns = [col for col in base_columns if col in recommended.columns]
-    available_columns.append("similarity_score")  # Always add similarity score for ML results
-
-    return recommended[available_columns]
 
 @app.route("/recommend", methods=["POST"])
 def recommend():
@@ -256,6 +246,8 @@ def recommend():
 def eligible_schemes():
     """Fast rule-based filtering for initial page load without ML processing"""
     data = request.get_json()
+    lang = data.get("lang", "en")
+    print(lang)
     required_fields = {"age", "gender", "social_category", "income_group", "location"}
     if not required_fields.issubset(set(data)):
         return jsonify({"error": f"Missing fields. Required: {', '.join(required_fields)}"}), 400
@@ -296,13 +288,24 @@ def eligible_schemes():
     # The Flutter app will handle pagination on the frontend
     
     # Select relevant columns for display (only include columns that exist)
-    available_columns = ["scheme_name", "scheme_goal", "benefits", "total_returns", "time_duration", "scheme_website"]
+    base_columns = ["scheme_name", "scheme_goal", "benefits", "total_returns", "time_duration", "scheme_website"]
     optional_columns = ["risk", "eligibility", "application_process", "required_documents", "funding_agency", "contact_details"]
-    
-    # Add optional columns if they exist in the dataframe
-    for col in optional_columns:
+
+    lang_suffix = ""
+    if lang == "hi":
+        lang_suffix = "_hi"
+    elif lang == "mr":
+        lang_suffix = "_mr"
+
+    available_columns = []
+    for col in base_columns + optional_columns:
+        # Add English column if exists
         if col in filtered_df.columns:
             available_columns.append(col)
+        # Add language column if exists
+        lang_col = f"{col}{lang_suffix}"
+        if lang_suffix and lang_col in filtered_df.columns:
+            available_columns.append(lang_col)
     
     result_df = filtered_df[available_columns].copy()
 
@@ -314,7 +317,27 @@ def eligible_schemes():
         elif isinstance(obj, float) and (np.isnan(obj) or np.isinf(obj)):
             return "N/A"
         return obj
-
+    # print(row.get(get_col("scheme_name", lang), row.get("scheme_name")))
+    result_json = []
+    for row in result_df.to_dict(orient="records"):
+        result_json.append({
+            "scheme_name": row.get(get_col("scheme_name", lang), row.get("scheme_name")),
+            "scheme_goal": row.get(get_col("scheme_goal", lang), row.get("scheme_goal")),
+            "benefits": row.get(get_col("benefits", lang), row.get("benefits")),
+            "application_process": row.get(get_col("application_process", lang), row.get("application_process")),
+            "eligibility": row.get(get_col("eligibility", lang), row.get("eligibility")),
+            "total_returns": row.get(get_col("total_returns", lang), row.get("total_returns")),
+            "time_duration": row.get(get_col("time_duration", lang), row.get("time_duration")),
+            "scheme_website": row.get("scheme_website"),
+            "similarity_score": row.get("similarity_score"),
+        })
+    print(clean_json(result_json))
+    return jsonify({
+        "eligible_schemes": clean_json(result_json), 
+        "count": len(result_json),
+        "filter_type": "ml_powered",
+        "sorted_by": "similarity_score"
+    })
     result_json = clean_json(result_df.to_dict(orient="records"))
     print(f"Returning {len(result_json)} eligible schemes")
     
@@ -381,11 +404,12 @@ else:
 def scheme_detail():
     scheme_name = request.args.get("name", "").strip().lower()
     lang = request.args.get("lang", "en")
-
+    print(f"Scheme detail request for: {scheme_name} in language: {lang}")
     def normalize(text):
         return " ".join(text.lower().strip().split())
 
     name_col = get_col("scheme_name", lang)
+    print(f"Using column for scheme name: {name_col}")
     df_schemes["normalized_name"] = df_schemes[name_col].astype(str).apply(normalize)
     matched = df_schemes[df_schemes["normalized_name"] == normalize(scheme_name)]
 
@@ -440,6 +464,8 @@ def scheme_detail():
         "benefits": scheme.get(get_col("benefits", lang), scheme.get("benefits")),
         "total_returns": scheme.get(get_col("total_returns", lang), scheme.get("total_returns")),
         "time_duration": scheme.get(get_col("time_duration", lang), scheme.get("time_duration")),
+        "application_process": scheme.get(get_col("application_process", lang), scheme.get("application_process")),
+        "eligibility": scheme.get(get_col("eligibility", lang), scheme.get("eligibility")),
         "scheme_website": scheme.get("scheme_website"),
         "similar_investments": scheme.get("similar_investments", []),
         # ...other fields...

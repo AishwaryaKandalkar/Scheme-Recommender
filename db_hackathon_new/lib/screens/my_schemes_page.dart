@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:provider/provider.dart';
+import '../providers/language_provider.dart';
 
 const Color kAppPink = Color(0xFFE91E63); // Main pink color
 
@@ -59,6 +61,11 @@ class _MySchemesPageState extends State<MySchemesPage> {
         backgroundColor: kAppPink,
         title: Text('My Profile'),
         actions: [
+          IconButton(
+            icon: Icon(Icons.language),
+            tooltip: 'Change Language',
+            onPressed: () => _showLanguageDialog(context),
+          ),
           IconButton(
             icon: Icon(Icons.volume_up, color: Colors.white),
             onPressed: () => _speak("My Profile page. View your personal information, financial summary, and active schemes."),
@@ -202,8 +209,8 @@ class _MySchemesPageState extends State<MySchemesPage> {
                   ),
                 ),
                 SizedBox(height: 16),
-                // Financial Snapshot
-                FutureBuilder<List<Map<String, dynamic>>>(  
+                // Financial Summary
+                FutureBuilder<List<Map<String, dynamic>>>(
                   future: fetchMySchemes(),
                   builder: (context, schemesSnapshot) {
                     final schemes = schemesSnapshot.data ?? [];
@@ -388,6 +395,34 @@ class _MySchemesPageState extends State<MySchemesPage> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showLanguageDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Select Language'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _languageOption(context, 'English', 'en'),
+            _languageOption(context, 'हिन्दी', 'hi'),
+            _languageOption(context, 'मराठी', 'mr'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _languageOption(BuildContext context, String label, String code) {
+    return ListTile(
+      title: Text(label),
+      onTap: () {
+        Provider.of<LanguageProvider>(context, listen: false).setLanguage(code);
+        Navigator.of(context).pop();
+        _speak("$label selected");
+      },
     );
   }
 }

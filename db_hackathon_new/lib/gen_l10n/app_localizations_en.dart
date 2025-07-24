@@ -266,4 +266,343 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get support => 'Support';
+
+  @override
+  String get myProfile => 'My Profile';
+
+  @override
+  String get profilePageTts =>
+      'My Profile page. View your personal information, financial summary, and active schemes.';
+
+  @override
+  String get editProfile => 'Edit Profile';
+
+  @override
+  String get logout => 'Logout';
+
+  @override
+  String get loggingOut => 'Logging out';
+
+  @override
+  String get contactInfo => 'Contact Information';
+
+  @override
+  String get noEmail => 'No email';
+
+  @override
+  String get noPhone => 'No phone';
+
+  @override
+  String get noLocation => 'No location';
+
+  @override
+  String get phone => 'Phone';
+
+  @override
+  String get location => 'Location';
+
+  @override
+  String get financialSummary => 'Financial Summary';
+
+  @override
+  String get totalSavings => 'Total Savings';
+
+  @override
+  String get activeSchemes => 'Active Schemes';
+
+  @override
+  String get investmentReturns => 'Investment Returns';
+
+  @override
+  String get goalsAchieved => 'Goals Achieved';
+
+  @override
+  String get rupees => 'rupees';
+
+  @override
+  String get savingsSubtitle => '+1.2% this month';
+
+  @override
+  String activeSchemesSubtitle(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '1 new',
+      zero: 'none',
+    );
+    return 'Joined $_temp0';
+  }
+
+  @override
+  String get returnsSubtitle => '+5% last quarter';
+
+  @override
+  String get goalsSubtitle => 'On track for 3 more';
+
+  @override
+  String get recentActivities => 'Recent Activities & Tips';
+
+  @override
+  String get recentActivitiesTts => 'Recent Activities and Tips section';
+
+  @override
+  String get noSchemes => 'No schemes registered yet.';
+
+  @override
+  String get noSchemesTts =>
+      'No schemes registered yet. You can explore new schemes from the home page.';
+
+  @override
+  String get unnamedScheme => 'Unnamed Scheme';
+
+  @override
+  String get amount => 'Amount';
+
+  @override
+  String get registeredOn => 'Registered on';
+
+  @override
+  String get nextDueDate => 'Next Due Date';
+
+  @override
+  String get scheme => 'Scheme';
+
+  @override
+  String get financeInclude => 'FinanceInclude';
+
+  @override
+  String get pathToFinancialSuccess => 'Your Path to Financial Success';
+
+  @override
+  String get financialToolsDescription =>
+      'Simple, visual tools to help you manage money and access financial services';
+
+  @override
+  String get alreadyHaveAccount => 'Already Have Account';
+
+  @override
+  String get voiceAssistant => 'Voice Assistant';
+
+  @override
+  String get voiceAssistantDescription =>
+      'Get personalized recommendations to improve your financial situation';
+
+  @override
+  String get unsureWhatYouNeed => 'Unsure of what you need?';
+
+  @override
+  String get browseSchemes => 'Browse through our schemes';
+
+  @override
+  String get continueAsGuest => 'Continue as Guest';
+
+  @override
+  String get welcomeToSchemeRecommender =>
+      'Welcome to Scheme Recommender! Your AI-powered financial companion for discovering government schemes.';
+
+  @override
+  String get loginToFinWise => 'Login to FinWise';
+
+  @override
+  String get welcomeBack => 'Welcome Back!';
+
+  @override
+  String get loginDescription =>
+      'Discover your personalized financial recommendations and track your progress';
+
+  @override
+  String get emailOrUsername => 'Email or Username';
+
+  @override
+  String get forgotPassword => 'Forgot Password?';
+
+  @override
+  String get logInSecurely => 'Log in Securely';
+
+  @override
+  String get continueWithChatbot => 'Continue with Chatbot';
+
+  @override
+  String get continueAsAgent => 'Continue as Agent';
+
+  @override
+  String get registerAsAgent => 'Register as Agent';
+
+  @override
+  String get dontHaveAccountRegister => 'Don\'t have an account?';
+
+  @override
+  String get registerAsNewUser => 'Register as a New User';
+
+  @override
+  String get loggingIn => 'Logging in';
+
+  @override
+  String get loginSuccessMessage =>
+      'Login successful! Redirecting to home screen.';
+
+  @override
+  String get loginFailedMessage =>
+      'Login failed. Please check your credentials and try again.';
+
+  @override
+  String get welcomeLoginMessage =>
+      'Welcome to Scheme Recommender Login. Enter your credentials to access your account, or explore other options like chatbot or agent services.';
+
+  @override
+  String get emailFieldEmpty => 'Email field is empty';
+
+  @override
+  String get passwordFieldEmpty => 'Password field is empty';
+
+  @override
+  String get passwordEntered => 'Password entered';
+
+  @override
+  String get loginButtonDescription =>
+      'Login button. Tap to sign in to your account.';
+
+  @override
+  String get openingChatbot => 'Opening chatbot';
+
+  @override
+  String get openingAgentLogin => 'Opening agent login';
+
+  @override
+  String get openingAgentRegistration => 'Opening agent registration';
+
+  @override
+  String get createNewProfile => 'Don\'t have an account? Create profile';
+
+  @override
+  String get createNewProfileDescription =>
+      'Don\'t have an account? Create a new profile to get started.';
+
+  @override
+  String get or => 'OR';
+
+  @override
+  String get createFinWiseAccount => 'Create Your FinWise Account';
+
+  @override
+  String get personalInfo => 'Personal\nInfo';
+
+  @override
+  String get financialOccupational => 'Financial &\nOccupational';
+
+  @override
+  String get demographicsBank => 'Demographics\n& Bank';
+
+  @override
+  String get fullName => 'Full Name';
+
+  @override
+  String get emailAddress => 'Email Address';
+
+  @override
+  String get confirmPassword => 'Confirm Password';
+
+  @override
+  String get enterFullName => 'Enter your full name';
+
+  @override
+  String get enterEmail => 'Enter your email';
+
+  @override
+  String get createPassword => 'Create a password';
+
+  @override
+  String get reenterPassword => 'Re-enter your password';
+
+  @override
+  String get doBankAccount => 'Do you have a bank account?';
+
+  @override
+  String get yes => 'Yes';
+
+  @override
+  String get no => 'No';
+
+  @override
+  String get bankAccountRequired =>
+      'You need a bank account to access most schemes. We\'ll help you connect with support.';
+
+  @override
+  String get welcomeProfileCreation =>
+      'Welcome to profile creation. Let\'s set up your account in 3 simple steps.';
+
+  @override
+  String get step1Description =>
+      'Step 1 of 3: Account Setup. Please enter your name, email, and password.';
+
+  @override
+  String get step2Description =>
+      'Step 2 of 3: Financial Information. Please enter your annual income and current savings.';
+
+  @override
+  String get step3Description =>
+      'Step 3 of 3: Personal Details. Please select your gender and category.';
+
+  @override
+  String get goingBackStep => 'Going back to previous step';
+
+  @override
+  String get movingNextStep => 'Moving to next step';
+
+  @override
+  String get creatingAccount => 'Creating your account';
+
+  @override
+  String get selectBankAccount => 'Please select if you have a bank account.';
+
+  @override
+  String get creatingAccountWait => 'Creating your account, please wait...';
+
+  @override
+  String get accountCreatedSuccess =>
+      'Account created successfully! Welcome to Scheme Recommender!';
+
+  @override
+  String get accountCreationFailed =>
+      'Account creation failed. Please try again.';
+
+  @override
+  String get pleaseSpeakField => 'Please speak your';
+
+  @override
+  String get youSaid => 'You said:';
+
+  @override
+  String get voiceInputFailed => 'Voice input failed. Please type manually.';
+
+  @override
+  String get currentGenderIs => 'Current gender is';
+
+  @override
+  String get availableOptions => 'Available options are:';
+
+  @override
+  String get currentCategoryIs => 'Current category is';
+
+  @override
+  String get profileCreation => 'Profile Creation';
+
+  @override
+  String get fullNameVoice => 'full name';
+
+  @override
+  String get emailAddressVoice => 'email address';
+
+  @override
+  String get annualIncomeVoice => 'annual income';
+
+  @override
+  String get savingsVoice => 'current savings';
+
+  @override
+  String get needBankAccountSupport =>
+      'You need a bank account to access most schemes. We\'ll help you connect with support.';
+
+  @override
+  String get goingBack => 'Going back to previous step';
 }
