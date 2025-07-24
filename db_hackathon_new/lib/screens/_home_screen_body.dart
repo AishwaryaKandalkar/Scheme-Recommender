@@ -27,7 +27,7 @@ Future<Map<String, dynamic>?> _fetchProfile() async {
 }
 
 Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile, String lang) async {
-  final url = Uri.parse('http://10.146.241.105:5000/recommend');
+  final url = Uri.parse('http://10.166.220.251:5000/recommend');
   final payload = Map<String, dynamic>.from(profile);
   payload['lang'] = lang; // Pass language to backend
 
@@ -329,12 +329,14 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                             },
                       icon: loading
                           ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : Icon(goalController.text.trim().isNotEmpty ? Icons.psychology : Icons.refresh, color: Colors.white),
-                      label: loading 
-                          ? Text('') 
-                          : Text(goalController.text.trim().isNotEmpty ? 'AI Search' : 'Refresh', style: TextStyle(color: Colors.white)),
-                          : Icon(Icons.search, color: Colors.white),
-                      label: loading ? Text('') : Text(loc.find, style: TextStyle(color: Colors.white)),
+                          : (goalController.text.trim().isNotEmpty
+                              ? Icon(Icons.psychology, color: Colors.white)
+                              : Icon(Icons.refresh, color: Colors.white)),
+                      label: loading
+                          ? Text('')
+                          : (goalController.text.trim().isNotEmpty
+                              ? Text('AI Search', style: TextStyle(color: Colors.white))
+                              : Text('Refresh', style: TextStyle(color: Colors.white))),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: goalController.text.trim().isNotEmpty ? Colors.deepPurple : Colors.pinkAccent,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
