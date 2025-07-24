@@ -44,8 +44,11 @@ Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile, String lang) 
   return null;
 }
 
-Future<List<dynamic>?> _fetchEligibleSchemes(Map<String, dynamic> profile) async {
+Future<List<dynamic>?> _fetchEligibleSchemes(Map<String, dynamic> profile, String lang) async {
   final url = Uri.parse('http://10.166.220.251:5000/eligible_schemes');
+  // Add language parameter to the profile
+  profile['lang'] = lang; // Pass language to backend
+  
   final response = await http.post(
     url,
     body: jsonEncode(profile),
@@ -126,7 +129,7 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
         isAiSearch = false;
       });
       await _speak("Loading your eligible schemes");
-      result = await _fetchEligibleSchemes(payload);
+      result = await _fetchEligibleSchemes(payload, lang);
     }
 
     if (result != null) {

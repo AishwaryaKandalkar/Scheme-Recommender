@@ -126,8 +126,22 @@ class __SchemeDetailScreenStateState extends State<_SchemeDetailScreenState> {
   }
 
   Future<void> fetchSchemeDetail() async {
+    // Attempt to get user's location from their profile
+    String userLocation = 'All';
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final docRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+        final doc = await docRef.get();
+        final data = doc.data() ?? {};
+        userLocation = data['location'] ?? 'All';
+      }
+    } catch (e) {
+      print('Error fetching user location: $e');
+    }
+    
     final url = Uri.parse(
-        'http://10.166.220.251:5000/scheme_detail?name=${Uri.encodeComponent(widget.schemeName)}');
+        'http://10.166.220.251:5000/scheme_detail?name=${Uri.encodeComponent(widget.schemeName)}&lang=${widget.lang}&location=${Uri.encodeComponent(userLocation)}');
 
     try {
       final response = await http.get(url);
@@ -156,7 +170,7 @@ class __SchemeDetailScreenStateState extends State<_SchemeDetailScreenState> {
 
   Future<void> fetchPrediction() async {
     final url = Uri.parse(
-        'http://10.166.220.251:5000/predict_limits?scheme_name=${Uri.encodeComponent(widget.schemeName)}');
+        'http://10.166.220.251:5000/predict_limits?scheme_name=${Uri.encodeComponent(widget.schemeName)}&lang=${widget.lang}');
 
     try {
       final response = await http.get(url);
@@ -269,11 +283,15 @@ class __SchemeDetailScreenStateState extends State<_SchemeDetailScreenState> {
         return;
       }
 
+      // Get user's location from their profile
+      String? userLocation = data['location'] ?? 'All';
+      
       mySchemes.add({
         'scheme_name': widget.schemeName,
         'registered_at': registrationDate!.toIso8601String(),
         'amount': amount,
         'due_date': dueDate!.toIso8601String(),
+        'location': userLocation,
       });
 
       await docRef.set({'my_schemes': mySchemes}, SetOptions(merge: true));

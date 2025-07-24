@@ -33,6 +33,16 @@ class HomeScreen extends StatelessWidget {
       if (val < 1000000) return loc.incomeGroup5to10Lakh;
       return loc.incomeGroup10PlusLakh;
     }
+    // Get the current locale
+    final currentLocale = Localizations.localeOf(context).languageCode;
+    // Map locale to language code for the API
+    String langCode = 'en';
+    if (currentLocale == 'hi') {
+      langCode = 'hi';
+    } else if (currentLocale == 'mr') {
+      langCode = 'mr';
+    }
+    
     final data = {
       'age': profile['age'] ?? 30,
       'gender': profile['gender'] ?? loc.male,
@@ -40,6 +50,7 @@ class HomeScreen extends StatelessWidget {
       'income_group': mapIncome(profile['annual_income']),
       'location': profile['location'] ?? loc.urban,
       'situation': profile['situation'] ?? loc.defaultSituation,
+      'lang': langCode, // Include language parameter
     };
     print('Sending to backend: $data');
     final url = Uri.parse('http://10.166.220.251:5000/recommend');

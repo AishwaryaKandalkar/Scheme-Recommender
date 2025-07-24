@@ -11,7 +11,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 app = Flask(__name__)
 
 # Load schemes dataset
-df_schemes = pd.read_csv("datasets/financial_inclusion_schemes_translated_final.csv")
+df_schemes = pd.read_csv("datasets/financial_inclusion_schemes_translated_final_updated.csv")
 print("Available columns in schemes dataset:", df_schemes.columns.tolist())
 df_schemes['text_blob'] = (
     df_schemes['scheme_goal'].fillna('') + ". " +
@@ -22,13 +22,13 @@ df_schemes['text_blob'] = (
 )
 model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 def get_col(col, lang):
-    print("HERE")
     if lang == "hi" and f"{col}_hi" in df_schemes.columns:
-        print("here")
-        print(f"{col}_hi")
+        print(f"Using Hindi column: {col}_hi")
         return f"{col}_hi"
     elif lang == "mr" and f"{col}_mr" in df_schemes.columns:
+        print(f"Using Marathi column: {col}_mr")
         return f"{col}_mr"
+    print(f"Using default column: {col}")
     return col
 
 # Load investment data
@@ -256,6 +256,9 @@ def recommend():
 def eligible_schemes():
     """Fast rule-based filtering for initial page load without ML processing"""
     data = request.get_json()
+    lang = data.get("lang", "en")
+    print(f"Language requested: {lang}")
+    
     required_fields = {"age", "gender", "social_category", "income_group", "location"}
     if not required_fields.issubset(set(data)):
         return jsonify({"error": f"Missing fields. Required: {', '.join(required_fields)}"}), 400
@@ -292,19 +295,23 @@ def eligible_schemes():
     # Sort schemes by scheme name for consistent ordering (alphabetical)
     filtered_df = filtered_df.sort_values('scheme_name').reset_index(drop=True)
     
-    # Return ALL eligible schemes (no artificial limit)
-    # The Flutter app will handle pagination on the frontend
+    # Always include both English and language columns so you can pick later
+    columns = [
+        "scheme_name", "scheme_goal", "benefits", "application_process", "eligibility", "total_returns",
+        "time_duration", "scheme_website",
+        "scheme_name_hi", "scheme_goal_hi", "benefits_hi", "application_process_hi", "eligibility_hi", "total_returns_hi", "time_duration_hi",
+        "scheme_name_mr", "scheme_goal_mr", "benefits_mr", "application_process_mr", "eligibility_mr", "total_returns_mr", "time_duration_mr"
+    ]
+    # Only keep columns that exist in the DataFrame
+    columns = [col for col in columns if col in filtered_df.columns]
     
-    # Select relevant columns for display (only include columns that exist)
-    available_columns = ["scheme_name", "scheme_goal", "benefits", "total_returns", "time_duration", "scheme_website"]
-    optional_columns = ["risk", "eligibility", "application_process", "required_documents", "funding_agency", "contact_details"]
-    
-    # Add optional columns if they exist in the dataframe
+    # Additional optional columns
+    optional_columns = ["risk", "required_documents", "funding_agency", "contact_details"]
     for col in optional_columns:
         if col in filtered_df.columns:
-            available_columns.append(col)
+            columns.append(col)
     
-    result_df = filtered_df[available_columns].copy()
+    result_df = filtered_df[columns].copy()
 
     def clean_json(obj):
         if isinstance(obj, dict):
@@ -315,11 +322,29 @@ def eligible_schemes():
             return "N/A"
         return obj
 
-    result_json = clean_json(result_df.to_dict(orient="records"))
-    print(f"Returning {len(result_json)} eligible schemes")
+    # Pick columns based on language
+    result_json = []
+    for row in result_df.to_dict(orient="records"):
+        result_json.append({
+            "scheme_name": row.get(get_col("scheme_name", lang), row.get("scheme_name")),
+            "scheme_goal": row.get(get_col("scheme_goal", lang), row.get("scheme_goal")),
+            "benefits": row.get(get_col("benefits", lang), row.get("benefits")),
+            "application_process": row.get(get_col("application_process", lang), row.get("application_process")),
+            "eligibility": row.get(get_col("eligibility", lang), row.get("eligibility")),
+            "total_returns": row.get(get_col("total_returns", lang), row.get("total_returns")),
+            "time_duration": row.get(get_col("time_duration", lang), row.get("time_duration")),
+            "scheme_website": row.get("scheme_website"),
+            # Include optional columns if they exist
+            "risk": row.get("risk") if "risk" in row else None,
+            "required_documents": row.get("required_documents") if "required_documents" in row else None,
+            "funding_agency": row.get("funding_agency") if "funding_agency" in row else None,
+            "contact_details": row.get("contact_details") if "contact_details" in row else None,
+        })
+    
+    print(f"Returning {len(result_json)} eligible schemes in language: {lang}")
     
     return jsonify({
-        "eligible_schemes": result_json, 
+        "eligible_schemes": clean_json(result_json), 
         "count": len(result_json),
         "filter_type": "rule_based",
         "sorted_by": "scheme_name"
@@ -329,6 +354,9 @@ def eligible_schemes():
 def chatbot():
     data = request.get_json()
     question = data.get("question", "").strip()
+    lang = data.get("lang", "en")
+    print(f"Language requested for chatbot: {lang}")
+    
     if not question:
         return jsonify({"answer": "Please provide a question."}), 400
 
@@ -341,17 +369,24 @@ def chatbot():
 
     answer = "Here are the most relevant schemes I found for your question:\n\n"
     for idx, row in top_schemes.iterrows():
-        answer += f"📄 {row['scheme_name']}\n"
-        if pd.notna(row['scheme_goal']):
-            answer += f"Goal: {row['scheme_goal']}\n"
-        if pd.notna(row['eligibility']):
-            answer += f"Eligibility: {row['eligibility']}\n"
-        if pd.notna(row['benefits']):
-            answer += f"Benefits: {row['benefits']}\n"
-        if pd.notna(row['total_returns']):
-            answer += f"Returns: {row['total_returns']}\n"
-        if pd.notna(row['time_duration']):
-            answer += f"Duration: {row['time_duration']}\n"
+        scheme_name = row.get(get_col("scheme_name", lang), row.get("scheme_name"))
+        scheme_goal = row.get(get_col("scheme_goal", lang), row.get("scheme_goal"))
+        eligibility = row.get(get_col("eligibility", lang), row.get("eligibility"))
+        benefits = row.get(get_col("benefits", lang), row.get("benefits"))
+        total_returns = row.get(get_col("total_returns", lang), row.get("total_returns"))
+        time_duration = row.get(get_col("time_duration", lang), row.get("time_duration"))
+        
+        answer += f"📄 {scheme_name}\n"
+        if pd.notna(scheme_goal):
+            answer += f"Goal: {scheme_goal}\n"
+        if pd.notna(eligibility):
+            answer += f"Eligibility: {eligibility}\n"
+        if pd.notna(benefits):
+            answer += f"Benefits: {benefits}\n"
+        if pd.notna(total_returns):
+            answer += f"Returns: {total_returns}\n"
+        if pd.notna(time_duration):
+            answer += f"Duration: {time_duration}\n"
         if pd.notna(row['scheme_website']):
             answer += f"Website: {row['scheme_website']}\n"
         answer += "\n"
@@ -381,6 +416,9 @@ else:
 def scheme_detail():
     scheme_name = request.args.get("name", "").strip().lower()
     lang = request.args.get("lang", "en")
+    location = request.args.get("location", "").strip()
+    print(f"Language requested for scheme detail: {lang}")
+    print(f"Location requested for scheme detail: {location}")
 
     def normalize(text):
         return " ".join(text.lower().strip().split())
@@ -388,6 +426,17 @@ def scheme_detail():
     name_col = get_col("scheme_name", lang)
     df_schemes["normalized_name"] = df_schemes[name_col].astype(str).apply(normalize)
     matched = df_schemes[df_schemes["normalized_name"] == normalize(scheme_name)]
+    
+    # If we have location parameter and multiple matches, filter by location as well
+    if not matched.empty and len(matched) > 1 and location:
+        # Filter for schemes that match the location or have 'All' for location
+        location_match = matched[
+            (matched["location"].fillna("All").astype(str).str.lower().str.contains("all")) |
+            (matched["location"].fillna("All").astype(str).str.lower().str.contains(location.lower()))
+        ]
+        # Only use location filtered results if we found any
+        if not location_match.empty:
+            matched = location_match
 
     if matched.empty:
         return jsonify({"error": f"Scheme '{scheme_name}' not found."}), 404
@@ -484,6 +533,10 @@ def register_scheme():
     scheme_name = data.get("scheme_name")
     amount_paid = data.get("amount_paid")
     start_date = data.get("start_date")
+    location = data.get("location", "")
+    lang = data.get("lang", "en")
+    print(f"Language requested for scheme registration: {lang}")
+    print(f"Location for scheme registration: {location}")
 
     if not scheme_name:
         return jsonify({"error": "Missing scheme_name"}), 400
@@ -493,7 +546,20 @@ def register_scheme():
 
     norm_name = normalize(scheme_name)
     df_schemes["normalized_name"] = df_schemes["scheme_name"].astype(str).apply(normalize)
+    
+    # First try to find an exact match for the scheme
     match = df_schemes[df_schemes["normalized_name"] == norm_name]
+    
+    # If we have a location filter and multiple matches, filter by location as well
+    if not match.empty and len(match) > 1 and location:
+        # Filter for schemes that match the location or have 'All' for location
+        location_match = match[
+            (match["location"].fillna("All").astype(str).str.lower().str.contains("all")) |
+            (match["location"].fillna("All").astype(str).str.lower().str.contains(location.lower()))
+        ]
+        # Only use location filtered results if we found any
+        if not location_match.empty:
+            match = location_match
 
     if match.empty:
         return jsonify({"error": f"Scheme '{scheme_name}' not found."}), 404
@@ -523,7 +589,8 @@ def register_scheme():
     response = {
         "scheme_name": scheme_name,
         "predicted_amount": round(predicted_amount, 2),
-        "predicted_duration_months": predicted_duration
+        "predicted_duration_months": predicted_duration,
+        "location": location or scheme.get("location", "All")
     }
 
     lower_bound = 0.8 * predicted_amount
@@ -542,7 +609,7 @@ def register_scheme():
     else:
         response["note"] = "No amount entered. Using predicted amount."
 
-    print(f"[REGISTERED] Scheme: {scheme_name} | Recommended Amount: ₹{predicted_amount} | Duration: {predicted_duration} months | Start: {start_date}")
+    print(f"[REGISTERED] Scheme: {scheme_name} | Recommended Amount: ₹{predicted_amount} | Duration: {predicted_duration} months | Start: {start_date} | Location: {location}")
 
     return jsonify({
         "message": "Registration successful (with smart amount and duration prediction).",
