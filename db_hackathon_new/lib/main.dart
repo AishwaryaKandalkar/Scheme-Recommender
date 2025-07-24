@@ -14,6 +14,8 @@ import 'screens/my_schemes_page.dart';
 import 'screens/agent_login_screen.dart';
 import 'screens/agent_register_screen.dart';
 import 'providers/language_provider.dart';
+import 'providers/voice_navigation_provider.dart';
+import 'services/voice_navigation_service.dart';
 import 'package:provider/provider.dart';
 import '../gen_l10n/app_localizations.dart';
 
@@ -26,10 +28,13 @@ void main() async {
 class SchemeFinderApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => LanguageProvider(),
-      child: Consumer<LanguageProvider>(
-        builder: (context, langProvider, _) {
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
+        ChangeNotifierProvider(create: (_) => VoiceNavigationProvider()),
+      ],
+      child: Consumer2<LanguageProvider, VoiceNavigationProvider>(
+        builder: (context, langProvider, voiceProvider, _) {
           return MaterialApp(
             title: 'SchemeFinder',
             debugShowCheckedModeBanner: false,
@@ -39,6 +44,18 @@ class SchemeFinderApp extends StatelessWidget {
               Locale('hi'),
               Locale('mr'),
             ],
+            theme: ThemeData(
+              // High contrast theme for better accessibility
+              brightness: Brightness.light,
+              primaryColor: Colors.blue.shade700,
+              textTheme: TextTheme(
+                bodyMedium: TextStyle(fontSize: 16.0), // Larger default text
+              ),
+              buttonTheme: ButtonThemeData(
+                minWidth: 88.0,
+                height: 48.0, // Larger touch targets
+              ),
+            ),
             localizationsDelegates: [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
@@ -46,6 +63,21 @@ class SchemeFinderApp extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
             initialRoute: '/language', // start from language screen
+            builder: (context, child) {
+              // Apply global accessibility features
+              return MediaQuery(
+                // Enable large fonts if needed
+                data: MediaQuery.of(context).copyWith(
+                  textScaleFactor: 1.1, // Slightly larger text by default
+                ),
+                child: Semantics(
+                  // Make the app more accessible
+                  container: true,
+                  explicitChildNodes: true,
+                  child: child!,
+                ),
+              );
+            },
             routes: {
                   '/': (_) => WelcomeScreen(),
                   '/location': (_) => LocationAccessScreen(),

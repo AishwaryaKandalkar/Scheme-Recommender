@@ -1,26 +1,37 @@
-# Use official Python image with slim variant for smaller image size
-FROM python:3.10-slim
+# Use NVIDIA CUDA image as base for GPU support
+FROM nvidia/cuda:12.0.1-runtime-ubuntu22.04
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PORT=5000
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
 
 # Set the working directory
 WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
+    python3.10 \
+    python3-pip \
     python3-dev \
+    build-essential \
+    curl \
+    git \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Make python3 the default
+RUN ln -sf /usr/bin/python3 /usr/bin/python && \
+    ln -sf /usr/bin/pip3 /usr/bin/pip
 
 # Copy requirements first to leverage Docker cache
 COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --upgrade pip && \
+    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application

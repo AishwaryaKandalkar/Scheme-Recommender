@@ -3,6 +3,8 @@ import '../gen_l10n/app_localizations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/voice_navigation_service.dart';
 
 /// The welcome screen for the Scheme Recommender app.
 /// Shows app features and navigation actions.
@@ -12,34 +14,42 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
-  FlutterTts? _flutterTts;
+  final VoiceNavigationService _voiceService = VoiceNavigationService();
+  bool isVoiceEnabled = true;
+  bool isListening = false;
   static const MethodChannel _voiceChannel = MethodChannel('voice_channel');
 
   @override
   void initState() {
     super.initState();
-    _initTts();
+    _initVoiceNavigation();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _speak("Welcome to Scheme Recommender! Your AI-powered financial companion for discovering government schemes.");
+      _speak("Welcome to Scheme Recommender! Your AI-powered financial companion for discovering government schemes. Would you like to enable voice navigation for accessibility throughout the app?");
     });
   }
 
   @override
   void dispose() {
-    _flutterTts?.stop();
+    _voiceService.stopSpeaking();
     super.dispose();
   }
 
-  void _initTts() async {
-    _flutterTts = FlutterTts();
-    await _flutterTts?.setLanguage("en-US");
-    await _flutterTts?.setSpeechRate(0.5);
-    await _flutterTts?.setVolume(1.0);
-    await _flutterTts?.setPitch(1.0);
+  Future<void> _initVoiceNavigation() async {
+    await _voiceService.init();
+    setState(() {
+      isVoiceEnabled = _voiceService.isVoiceEnabled;
+    });
+  }
+
+  Future<void> _toggleVoiceNavigation() async {
+    await _voiceService.toggleVoiceNavigation();
+    setState(() {
+      isVoiceEnabled = _voiceService.isVoiceEnabled;
+    });
   }
 
   Future<void> _speak(String text) async {
-    await _flutterTts?.speak(text);
+    await _voiceService.speak(text);
   }
 
   void _speakAppOverview() {
@@ -74,7 +84,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     }
   }
 
-  static List<Map<String, dynamic>> features(BuildContext context) => [
+  List<Map<String, dynamic>> features(BuildContext context) => [
+        {
+          'icon': Icons.accessibility_new,
+          'title': 'Voice Navigation',
+          'description': 'Navigate and use the app with voice commands - ideal for blind users or hands-free operation.',
+          'color': isVoiceEnabled ? Colors.green : Colors.grey,
+          'action': _toggleVoiceNavigation,
+          'actionIcon': isVoiceEnabled ? Icons.toggle_on : Icons.toggle_off,
+        },
         {
           'icon': Icons.location_on,
           'title': AppLocalizations.of(context)!.locationBased,
@@ -158,6 +176,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           ),
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _toggleVoiceNavigation,
+        tooltip: 'Toggle Voice Navigation',
+        child: Icon(
+          isVoiceEnabled ? Icons.mic : Icons.mic_off,
+          color: isVoiceEnabled ? Colors.white : Colors.grey,
+        ),
+      ),
     );
   }
 }
@@ -171,7 +197,7 @@ class _WelcomeScreenContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final features = _WelcomeScreenState.features(context);
+    final features = parent.features(context);
 
     return Column(
       children: [
@@ -286,6 +312,20 @@ class _WelcomeScreenContent extends StatelessWidget {
                         textAlign: TextAlign.center,
                         style: const TextStyle(color: Color(0xFF7F8C8D), fontSize: 15),
                       ),
+                      if (feature.containsKey('action')) ...[
+                        const SizedBox(height: 15),
+                        ElevatedButton.icon(
+                          onPressed: feature['action'],
+                          icon: Icon(feature['actionIcon'] ?? Icons.arrow_forward),
+                          label: Text(feature['title'] == 'Voice Navigation' ? 
+                              (parent.isVoiceEnabled ? 'Enabled (Tap to Disable)' : 'Disabled (Tap to Enable)') : 
+                              'Activate'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: feature['color'],
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),

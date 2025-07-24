@@ -8,23 +8,33 @@ import pickle
 from datetime import timedelta
 from sklearn.feature_extraction.text import TfidfVectorizer
 from dotenv import load_dotenv
+import logging
 
 # Load environment variables from .env file if present
 load_dotenv()
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Get configuration from environment variables
 PORT = int(os.getenv('PORT', 5000))
 HOST = os.getenv('HOST', '0.0.0.0')
 DATASET_PATH = os.getenv('DATASET_PATH', 'datasets')
 MODELS_PATH = os.getenv('MODELS_PATH', 'models')
+USE_OPENCHAT = os.getenv('USE_OPENCHAT', 'False').lower() in ('true', '1', 't')
+OPENCHAT_MODEL = os.getenv('OPENCHAT_MODEL', 'openchat/openchat_3.5')
 
 app = Flask(__name__)
 
 # Load schemes dataset
 schemes_path = os.path.join(DATASET_PATH, "financial_inclusion_schemes_translated_final_updated.csv")
-print(f"Loading schemes data from: {schemes_path}")
+logger.info(f"Loading schemes data from: {schemes_path}")
 df_schemes = pd.read_csv(schemes_path)
-print("Available columns in schemes dataset:", df_schemes.columns.tolist())
+logger.info("Available columns in schemes dataset: %s", df_schemes.columns.tolist())
 df_schemes['text_blob'] = (
     df_schemes['scheme_goal'].fillna('') + ". " +
     df_schemes['eligibility'].fillna('') + ". " +
@@ -33,6 +43,21 @@ df_schemes['text_blob'] = (
     df_schemes['time_duration'].fillna('')
 )
 model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+
+# Initialize OpenChat-based chatbot if enabled
+financial_chatbot = None
+if USE_OPENCHAT:
+    try:
+        from financial_chatbot import create_financial_chatbot
+        logger.info(f"Initializing OpenChat-based financial chatbot with model: {OPENCHAT_MODEL}")
+        # Defer initialization to first use to save memory during startup
+        logger.info("OpenChat will be initialized on first use")
+    except ImportError as e:
+        logger.error(f"Could not import financial_chatbot module: {str(e)}")
+        logger.warning("Using basic chatbot functionality only")
+        USE_OPENCHAT = False
+else:
+    logger.info("OpenChat integration is disabled. Using basic chatbot functionality.")
 def get_col(col, lang):
     if lang == "hi" and f"{col}_hi" in df_schemes.columns:
         print(f"Using Hindi column: {col}_hi")
@@ -366,14 +391,40 @@ def eligible_schemes():
 
 @app.route("/chatbot", methods=["POST"])
 def chatbot():
+    global financial_chatbot
+    
     data = request.get_json()
     question = data.get("question", "").strip()
     lang = data.get("lang", "en")
-    print(f"Language requested for chatbot: {lang}")
+    logger.info(f"Language requested for chatbot: {lang}")
+    logger.info(f"Question: {question}")
     
     if not question:
         return jsonify({"answer": "Please provide a question."}), 400
-
+    
+    # Use OpenChat-based chatbot if enabled
+    if USE_OPENCHAT:
+        try:
+            # Lazy initialization of OpenChat model on first use
+            if financial_chatbot is None:
+                logger.info("Initializing OpenChat model on first use")
+                from financial_chatbot import create_financial_chatbot
+                financial_chatbot = create_financial_chatbot(df_schemes, model_name=OPENCHAT_MODEL)
+                logger.info("OpenChat financial chatbot initialized successfully")
+            
+            logger.info("Using OpenChat financial chatbot")
+            answer = financial_chatbot.get_response(question, language=lang)
+            return jsonify({
+                "answer": answer.strip(), 
+                "model": "openchat",
+                "language": lang
+            })
+        except Exception as e:
+            logger.error(f"OpenChat error: {str(e)}")
+            logger.info("Falling back to basic chatbot due to error")
+    
+    # Fall back to basic embedding-based search if OpenChat is not available or fails
+    logger.info("Using basic embedding-based scheme search")
     question_embedding = model.encode(question, convert_to_tensor=True)
     scheme_texts = df_schemes['text_blob'].tolist()
     scheme_embeddings = model.encode(scheme_texts, convert_to_tensor=True)
@@ -404,7 +455,11 @@ def chatbot():
         if pd.notna(row['scheme_website']):
             answer += f"Website: {row['scheme_website']}\n"
         answer += "\n"
-    return jsonify({"answer": answer.strip()})
+    return jsonify({
+        "answer": answer.strip(), 
+        "model": "basic",
+        "language": lang
+    })
 
 
 

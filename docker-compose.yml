@@ -9,6 +9,8 @@ services:
       - ./backend-flask:/app
       - ./datasets:/app/datasets
       - ./models:/app/models
+      # Cache directory for downloaded HuggingFace models
+      - huggingface-cache:/root/.cache/huggingface
     ports:
       - "5000:5000"
     environment:
@@ -19,10 +21,25 @@ services:
       - HOST=0.0.0.0
       - DATASET_PATH=datasets
       - MODELS_PATH=models
+      # Set to true to enable OpenChat model
+      - USE_OPENCHAT=true
+      - OPENCHAT_MODEL=openchat/openchat_3.5
+      # Hardware acceleration settings
+      - CUDA_VISIBLE_DEVICES=0
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/"]
       interval: 30s
       timeout: 10s
       retries: 5
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     restart: unless-stopped
     command: python -u app.py
+
+volumes:
+  huggingface-cache:
