@@ -9,7 +9,7 @@ import '../widgets/voice_navigation_widget.dart';
 import '../widgets/accessible_widgets.dart';
 
 // TODO: Move to config or env for production
-const String chatbotApiUrl = 'http://10.166.220.251:5000/chatbot';
+const String chatbotApiUrl = 'http://192.168.1.4:5000/chatbot';
 
 class ChatbotScreen extends StatefulWidget {
   @override

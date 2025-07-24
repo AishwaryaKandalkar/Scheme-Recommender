@@ -27,7 +27,7 @@ Future<Map<String, dynamic>?> _fetchProfile() async {
 }
 
 Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile, String lang) async {
-  final url = Uri.parse('http://10.166.220.251:5000/recommend');
+  final url = Uri.parse('http://192.168.1.4:5000/recommend');
   final payload = Map<String, dynamic>.from(profile);
   payload['lang'] = lang; // Pass language to backend
 
@@ -45,7 +45,7 @@ Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile, String lang) 
 }
 
 Future<List<dynamic>?> _fetchEligibleSchemes(Map<String, dynamic> profile, String lang) async {
-  final url = Uri.parse('http://10.166.220.251:5000/eligible_schemes');
+  final url = Uri.parse('http://192.168.1.4:5000/eligible_schemes');
   // Add language parameter to the profile
   profile['lang'] = lang; // Pass language to backend
   

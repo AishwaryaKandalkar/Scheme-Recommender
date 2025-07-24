@@ -141,7 +141,7 @@ class __SchemeDetailScreenStateState extends State<_SchemeDetailScreenState> {
     }
     
     final url = Uri.parse(
-        'http://10.166.220.251:5000/scheme_detail?name=${Uri.encodeComponent(widget.schemeName)}&lang=${widget.lang}&location=${Uri.encodeComponent(userLocation)}');
+        'http://192.168.1.4:5000/scheme_detail?name=${Uri.encodeComponent(widget.schemeName)}&lang=${widget.lang}&location=${Uri.encodeComponent(userLocation)}');
 
     try {
       final response = await http.get(url);
@@ -170,7 +170,7 @@ class __SchemeDetailScreenStateState extends State<_SchemeDetailScreenState> {
 
   Future<void> fetchPrediction() async {
     final url = Uri.parse(
-        'http://10.166.220.251:5000/predict_limits?scheme_name=${Uri.encodeComponent(widget.schemeName)}&lang=${widget.lang}');
+        'http://192.168.1.4:5000/predict_limits?scheme_name=${Uri.encodeComponent(widget.schemeName)}&lang=${widget.lang}');
 
     try {
       final response = await http.get(url);
