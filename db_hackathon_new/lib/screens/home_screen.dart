@@ -42,7 +42,7 @@ class HomeScreen extends StatelessWidget {
       'situation': profile['situation'] ?? loc.defaultSituation,
     };
     print('Sending to backend: $data');
-    final url = Uri.parse('http://192.168.1.2:5000/recommend');
+    final url = Uri.parse('http://10.146.241.105:5000/recommend');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},

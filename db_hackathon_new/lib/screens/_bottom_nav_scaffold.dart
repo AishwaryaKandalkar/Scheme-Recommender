@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../gen_l10n/app_localizations.dart';
 import 'scheme_detail_screen.dart';
 
 class _BottomNavScaffold extends StatefulWidget {
@@ -30,6 +31,7 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
   int _selectedIndex = 0;
 
   Widget _buildHomeContent() {
+    final loc = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
@@ -39,7 +41,7 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
             Padding(
               padding: const EdgeInsets.only(top: 24, left: 24, right: 24, bottom: 8),
               child: Text(
-                'Welcome! Here are the schemes you are eligible for.',
+                loc.welcomeSchemes,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 22,
@@ -57,7 +59,7 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
                     child: TextFormField(
                       controller: widget.goalController,
                       decoration: InputDecoration(
-                        hintText: 'Type your goal or need (optional)',
+                        hintText: loc.typeGoalOrNeed,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                         prefixIcon: Icon(Icons.search, color: Colors.blueAccent),
                         contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -80,7 +82,7 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
                             height: 16,
                             child: CircularProgressIndicator(strokeWidth: 2))
                         : Icon(Icons.search),
-                    label: widget.loading ? Text('') : Text('Find'),
+                    label: widget.loading ? Text('') : Text(loc.find),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blueAccent,
                       shape: RoundedRectangleBorder(
@@ -106,7 +108,7 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
                         children: [
                           Icon(Icons.info_outline, color: Colors.grey, size: 48),
                           SizedBox(height: 10),
-                          Text('No eligible recommendations found.', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                          Text(loc.noRecommendations, style: TextStyle(fontSize: 16, color: Colors.grey)),
                         ],
                       ),
                     )
@@ -186,7 +188,7 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
                                         children: [
                                           Icon(Icons.flag, color: Colors.green, size: 20),
                                           SizedBox(width: 8),
-                                          Expanded(child: Text('Goal: ${scheme['scheme_goal']}', style: TextStyle(fontSize: 16))),
+                                          Expanded(child: Text('${loc.goal}: ${scheme['scheme_goal']}', style: TextStyle(fontSize: 16))),
                                         ],
                                       ),
                                     if ((scheme['benefits'] ?? '').toString().isNotEmpty)
@@ -195,7 +197,7 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
                                         children: [
                                           Icon(Icons.thumb_up, color: Colors.blueAccent, size: 20),
                                           SizedBox(width: 8),
-                                          Expanded(child: Text('Benefits: ${scheme['benefits']}', style: TextStyle(fontSize: 16))),
+                                          Expanded(child: Text('${loc.benefits}: ${scheme['benefits']}', style: TextStyle(fontSize: 16))),
                                         ],
                                       ),
                                     if ((scheme['total_returns'] ?? '').toString().isNotEmpty)
@@ -204,7 +206,7 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
                                         children: [
                                           Icon(Icons.trending_up, color: Colors.purple, size: 20),
                                           SizedBox(width: 8),
-                                          Expanded(child: Text('Returns: ${scheme['total_returns']}', style: TextStyle(fontSize: 16))),
+                                          Expanded(child: Text('${loc.returns}: ${scheme['total_returns']}', style: TextStyle(fontSize: 16))),
                                         ],
                                       ),
                                     if ((scheme['time_duration'] ?? '').toString().isNotEmpty)
@@ -213,7 +215,7 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
                                         children: [
                                           Icon(Icons.timer, color: Colors.teal, size: 20),
                                           SizedBox(width: 8),
-                                          Expanded(child: Text('Duration: ${scheme['time_duration']}', style: TextStyle(fontSize: 16))),
+                                          Expanded(child: Text('${loc.duration}: ${scheme['time_duration']}', style: TextStyle(fontSize: 16))),
                                         ],
                                       ),
                                     if ((scheme['scheme_website'] ?? '').toString().isNotEmpty)
@@ -222,7 +224,7 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
                                         children: [
                                           Icon(Icons.link, color: Colors.indigo, size: 20),
                                           SizedBox(width: 8),
-                                          Expanded(child: Text('Website: ${scheme['scheme_website']}', style: TextStyle(fontSize: 16, color: Colors.indigo))),
+                                          Expanded(child: Text('${loc.website}: ${scheme['scheme_website']}', style: TextStyle(fontSize: 16, color: Colors.indigo))),
                                         ],
                                       ),
                                     if ((scheme['similarity_score'] ?? '').toString().isNotEmpty)
@@ -231,7 +233,7 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
                                         children: [
                                           Icon(Icons.score, color: Colors.deepOrange, size: 20),
                                           SizedBox(width: 8),
-                                          Expanded(child: Text('Match Score: ${scheme['similarity_score']?.toStringAsFixed(2) ?? ''}', style: TextStyle(fontSize: 16))),
+                                          Expanded(child: Text('${loc.matchScore}: ${scheme['similarity_score']?.toStringAsFixed(2) ?? ''}', style: TextStyle(fontSize: 16))),
                                         ],
                                       ),
                                   ],
@@ -274,13 +276,16 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
   }
 
   Widget _buildTrackerContent() {
-    return Center(child: Text('Tracker page coming soon!', style: TextStyle(fontSize: 18)));
+    final loc = AppLocalizations.of(context)!;
+    return Center(child: Text(loc.trackerComingSoon, style: TextStyle(fontSize: 18)));
   }
   Widget _buildProfileContent() {
-    return Center(child: Text('Profile page coming soon!', style: TextStyle(fontSize: 18)));
+    final loc = AppLocalizations.of(context)!;
+    return Center(child: Text(loc.profileComingSoon, style: TextStyle(fontSize: 18)));
   }
   Widget _buildMicroLoansContent() {
-    return Center(child: Text('Micro Loans page coming soon!', style: TextStyle(fontSize: 18)));
+    final loc = AppLocalizations.of(context)!;
+    return Center(child: Text(loc.microLoansComingSoon, style: TextStyle(fontSize: 18)));
   }
 
   List<Widget> get _tabContents => [
@@ -292,6 +297,7 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -314,22 +320,22 @@ class _BottomNavScaffoldState extends State<_BottomNavScaffold> {
             _selectedIndex = index;
           });
         },
-        items: const [
+        items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'Home',
+            label: loc.home,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.track_changes),
-            label: 'Tracker',
+            label: loc.tracker,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: 'Profile',
+            label: loc.profile,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.account_balance_wallet),
-            label: 'Micro Loans',
+            label: loc.microLoans,
           ),
         ],
       ),

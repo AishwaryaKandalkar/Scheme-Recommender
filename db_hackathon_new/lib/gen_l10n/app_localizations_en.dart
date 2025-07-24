@@ -142,7 +142,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get benefits => 'Benefits';
 
   @override
-  String get returns => 'Returns';
+  String get returns => 'Return';
 
   @override
   String get duration => 'Duration';
@@ -206,4 +206,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileCreationTitle => 'Create Your Profile';
+
+  @override
+  String get welcomeSchemes =>
+      'Welcome! Here are the schemes you are eligible for.';
+
+  @override
+  String get typeGoalOrNeed => 'Type your goal or need (optional)';
+
+  @override
+  String get find => 'Find';
+
+  @override
+  String get noRecommendations => 'No eligible recommendations found.';
+
+  @override
+  String get matchScore => 'Match Score';
+
+  @override
+  String get trackerComingSoon => 'Tracker page coming soon!';
+
+  @override
+  String get profileComingSoon => 'Profile page coming soon!';
+
+  @override
+  String get microLoansComingSoon => 'Micro Loans page coming soon!';
+
+  @override
+  String get home => 'Home';
+
+  @override
+  String get tracker => 'Tracker';
+
+  @override
+  String get profile => 'Profile';
+
+  @override
+  String get microLoans => 'Micro Loans';
+
+  @override
+  String welcomeUser(Object user) {
+    return 'Welcome, $user!';
+  }
+
+  @override
+  String get searchGoalOrNeed => 'Search your goal or need';
+
+  @override
+  String get risk => 'Risk';
+
+  @override
+  String get term => 'Term';
+
+  @override
+  String get supportComingSoon => 'Support page coming soon!';
+
+  @override
+  String get community => 'Community';
+
+  @override
+  String get support => 'Support';
 }

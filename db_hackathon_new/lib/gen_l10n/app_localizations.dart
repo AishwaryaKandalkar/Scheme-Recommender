@@ -361,7 +361,7 @@ abstract class AppLocalizations {
   /// No description provided for @returns.
   ///
   /// In en, this message translates to:
-  /// **'Returns'**
+  /// **'Return'**
   String get returns;
 
   /// No description provided for @duration.
@@ -489,6 +489,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Create Your Profile'**
   String get profileCreationTitle;
+
+  /// No description provided for @welcomeSchemes.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome! Here are the schemes you are eligible for.'**
+  String get welcomeSchemes;
+
+  /// No description provided for @typeGoalOrNeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Type your goal or need (optional)'**
+  String get typeGoalOrNeed;
+
+  /// No description provided for @find.
+  ///
+  /// In en, this message translates to:
+  /// **'Find'**
+  String get find;
+
+  /// No description provided for @noRecommendations.
+  ///
+  /// In en, this message translates to:
+  /// **'No eligible recommendations found.'**
+  String get noRecommendations;
+
+  /// No description provided for @matchScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Match Score'**
+  String get matchScore;
+
+  /// No description provided for @trackerComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracker page coming soon!'**
+  String get trackerComingSoon;
+
+  /// No description provided for @profileComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile page coming soon!'**
+  String get profileComingSoon;
+
+  /// No description provided for @microLoansComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Micro Loans page coming soon!'**
+  String get microLoansComingSoon;
+
+  /// No description provided for @home.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
+  /// No description provided for @tracker.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracker'**
+  String get tracker;
+
+  /// No description provided for @profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profile;
+
+  /// No description provided for @microLoans.
+  ///
+  /// In en, this message translates to:
+  /// **'Micro Loans'**
+  String get microLoans;
+
+  /// No description provided for @welcomeUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome, {user}!'**
+  String welcomeUser(Object user);
+
+  /// No description provided for @searchGoalOrNeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Search your goal or need'**
+  String get searchGoalOrNeed;
+
+  /// No description provided for @risk.
+  ///
+  /// In en, this message translates to:
+  /// **'Risk'**
+  String get risk;
+
+  /// No description provided for @term.
+  ///
+  /// In en, this message translates to:
+  /// **'Term'**
+  String get term;
+
+  /// No description provided for @supportComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Support page coming soon!'**
+  String get supportComingSoon;
+
+  /// No description provided for @community.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get community;
+
+  /// No description provided for @support.
+  ///
+  /// In en, this message translates to:
+  /// **'Support'**
+  String get support;
 }
 
 class _AppLocalizationsDelegate

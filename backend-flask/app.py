@@ -10,7 +10,7 @@ from datetime import timedelta
 app = Flask(__name__)
 
 # Load schemes dataset
-df_schemes = pd.read_csv("C:/Users/USER/Documents/projects/Scheme-Recommender/datasets/financial_inclusion_schemes_1000_v3.csv")
+df_schemes = pd.read_csv("C:/Users/USER/Documents/projects/Scheme-Recommender/datasets/financial_inclusion_schemes_translated_final.csv")
 df_schemes['text_blob'] = (
     df_schemes['scheme_goal'].fillna('') + ". " +
     df_schemes['eligibility'].fillna('') + ". " +
@@ -19,6 +19,15 @@ df_schemes['text_blob'] = (
     df_schemes['time_duration'].fillna('')
 )
 model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+def get_col(col, lang):
+    print("HERE")
+    if lang == "hi" and f"{col}_hi" in df_schemes.columns:
+        print("here")
+        print(f"{col}_hi")
+        return f"{col}_hi"
+    elif lang == "mr" and f"{col}_mr" in df_schemes.columns:
+        return f"{col}_mr"
+    return col
 
 # Load investment data
 df_investments = pd.read_csv("C:/Users/USER/Documents/projects/Scheme-Recommender/datasets/user_investments.csv")
@@ -86,7 +95,7 @@ def filter_by_profile(user, df):
         (df["age_group"].fillna("All").apply(lambda ag: age_matches(user["age"], ag)))
     ].reset_index(drop=True)
 
-def recommend_schemes(user_profile, user_text_description, top_k=3):
+def recommend_schemes(user_profile, user_text_description, lang="en", top_k=3):
     filtered_df = filter_by_profile(user_profile, df_schemes)
     user_embedding = model.encode(user_text_description, convert_to_tensor=True)
 
@@ -105,14 +114,22 @@ def recommend_schemes(user_profile, user_text_description, top_k=3):
     recommended = search_df.iloc[top_indices].copy()
     recommended["similarity_score"] = similarities[top_indices]
 
-    return recommended[[
-        "scheme_name", "scheme_goal", "benefits", "total_returns",
-        "time_duration", "scheme_website", "similarity_score"
-    ]]
+    # Always include both English and language columns so you can pick later
+    columns = [
+        "scheme_name", "scheme_goal", "benefits","application_process", "eligibility","total_returns",
+        "time_duration", "scheme_website", "similarity_score",
+        "scheme_name_hi", "scheme_goal_hi", "benefits_hi","application_process_hi", "eligibility_hi", "total_returns_hi", "time_duration_hi",
+        "scheme_name_mr", "scheme_goal_mr", "benefits_mr","application_process_mr", "eligibility_mr", "total_returns_mr", "time_duration_mr"
+    ]
+    # Only keep columns that exist in the DataFrame
+    columns = [col for col in columns if col in recommended.columns]
+    return recommended[columns]
 
 @app.route("/recommend", methods=["POST"])
 def recommend():
     data = request.get_json()
+    lang = data.get("lang", "en")
+    print(lang)  # Pass lang in request body
     required_fields = {"age", "gender", "social_category", "income_group", "location", "situation"}
     if not required_fields.issubset(set(data)):
         return jsonify({"error": f"Missing fields. Required: {', '.join(required_fields)}"}), 400
@@ -144,8 +161,22 @@ def recommend():
             return "N/A"
         return obj
 
-    result_json = clean_json(result_df.to_dict(orient="records"))
-    return jsonify({"recommended_schemes": result_json, "count": len(result_json)})
+    # Pick columns based on language
+    result_json = []
+    for row in result_df.to_dict(orient="records"):
+        result_json.append({
+            "scheme_name": row.get(get_col("scheme_name", lang), row.get("scheme_name")),
+            "scheme_goal": row.get(get_col("scheme_goal", lang), row.get("scheme_goal")),
+            "benefits": row.get(get_col("benefits", lang), row.get("benefits")),
+            "application_process": row.get(get_col("application_process", lang), row.get("application_process")),
+            "eligibility": row.get(get_col("eligibility", lang), row.get("eligibility")),
+            "total_returns": row.get(get_col("total_returns", lang), row.get("total_returns")),
+            "time_duration": row.get(get_col("time_duration", lang), row.get("time_duration")),
+            "scheme_website": row.get("scheme_website"),
+            "similarity_score": row.get("similarity_score"),
+        })
+    print(clean_json(result_json))
+    return jsonify({"recommended_schemes": clean_json(result_json), "count": len(result_json)})
 
 @app.route("/chatbot", methods=["POST"])
 def chatbot():
@@ -185,37 +216,70 @@ duration_model = pickle.load(open("C:/Users/USER/Documents/projects/Scheme-Recom
 @app.route("/scheme_detail", methods=["GET"])
 def scheme_detail():
     scheme_name = request.args.get("name", "").strip().lower()
-    if not scheme_name:
-        return jsonify({"error": "Scheme name is required."}), 400
+    lang = request.args.get("lang", "en")
 
     def normalize(text):
         return " ".join(text.lower().strip().split())
 
-    normalized_query = normalize(scheme_name)
-    df_schemes["normalized_name"] = df_schemes["scheme_name"].astype(str).apply(normalize)
-    matched = df_schemes[df_schemes["normalized_name"] == normalized_query]
+    name_col = get_col("scheme_name", lang)
+    df_schemes["normalized_name"] = df_schemes[name_col].astype(str).apply(normalize)
+    matched = df_schemes[df_schemes["normalized_name"] == normalize(scheme_name)]
 
     if matched.empty:
         return jsonify({"error": f"Scheme '{scheme_name}' not found."}), 404
 
     scheme = matched.iloc[0].to_dict()
-    scheme_duration = normalize_duration(scheme.get("time_duration"))
-    ret_min, ret_max = extract_return_range(scheme.get("total_returns"))
+    scheme_duration = normalize_duration(scheme.get(get_col("time_duration", lang)))
+    ret_min, ret_max = extract_return_range(scheme.get(get_col("total_returns", lang)))
 
-    def is_similar(row):
-        dur_similar = scheme_duration is not None and row["duration_months"] is not None and abs(row["duration_months"] - scheme_duration) <= 6
-        return_similar = (
-            ret_min is not None and ret_max is not None and
-            row["return_min"] is not None and row["return_max"] is not None and
-            not (row["return_max"] < ret_min or row["return_min"] > ret_max)
-        )
-        return dur_similar and return_similar
+    # Find investments with similar duration and greater returns
+    def is_similar_and_better(row):
+        row_ret_min, row_ret_max = extract_return_range(row.get("total_returns", ""))
+        # If scheme duration is N/A, consider all investments with greater returns
+        if scheme_duration is None and ret_max is not None:
+            return row_ret_max is not None and row_ret_max > ret_max
+        # If scheme returns is N/A, show investments with highest returns
+        if ret_max is None:
+            return True  # We'll sort and pick top 4 later
+        # Otherwise, match similar duration and greater returns
+        dur_similar = row["duration_months"] is not None and abs(row["duration_months"] - scheme_duration) <= 6
+        better_return = row_ret_max is not None and row_ret_max > ret_max
+        return dur_similar and better_return
 
-    similar_investments = df_investments[df_investments.apply(is_similar, axis=1)]
+    def get_investment_details(row):
+        details = {}
+        # Example logic, you can customize per investment type/name
+        details["risk"] = "High Risk"
+        details["demat_account_required"] = True
+        details["eligibility"] = "No eligibility criteria"
+        details["documents_required"] = ["PAN", "AADHAR"]
+        details["bank_account_required"] = True
+        return details
+
+    similar_investments = df_investments[df_investments.apply(is_similar_and_better, axis=1)].copy()
+    similar_investments["sort_return"] = similar_investments["total_returns"].apply(
+        lambda x: extract_return_range(x)[1] if extract_return_range(x)[1] is not None else 0
+    )
+    similar_investments = similar_investments.sort_values("sort_return", ascending=False).head(4)
+    # Add extra details to each investment
+    similar_investments["extra_details"] = similar_investments.apply(get_investment_details, axis=1)
+
     scheme["similar_investments"] = similar_investments[[
         "investment_type", "investment_name", "investment_amount",
-        "total_returns", "time_duration", "current_value"
+        "total_returns", "time_duration", "current_value", "extra_details"
     ]].to_dict(orient="records")
+
+    # Use language columns for response
+    response = {
+        "scheme_name": scheme.get(get_col("scheme_name", lang), scheme.get("scheme_name")),
+        "scheme_goal": scheme.get(get_col("scheme_goal", lang), scheme.get("scheme_goal")),
+        "benefits": scheme.get(get_col("benefits", lang), scheme.get("benefits")),
+        "total_returns": scheme.get(get_col("total_returns", lang), scheme.get("total_returns")),
+        "time_duration": scheme.get(get_col("time_duration", lang), scheme.get("time_duration")),
+        "scheme_website": scheme.get("scheme_website"),
+        "similar_investments": scheme.get("similar_investments", []),
+        # ...other fields...
+    }
 
     def clean(val):
         if isinstance(val, list):
@@ -226,7 +290,7 @@ def scheme_detail():
             return "N/A"
         return val
 
-    return jsonify({k: clean(v) for k, v in scheme.items()})
+    return jsonify({k: clean(v) for k, v in response.items()})
 
 @app.route("/register_scheme", methods=["POST"])
 def register_scheme():
@@ -287,6 +351,7 @@ def register_scheme():
         "message": "Registration successful (with smart amount and duration prediction).",
         "details": response
     }), 200
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)

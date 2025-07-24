@@ -207,4 +207,63 @@ class AppLocalizationsMr extends AppLocalizations {
 
   @override
   String get profileCreationTitle => 'Create Your Profile';
+
+  @override
+  String get welcomeSchemes => 'स्वागत आहे! आपल्यासाठी पात्र योजना येथे आहेत.';
+
+  @override
+  String get typeGoalOrNeed => 'आपला उद्देश किंवा गरज लिहा (ऐच्छिक)';
+
+  @override
+  String get find => 'शोधा';
+
+  @override
+  String get noRecommendations => 'पात्र शिफारसी सापडल्या नाहीत.';
+
+  @override
+  String get matchScore => 'जुळणी स्कोर';
+
+  @override
+  String get trackerComingSoon => 'ट्रॅकर पृष्ठ लवकरच येत आहे!';
+
+  @override
+  String get profileComingSoon => 'प्रोफाइल पृष्ठ लवकरच येत आहे!';
+
+  @override
+  String get microLoansComingSoon => 'मायक्रो लोन पृष्ठ लवकरच येत आहे!';
+
+  @override
+  String get home => 'मुख्यपृष्ठ';
+
+  @override
+  String get tracker => 'ट्रॅकर';
+
+  @override
+  String get profile => 'प्रोफाइल';
+
+  @override
+  String get microLoans => 'मायक्रो लोन';
+
+  @override
+  String welcomeUser(Object user) {
+    return 'स्वागत आहे, $user!';
+  }
+
+  @override
+  String get searchGoalOrNeed => 'आपला उद्देश किंवा गरज शोधा';
+
+  @override
+  String get risk => 'जोखीम';
+
+  @override
+  String get term => 'कालावधी';
+
+  @override
+  String get supportComingSoon => 'सपोर्ट पृष्ठ लवकरच येत आहे!';
+
+  @override
+  String get community => 'कम्युनिटी';
+
+  @override
+  String get support => 'सपोर्ट';
 }

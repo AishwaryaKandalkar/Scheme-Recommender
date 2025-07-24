@@ -3,10 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../gen_l10n/app_localizations.dart';
 
 import 'scheme_detail_screen.dart';
 import 'account_page.dart';
 import 'my_schemes_page.dart';
+import 'community_page.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -22,11 +24,14 @@ Future<Map<String, dynamic>?> _fetchProfile() async {
   return doc.data();
 }
 
-Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile) async {
-  final url = Uri.parse('http://192.168.1.2:5000/recommend');
+Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile, String lang) async {
+  final url = Uri.parse('http://10.146.241.105:5000/recommend');
+  final payload = Map<String, dynamic>.from(profile);
+  payload['lang'] = lang; // Pass language to backend
+
   final response = await http.post(
     url,
-    body: jsonEncode(profile),
+    body: jsonEncode(payload),
     headers: {'Content-Type': 'application/json'},
   );
 
@@ -79,7 +84,9 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
       'location': profile?['location'] ?? '',
     };
 
-    final result = await _fetchSchemes(payload);
+    final lang = Localizations.localeOf(context).languageCode; 
+    print(lang);// 'en', 'hi', 'mr'
+    final result = await _fetchSchemes(payload, lang);
     if (result != null) {
       setState(() {
         schemes = result;
@@ -111,6 +118,7 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     int totalPages = (schemes.length / 10).ceil();
     int startIdx = (currentPage - 1) * 10;
     int endIdx = (startIdx + 10).clamp(0, schemes.length);
@@ -125,27 +133,20 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
             children: [
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
-                color: Colors.white,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.menu, color: Colors.black87),
+                    SizedBox(width: 32),
                     Text(
-                      'Welcome, ${userName ?? 'User'}!',
+                      loc.welcomeUser(userName ?? loc.user),
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black),
                     ),
-                    Row(
-                      children: [
-                        Icon(Icons.notifications_none, color: Colors.black54),
-                        SizedBox(width: 8),
-                        CircleAvatar(
-                          backgroundColor: Colors.grey.shade400,
-                          child: Text(
-                            userName != null ? userName![0].toUpperCase() : '',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ],
+                    CircleAvatar(
+                      backgroundColor: Colors.grey.shade400,
+                      child: Text(
+                        userName != null ? userName![0].toUpperCase() : '',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ],
                 ),
@@ -158,12 +159,10 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                       child: TextFormField(
                         controller: goalController,
                         decoration: InputDecoration(
-                          hintText: 'Search your goal or need',
+                          hintText: loc.searchGoalOrNeed,
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
                           prefixIcon: Icon(Icons.search, color: Colors.pinkAccent),
                           contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                          filled: true,
-                          fillColor: Colors.white,
                         ),
                         minLines: 1,
                         maxLines: 2,
@@ -180,7 +179,7 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                       icon: loading
                           ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                           : Icon(Icons.search, color: Colors.white),
-                      label: loading ? Text('') : Text('Find', style: TextStyle(color: Colors.white)),
+                      label: loading ? Text('') : Text(loc.find, style: TextStyle(color: Colors.white)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.pinkAccent,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
@@ -196,58 +195,65 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                   child: Text(error, style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                 ),
               SizedBox(height: 10),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: pageSchemes.length,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 0.9,
-                ),
-                itemBuilder: (context, index) {
-                  final scheme = pageSchemes[index];
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => SchemeDetailScreen(schemeName: scheme['scheme_name'] ?? ''),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      padding: EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(Icons.auto_graph, color: Colors.pinkAccent, size: 28),
-                          SizedBox(height: 10),
-                          Text(
-                            scheme['scheme_name'] ?? '',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+              Container(
+                color: Colors.transparent,
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: pageSchemes.length,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 0.9,
+                  ),
+                  itemBuilder: (context, index) {
+                    final scheme = pageSchemes[index];
+                    return GestureDetector(
+                      onTap: () {
+                        final lang = Localizations.localeOf(context).languageCode; // 'en', 'hi', 'mr'
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => SchemeDetailScreen(
+                              schemeName: scheme['scheme_name'] ?? '',
+                              lang: lang, // Pass the language to the detail screen
+                            ),
                           ),
-                          SizedBox(height: 6),
-                          if (scheme['total_returns'] != null)
-                            Text('Return: ${scheme['total_returns']}', style: TextStyle(fontSize: 13)),
-                          if (scheme['risk'] != null)
-                            Text('Risk: ${scheme['risk']}', style: TextStyle(fontSize: 13)),
-                          if (scheme['time_duration'] != null)
-                            Text('Term: ${scheme['time_duration']}', style: TextStyle(fontSize: 13)),
-                        ],
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(Icons.auto_graph, color: Colors.pinkAccent, size: 28),
+                            SizedBox(height: 10),
+                            Text(
+                              scheme['scheme_name'] ?? '',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            SizedBox(height: 6),
+                            if (scheme['total_returns'] != null)
+                              Text('${loc.returns}: ${scheme['total_returns']}', style: TextStyle(fontSize: 13)),
+                            if (scheme['risk'] != null)
+                              Text('${loc.risk}: ${scheme['risk']}', style: TextStyle(fontSize: 13)),
+                            if (scheme['time_duration'] != null)
+                              Text('${loc.term}: ${scheme['time_duration']}', style: TextStyle(fontSize: 13)),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ],
           ),
@@ -257,17 +263,15 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
 
     List<Widget> _tabContents = [
       _buildHomeContent(),
-      Center(child: Text('Support page coming soon!', style: TextStyle(fontSize: 18))),
+      Center(child: Text(loc.supportComingSoon, style: TextStyle(fontSize: 18))),
       MySchemesPage(),
-      Center(child: Text('Micro Loans page coming soon!', style: TextStyle(fontSize: 18))),
-      Center(child: Text('Community page coming soon!', style: TextStyle(fontSize: 18))),
+      Center(child: Text(loc.microLoansComingSoon, style: TextStyle(fontSize: 18))),
+      CommunityPage(),
     ];
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          color: Color(0xFFF8F9FC),
-        ),
+        color: Colors.white,
         child: _tabContents[_selectedIndex],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -281,12 +285,12 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
             _selectedIndex = index;
           });
         },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.support_agent), label: 'Support'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet), label: 'Micro Loans'),
-          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Community'),
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: loc.home),
+          BottomNavigationBarItem(icon: Icon(Icons.support_agent), label: loc.support),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: loc.profile),
+          BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet), label: loc.microLoans),
+          BottomNavigationBarItem(icon: Icon(Icons.people), label: loc.community),
         ],
       ),
     );

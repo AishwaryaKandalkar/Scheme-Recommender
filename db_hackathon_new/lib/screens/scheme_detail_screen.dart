@@ -4,17 +4,31 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'investment_detail_screen.dart';
 
-class SchemeDetailScreen extends StatefulWidget {
+class SchemeDetailScreen extends StatelessWidget {
   final String schemeName;
+  final String lang;
 
-  SchemeDetailScreen({required this.schemeName});
+  const SchemeDetailScreen({Key? key, required this.schemeName, required this.lang}) : super(key: key);
 
   @override
-  _SchemeDetailScreenState createState() => _SchemeDetailScreenState();
+  Widget build(BuildContext context) {
+    return _SchemeDetailScreenState(schemeName: schemeName, lang: lang);
+  }
 }
 
-class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
+class _SchemeDetailScreenState extends StatefulWidget {
+  final String schemeName;
+  final String lang;
+
+  _SchemeDetailScreenState({required this.schemeName, required this.lang});
+
+  @override
+  __SchemeDetailScreenStateState createState() => __SchemeDetailScreenStateState();
+}
+
+class __SchemeDetailScreenStateState extends State<_SchemeDetailScreenState> {
   Map<String, dynamic>? schemeData;
   bool loading = true;
   String? error;
@@ -39,7 +53,7 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
 
   Future<void> fetchSchemeDetail() async {
     final url = Uri.parse(
-        'http://192.168.1.2:5000/scheme_detail?name=${Uri.encodeComponent(widget.schemeName)}');
+        'http://10.146.241.105:5000/scheme_detail?name=${Uri.encodeComponent(widget.schemeName)}&lang=${widget.lang}');
 
     try {
       final response = await http.get(url);
@@ -65,7 +79,7 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
 
   Future<void> fetchPrediction() async {
     final url = Uri.parse(
-        'http://192.168.1.2:5000/predict_limits?scheme_name=${Uri.encodeComponent(widget.schemeName)}');
+        'http://10.146.241.105:5000/predict_limits?scheme_name=${Uri.encodeComponent(widget.schemeName)}');
 
     try {
       final response = await http.get(url);
@@ -99,7 +113,7 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
     } else if (interval.contains('year')) {
       offset = Duration(days: 365);
     } else {
-      offset = Duration(days: 30); // default to 1 month
+      offset = Duration(days: 30);
     }
 
     setState(() {
@@ -203,16 +217,25 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
     if (value == null || value.isEmpty || value == "N/A") return SizedBox();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: RichText(
-        text: TextSpan(
-          style: TextStyle(color: Colors.black87),
-          children: [
-            TextSpan(
-                text: "$title: ",
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            TextSpan(text: value),
-          ],
-        ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.check_circle_outline, color: Colors.green, size: 20),
+          SizedBox(width: 6),
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                style: TextStyle(color: Colors.black87, fontSize: 14),
+                children: [
+                  TextSpan(
+                      text: "$title: ",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  TextSpan(text: value),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -221,31 +244,28 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
     if (predictedAmount == null && predictedDuration == null) return SizedBox();
 
     final amtText = predictedAmount != null
-        ? "💰 ₹${predictedAmount!.toStringAsFixed(0)} (±20%)"
+        ? "\u{1F4B0} ₹${predictedAmount!.toStringAsFixed(0)} (±20%)"
         : null;
 
     final durationText =
         predictedDuration != null ? "⏳ $predictedDuration months" : null;
 
-    return Container(
-      padding: EdgeInsets.all(12),
-      margin: EdgeInsets.only(top: 12, bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.blue.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blueAccent),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "🔍 Suggested by AI:",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          if (amtText != null) Text(amtText),
-          if (durationText != null) Text(durationText),
-          Text("These are inferred from the scheme using AI/ML."),
-        ],
+    return Card(
+      margin: EdgeInsets.only(top: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: Color(0xFFE6F0FA),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("🔍 Suggested by AI:",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            if (amtText != null) Text(amtText),
+            if (durationText != null) Text(durationText),
+            Text("These are inferred from the scheme using AI/ML."),
+          ],
+        ),
       ),
     );
   }
@@ -253,174 +273,361 @@ class _SchemeDetailScreenState extends State<SchemeDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xFFF7F8FA),
       appBar: AppBar(
-        title: Text(widget.schemeName),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Text("Scheme Details", style: TextStyle(color: Colors.black)),
+        iconTheme: IconThemeData(color: Colors.black),
       ),
       body: loading
           ? Center(child: CircularProgressIndicator())
           : error != null
               ? Center(child: Text(error!))
               : SingleChildScrollView(
-                  padding: EdgeInsets.all(16),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildDetail("Goal", schemeData?["scheme_goal"]),
-                      _buildDetail("Eligibility", schemeData?["eligibility"]),
-                      _buildDetail("Benefits", schemeData?["benefits"]),
-                      _buildDetail("Returns", schemeData?["total_returns"]),
-                      _buildDetail("Duration", schemeData?["time_duration"]),
-                      _buildDetail(
-                          "Application Process", schemeData?["application_process"]),
-                      _buildDetail(
-                          "Documents Required", schemeData?["required_documents"]),
-                      _buildDetail("Funding Agency", schemeData?["funding_agency"]),
-                      _buildDetail("Contact Details", schemeData?["contact_details"]),
-                      if (schemeData?["scheme_website"] != null &&
-                          schemeData!["scheme_website"].toString().startsWith("http"))
-                        GestureDetector(
-                          onTap: () =>
-                              _launchWebsite(schemeData!["scheme_website"]),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: Text(
-                              "Visit Official Website",
-                              style: TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline),
-                            ),
-                          ),
+                      // Scheme Image & Title
+                      SizedBox(height: 8),
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey.shade200),
                         ),
-                      _buildPredictionInfo(),
+                        child: Column(
+                          children: [
+                            SizedBox(height: 16),
+                            Image.asset(
+                              'assets/images/scheme_illustration.jpg',
+                              height: 120,
+                              fit: BoxFit.contain,
+                            ),
+                            SizedBox(height: 12),
+                            Text(
+                              widget.schemeName,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 6),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.star, color: Colors.orange, size: 18),
+                                SizedBox(width: 4),
+                                Text(
+                                  schemeData?["rating"] != null
+                                      ? "${schemeData!["rating"]} (${schemeData!["reviews"] ?? "Reviewed"})"
+                                      : "4.8 (2,134 Reviewed)",
+                                  style: TextStyle(
+                                    color: Colors.pink,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              schemeData?["scheme_goal"] ?? "",
+                              style: TextStyle(
+                                color: Colors.grey[700],
+                                fontSize: 13,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 16),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 18),
+                      // Overview & Benefits
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Scheme Overview & Benefits",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            ...[
+                              _buildDetail("Guaranteed annual returns", schemeData?["total_returns"]),
+                              _buildDetail("Eligibility", schemeData?["eligibility"]),
+                              _buildDetail("Benefits", schemeData?["benefits"]),
+                              _buildDetail("Duration", schemeData?["time_duration"]),
+                              _buildDetail("Application Process", schemeData?["application_process"]),
+                              _buildDetail("Documents Required", schemeData?["required_documents"]),
+                              _buildDetail("Funding Agency", schemeData?["funding_agency"]),
+                              _buildDetail("Contact Details", schemeData?["contact_details"]),
+                            ],
+                            if (schemeData?["scheme_website"] != null &&
+                                schemeData!["scheme_website"].toString().startsWith("http"))
+                              GestureDetector(
+                                onTap: () => _launchWebsite(schemeData!["scheme_website"]),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                  child: Text(
+                                    "Visit Official Website",
+                                    style: TextStyle(
+                                        color: Colors.blue,
+                                        decoration: TextDecoration.underline),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 18),
+                      // Investment Goal
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Eegister for the scheme",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Text(
+                                  "Current Investment",
+                                  style: TextStyle(color: Colors.grey[700]),
+                                ),
+                                Spacer(),
+                                Text(
+                                  predictedAmount != null
+                                      ? "₹${predictedAmount!.toStringAsFixed(0)}"
+                                      : "₹25,000",
+                                  style: TextStyle(
+                                    color: Colors.pink,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              "Adjust Investment Percentage (Max ₹${predictedAmount?.toStringAsFixed(0) ?? "10,000"})",
+                              style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                            ),
+                            Slider(
+                              value: double.tryParse(amountController.text) ?? (predictedAmount ?? 10000),
+                              min: 0,
+                              max: predictedAmount ?? 10000,
+                              divisions: 100,
+                              label: amountController.text,
+                              onChanged: (val) {
+                                amountController.text = val.toStringAsFixed(0);
+                                setState(() {});
+                              },
+                            ),
+                            SizedBox(height: 8),
+                            TextField(
+                              controller: amountController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: 'Enter Custom Amount',
+                                hintText: 'e.g., 2500',
+                                border: OutlineInputBorder(),
+                                errorText: amountError,
+                              ),
+                              onChanged: (val) {
+                                if (predictedAmount != null) {
+                                  final num? v = double.tryParse(val);
+                                  final lower = predictedAmount! * 0.8;
+                                  final upper = predictedAmount! * 1.2;
+                                  setState(() {
+                                    showAmountWarning =
+                                        v != null && (v < lower || v > upper);
+                                  });
+                                }
+                              },
+                            ),
+                            if (showAmountWarning)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 6.0),
+                                child: Text(
+                                  '⚠️ This amount is outside the expected range.',
+                                  style: TextStyle(color: Colors.orange[700]),
+                                ),
+                              ),
+                            SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Text('Registration date: '),
+                                Text(registrationDate == null
+                                    ? 'Not set'
+                                    : '${registrationDate!.toLocal()}'.split(' ')[0]),
+                                SizedBox(width: 8),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.pink,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  onPressed: () async {
+                                    final picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: registrationDate ?? DateTime.now(),
+                                      firstDate: DateTime(2000),
+                                      lastDate: DateTime.now().add(Duration(days: 365 * 5)),
+                                    );
+                                    if (picked != null) {
+                                      setState(() {
+                                        registrationDate = picked;
+                                      });
+                                      calculateDueDate();
+                                    }
+                                  },
+                                  child: Text('Pick Date'),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                            if (dueDate != null)
+                              Text(
+                                'Next due date: ${dueDate!.toLocal()}'.split(' ')[0],
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.pink,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                icon: Icon(Icons.how_to_reg),
+                                label: registering
+                                    ? Text('Registering...')
+                                    : Text('Invest Now'),
+                                onPressed: registering ? null : registerForScheme,
+                              ),
+                            ),
+                            if (registerMsg != null) ...[
+                              SizedBox(height: 12),
+                              Text(
+                                registerMsg!,
+                                style: TextStyle(
+                                  color: registerMsg!.contains('success')
+                                      ? Colors.green
+                                      : Colors.red,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 18),
+                      // Similar Investment Opportunities
                       if (schemeData?['similar_investments'] != null &&
                           schemeData!['similar_investments'] is List) ...[
-                        SizedBox(height: 24),
                         Text(
-                          '📊 Similar Investments',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          'Similar Investment Opportunities',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                         SizedBox(height: 8),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: List.generate(schemeData!['similar_investments'].length, (index) {
+                        SizedBox(
+                          height: 140, // Adjust height as needed for your card design
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: schemeData!['similar_investments'].length,
+                            separatorBuilder: (context, index) => SizedBox(width: 12),
+                            itemBuilder: (context, index) {
                               final sim = schemeData!['similar_investments'][index];
                               final simName = sim['investment_name'] ?? 'Unnamed';
                               final returns = sim['total_returns'] ?? 'N/A';
                               final duration = sim['time_duration'] ?? 'N/A';
-
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => SchemeDetailScreen(schemeName: simName),
+                              return Container(
+                                width: 200,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.pink.shade100),
+                                ),
+                                padding: EdgeInsets.all(12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(Icons.trending_up, color: Colors.pink, size: 18),
+                                        SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            simName,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  );
-                                },
-                                child: Container(
-                                  width: 200,
-                                  margin: EdgeInsets.symmetric(horizontal: 8),
-                                  padding: EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade100,
-                                    border: Border.all(color: Colors.blueGrey.shade100),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(simName,
-                                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                      SizedBox(height: 6),
-                                      Text("Returns: $returns"),
-                                      Text("Duration: $duration"),
-                                    ],
-                                  ),
+                                    SizedBox(height: 4),
+                                    Text("Returns: $returns", style: TextStyle(fontSize: 12)),
+                                    Text("Duration: $duration", style: TextStyle(fontSize: 12)),
+                                    Spacer(),
+                                    Align(
+                                      alignment: Alignment.bottomRight,
+                                      child: TextButton(
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.pink,
+                                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                            side: BorderSide(color: Colors.pink.shade100),
+                                          ),
+                                        ),
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => InvestmentDetailScreen(investment: sim),
+                                            ),
+                                          );
+                                        },
+                                        child: Text("View Details"),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               );
-                            }),
-                          ),
-                        ),
-                      ],
-                      Divider(height: 32, thickness: 1.5),
-                      TextField(
-                        controller: amountController,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: 'Amount you want to pay',
-                          border: OutlineInputBorder(),
-                          errorText: amountError,
-                        ),
-                        onChanged: (val) {
-                          if (predictedAmount != null) {
-                            final num? v = double.tryParse(val);
-                            final lower = predictedAmount! * 0.8;
-                            final upper = predictedAmount! * 1.2;
-                            setState(() {
-                              showAmountWarning =
-                                  v != null && (v < lower || v > upper);
-                            });
-                          }
-                        },
-                      ),
-                      if (showAmountWarning)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6.0),
-                          child: Text(
-                            '⚠️ This amount is outside the expected range.',
-                            style: TextStyle(color: Colors.orange[700]),
-                          ),
-                        ),
-                      SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Text('Registration date: '),
-                          Text(registrationDate == null
-                              ? 'Not set'
-                              : '${registrationDate!.toLocal()}'.split(' ')[0]),
-                          SizedBox(width: 8),
-                          ElevatedButton(
-                            onPressed: () async {
-                              final picked = await showDatePicker(
-                                context: context,
-                                initialDate: registrationDate ?? DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime.now().add(Duration(days: 365 * 5)),
-                              );
-                              if (picked != null) {
-                                setState(() {
-                                  registrationDate = picked;
-                                });
-                                calculateDueDate();
-                              }
                             },
-                            child: Text('Pick Date'),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      if (dueDate != null)
-                        Text(
-                          'Next due date: ${dueDate!.toLocal()}'.split(' ')[0],
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      SizedBox(height: 16),
-                      ElevatedButton.icon(
-                        icon: Icon(Icons.how_to_reg),
-                        label: registering
-                            ? Text('Registering...')
-                            : Text('Register for this Scheme'),
-                        onPressed: registering ? null : registerForScheme,
-                      ),
-                      if (registerMsg != null) ...[
-                        SizedBox(height: 12),
-                        Text(
-                          registerMsg!,
-                          style: TextStyle(
-                            color: registerMsg!.contains('success')
-                                ? Colors.green
-                                : Colors.red,
                           ),
                         ),
                       ],

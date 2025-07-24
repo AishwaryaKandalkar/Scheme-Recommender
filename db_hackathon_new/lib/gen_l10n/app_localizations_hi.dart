@@ -126,7 +126,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get welcome => 'स्वागत है';
 
   @override
-  String get user => 'उपयोगकर्ता';
+  String get user => 'यूज़र';
 
   @override
   String get recommendedSchemes => 'यहां आपकी सिफारिश की गई योजनाएं हैं:';
@@ -142,7 +142,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get benefits => 'लाभ';
 
   @override
-  String get returns => 'प्रतिफल';
+  String get returns => 'रिटर्न';
 
   @override
   String get duration => 'अवधि';
@@ -206,4 +206,63 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get profileCreationTitle => 'Create Your Profile';
+
+  @override
+  String get welcomeSchemes => 'स्वागत है! आपके लिए योग्य योजनाएँ यहाँ हैं।';
+
+  @override
+  String get typeGoalOrNeed => 'अपना लक्ष्य या आवश्यकता लिखें (वैकल्पिक)';
+
+  @override
+  String get find => 'खोजें';
+
+  @override
+  String get noRecommendations => 'कोई योग्य अनुशंसा नहीं मिली।';
+
+  @override
+  String get matchScore => 'मिलान स्कोर';
+
+  @override
+  String get trackerComingSoon => 'ट्रैकर पेज जल्द आ रहा है!';
+
+  @override
+  String get profileComingSoon => 'प्रोफाइल पेज जल्द आ रहा है!';
+
+  @override
+  String get microLoansComingSoon => 'माइक्रो लोन पेज जल्द आ रहा है!';
+
+  @override
+  String get home => 'होम';
+
+  @override
+  String get tracker => 'ट्रैकर';
+
+  @override
+  String get profile => 'प्रोफाइल';
+
+  @override
+  String get microLoans => 'माइक्रो लोन';
+
+  @override
+  String welcomeUser(Object user) {
+    return 'स्वागत है, $user!';
+  }
+
+  @override
+  String get searchGoalOrNeed => 'अपने लक्ष्य या आवश्यकता खोजें';
+
+  @override
+  String get risk => 'जोखिम';
+
+  @override
+  String get term => 'अवधि';
+
+  @override
+  String get supportComingSoon => 'सपोर्ट पेज जल्द आ रहा है!';
+
+  @override
+  String get community => 'कम्युनिटी';
+
+  @override
+  String get support => 'सपोर्ट';
 }
