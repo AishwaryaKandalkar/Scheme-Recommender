@@ -11,7 +11,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 app = Flask(__name__)
 
 # Load schemes dataset
-df_schemes = pd.read_csv("datasets/financial_inclusion_schemes_1000_v3.csv")
+df_schemes = pd.read_csv("datasets/financial_inclusion_schemes_translated_final.csv")
 print("Available columns in schemes dataset:", df_schemes.columns.tolist())
 df_schemes['text_blob'] = (
     df_schemes['scheme_goal'].fillna('') + ". " +
@@ -357,55 +357,26 @@ def chatbot():
         answer += "\n"
     return jsonify({"answer": answer.strip()})
 
-amount_model = pickle.load(open("C:/Users/USER/Documents/projects/Scheme-Recommender/models/amount_prediction_model.pkl", "rb"))
-duration_model = pickle.load(open("C:/Users/USER/Documents/projects/Scheme-Recommender/models/duration_prediction_model.pkl", "rb"))
 
-@app.route("/scheme_detail", methods=["GET"])
-def scheme_detail():
-    scheme_name = request.args.get("name", "").strip().lower()
-    lang = request.args.get("lang", "en")
 
-    # If models are not available, return default values
-    if not models_available:
-        return jsonify({
-            "predicted_amount": 5000.0,
-            "predicted_duration_months": 12
-        })
+# Check if model files and vectorizer exist before loading
+import os
+amount_model_path = os.path.join("models", "amount_prediction_model.pkl")
+duration_model_path = os.path.join("models", "duration_prediction_model.pkl")
+vectorizer_path = os.path.join("models", "vectorizer.pkl")
+models_available = os.path.exists(amount_model_path) and os.path.exists(duration_model_path) and os.path.exists(vectorizer_path)
+if models_available:
+    import pickle
+    amount_model = pickle.load(open(amount_model_path, "rb"))
+    duration_model = pickle.load(open(duration_model_path, "rb"))
+    vectorizer = pickle.load(open(vectorizer_path, "rb"))
+else:
+    amount_model = None
+    duration_model = None
+    vectorizer = None
 
-    def normalize(text):
-        return " ".join(text.lower().strip().split())
 
-    normalized_query = normalize(scheme_name)
-    df_schemes["normalized_name"] = df_schemes["scheme_name"].astype(str).apply(normalize)
-    matched = df_schemes[df_schemes["normalized_name"] == normalized_query]
-
-    if matched.empty:
-        return jsonify({"error": f"Scheme '{scheme_name}' not found."}), 404
-
-    scheme = matched.iloc[0]
-    combined_text = " ".join([
-        str(scheme.get("scheme_goal", "")),
-        str(scheme.get("benefits", "")),
-        str(scheme.get("application_process", ""))
-    ])
-
-    try:
-        X_vectorized = vectorizer.transform([combined_text])
-        predicted_amount = float(amount_model.predict(X_vectorized)[0])
-        predicted_duration = int(duration_model.predict(X_vectorized)[0])
-
-        return jsonify({
-            "predicted_amount": round(predicted_amount, 2),
-            "predicted_duration_months": predicted_duration
-        })
-    except Exception as e:
-        print(f"Prediction error: {e}")
-        # Fallback values if prediction fails
-        return jsonify({
-            "predicted_amount": 5000.0,
-            "predicted_duration_months": 12
-        })
-
+# Unified /scheme_detail endpoint (merging both functionalities)
 @app.route("/scheme_detail", methods=["GET"])
 def scheme_detail():
     scheme_name = request.args.get("name", "").strip().lower()
@@ -473,6 +444,28 @@ def scheme_detail():
         "similar_investments": scheme.get("similar_investments", []),
         # ...other fields...
     }
+
+    # If models are available, add predictions
+    if models_available and amount_model is not None and duration_model is not None:
+        try:
+            combined_text = " ".join([
+                str(scheme.get("scheme_goal", "")),
+                str(scheme.get("benefits", "")),
+                str(scheme.get("application_process", ""))
+            ])
+            # Assume vectorizer is available in the global scope
+            X_vectorized = vectorizer.transform([combined_text])
+            predicted_amount = float(amount_model.predict(X_vectorized)[0])
+            predicted_duration = int(duration_model.predict(X_vectorized)[0])
+            response["predicted_amount"] = round(predicted_amount, 2)
+            response["predicted_duration_months"] = predicted_duration
+        except Exception as e:
+            print(f"Prediction error: {e}")
+            response["predicted_amount"] = 5000.0
+            response["predicted_duration_months"] = 12
+    else:
+        response["predicted_amount"] = 5000.0
+        response["predicted_duration_months"] = 12
 
     def clean(val):
         if isinstance(val, list):
