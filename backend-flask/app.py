@@ -7,11 +7,23 @@ from io import StringIO
 import pickle
 from datetime import timedelta
 from sklearn.feature_extraction.text import TfidfVectorizer
+from dotenv import load_dotenv
+
+# Load environment variables from .env file if present
+load_dotenv()
+
+# Get configuration from environment variables
+PORT = int(os.getenv('PORT', 5000))
+HOST = os.getenv('HOST', '0.0.0.0')
+DATASET_PATH = os.getenv('DATASET_PATH', 'datasets')
+MODELS_PATH = os.getenv('MODELS_PATH', 'models')
 
 app = Flask(__name__)
 
 # Load schemes dataset
-df_schemes = pd.read_csv("datasets/financial_inclusion_schemes_translated_final_updated.csv")
+schemes_path = os.path.join(DATASET_PATH, "financial_inclusion_schemes_translated_final_updated.csv")
+print(f"Loading schemes data from: {schemes_path}")
+df_schemes = pd.read_csv(schemes_path)
 print("Available columns in schemes dataset:", df_schemes.columns.tolist())
 df_schemes['text_blob'] = (
     df_schemes['scheme_goal'].fillna('') + ". " +
@@ -32,7 +44,9 @@ def get_col(col, lang):
     return col
 
 # Load investment data
-df_investments = pd.read_csv("datasets/user_investments.csv")
+investments_path = os.path.join(DATASET_PATH, "user_investments.csv")
+print(f"Loading investments data from: {investments_path}")
+df_investments = pd.read_csv(investments_path)
 
 def normalize_duration(text):
     text = str(text).lower()
@@ -395,10 +409,11 @@ def chatbot():
 
 
 # Check if model files and vectorizer exist before loading
-import os
-amount_model_path = os.path.join("models", "amount_prediction_model.pkl")
-duration_model_path = os.path.join("models", "duration_prediction_model.pkl")
-vectorizer_path = os.path.join("models", "vectorizer.pkl")
+amount_model_path = os.path.join(MODELS_PATH, "amount_prediction_model.pkl")
+duration_model_path = os.path.join(MODELS_PATH, "duration_prediction_model.pkl")
+vectorizer_path = os.path.join(MODELS_PATH, "vectorizer.pkl")
+
+print(f"Checking for models at: {amount_model_path}, {duration_model_path}, {vectorizer_path}")
 models_available = os.path.exists(amount_model_path) and os.path.exists(duration_model_path) and os.path.exists(vectorizer_path)
 if models_available:
     import pickle
@@ -618,4 +633,7 @@ def register_scheme():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Use environment variables for host and port
+    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() in ('true', '1', 't')
+    print(f"Starting Flask app on {HOST}:{PORT} (Debug: {debug_mode})")
+    app.run(host=HOST, port=PORT, debug=debug_mode)
