@@ -303,6 +303,9 @@ def eligible_schemes():
     # Sort schemes by scheme name for consistent ordering (alphabetical)
     filtered_df = filtered_df.sort_values('scheme_name').reset_index(drop=True)
     
+    # Limit to 20 schemes for the home page
+    filtered_df = filtered_df.head(20)
+    
     # Always include both English and language columns so you can pick later
     columns = [
         "scheme_name", "scheme_goal", "benefits", "application_process", "eligibility", "total_returns",
