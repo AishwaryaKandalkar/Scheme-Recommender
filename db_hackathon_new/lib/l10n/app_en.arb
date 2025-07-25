@@ -85,6 +85,45 @@
   "supportComingSoon": "Support page coming soon!",
   "community": "Community",
   "support":"Support",
+  "supportHub": "Support Hub",
+  "supportHubWelcome": "Support Hub. Connect with local agents and get help with your financial schemes.",
+  "howCanWeHelp": "How can we help you today?",
+  "searchKnowledgeBase": "Search our knowledge base or connect with an expert",
+  "searchHelpTopics": "Search articles, FAQs, and help topics...",
+  "searchCleared": "Search cleared",
+  "connectWithLocalAgents": "Connect with Local Agents",
+  "findExpertHelp": "Find expert help in your area",
+  "agentInfo": "Agent: {name}, Region: {region}",
+  "@agentInfo": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "region": {"type": "String"}
+    }
+  },
+  "regionNotSpecified": "Not specified",
+  "calling": "Calling {phone}",
+  "@calling": {
+    "placeholders": {
+      "phone": {"type": "String"}
+    }
+  },
+  "openingEmail": "Opening email to {email}",
+  "@openingEmail": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "call": "Call",
+  "message": "Message",
+  "bankCustomerCare": "Bank Customer Care",
+  "bankCustomerCareDescription": "24/7 support for all your banking needs",
+  "primaryCustomerCare": "Primary Customer Care",
+  "primaryCustomerCareSubtitle": "24/7 Available • General Support",
+  "technicalSupport": "Technical Support",
+  "technicalSupportSubtitle": "Mon-Fri, 8AM - 6PM • Technical Issues",
+  "callNow": "Call Now",
+  "helpTooltip": "Help",
+  "getHelpSupport": "Get help and support for your financial schemes and questions",
   "myProfile": "My Profile",
   "profilePageTts": "My Profile page. View your personal information, financial summary, and active schemes.",
   "editProfile": "Edit Profile",
@@ -116,7 +155,8 @@
   "registeredOn": "Registered on",
   "nextDueDate": "Next Due Date",
   "scheme": "Scheme",
-  "financeInclude": "FinanceInclude",
+  "arthSamarth": "ArthSamarth",
+  "financeInclude": "ArthSamarth",
   "pathToFinancialSuccess": "Your Path to Financial Success",
   "financialToolsDescription": "Simple, visual tools to help you manage money and access financial services",
   "alreadyHaveAccount": "Already Have Account",
@@ -126,7 +166,8 @@
   "browseSchemes": "Browse through our schemes",
   "continueAsGuest": "Continue as Guest",
   "welcomeToSchemeRecommender": "Welcome to Scheme Recommender! Your AI-powered financial companion for discovering government schemes.",
-  "loginToFinWise": "Login to FinWise",
+  "loginToArthSamarth": "Login to ArthSamarth",
+  "loginToFinWise": "Login to ArthSamarth",
   "welcomeBack": "Welcome Back!",
   "loginDescription": "Discover your personalized financial recommendations and track your progress",
   "emailOrUsername": "Email or Username",
@@ -151,7 +192,8 @@
   "createNewProfile": "Don't have an account? Create profile",
   "createNewProfileDescription": "Don't have an account? Create a new profile to get started.",
   "or": "OR",
-  "createFinWiseAccount": "Create Your FinWise Account",
+  "createArthSamarthAccount": "Create Your ArthSamarth Account",
+  "createFinWiseAccount": "Create Your ArthSamarth Account",
   "personalInfo": "Personal\nInfo",
   "financialOccupational": "Financial &\nOccupational",
   "demographicsBank": "Demographics\n& Bank",
@@ -194,5 +236,133 @@
   "next": "Next",
   "goingBack": "Going back to previous step",
   "back": "Back",
-  "error": "Error"
+  "error": "Error",
+  "searchingForSchemes": "Searching for schemes related to: {goal}",
+  "loadingEligibleSchemes": "Loading your eligible schemes",
+  "foundSchemesForSearch": "Found {count} schemes matching your search for {goal}",
+  "loadedEligibleSchemes": "Loaded {count} schemes you're eligible for",
+  "failedToLoadSchemes": "Failed to load schemes. Please try again.",
+  "pageNumber": "Page {number}",
+  "welcomeToFinancialHub": "Welcome to Financial Scheme Hub! Loading your personalized recommendations.",
+  "welcomeToFinancialHubDescription": "Welcome to Financial Scheme Hub! Find personalized recommendations for your financial goals.",
+  "discoverFinancialOpportunities": "Discover Financial Opportunities",
+  "findYourPerfectScheme": "Find Your Perfect Scheme",
+  "whatAreYouLookingFor": "What are you looking for?",
+  "usingAiToFind": "Using AI to find the best schemes for: {searchText}",
+  "refreshingEligibleSchemes": "Refreshing your eligible schemes",
+  "userProfileNotFound": "User profile not found.",
+  "noDataReceived": "No data received from backend.",
+  "aiRecommendations": "AI Recommendations",
+  "eligibleSchemes": "Eligible Schemes",
+  "schemesFound": "{count} schemes found",
+  "showingAiRecommendations": "Showing AI-powered recommendations based on your search",
+  "showingEligibleSchemes": "Showing schemes you're eligible for based on your profile",
+  "foundSchemesTotal": "{modeText}. Found {count} schemes.",
+  "pageOf": "Page {current} of {total}",
+  "schemes": "schemes",
+  "totalSchemesFound": "Page {current} of {total}. Total {count} schemes found.",
+  "pageNumber": "Page {page}",
+  "returnLabel": "Return",
+  "riskLabel": "Risk", 
+  "termLabel": "Term",
+  "myProfile": "My Profile",
+  "changeLanguage": "Change Language",
+  "editProfile": "Edit Profile",
+  "logout": "Logout",
+  "loggingOut": "Logging out",
+  "activeMember": "Active Member",
+  "profileUserInfo": "Profile: {userName}, Active Member",
+  "@profileUserInfo": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "contactInformation": "Contact Information",
+  "contactInfoVoice": "Contact Information. Email: {email}. Phone: {phone}. Location: {location}.",
+  "@contactInfoVoice": {
+    "placeholders": {
+      "email": {"type": "String"},
+      "phone": {"type": "String"},
+      "location": {"type": "String"}
+    }
+  },
+  "email": "Email",
+  "phone": "Phone",
+  "location": "Location",
+  "noEmail": "No email",
+  "noPhone": "No phone",
+  "noLocation": "No location",
+  "financialSummary": "Financial Summary",
+  "financialSummaryVoice": "Financial Summary. Total Savings: {savings} rupees. Active Schemes: {schemes}. Investment Returns: {returns} rupees. Goals Achieved: {goals}",
+  "@financialSummaryVoice": {
+    "placeholders": {
+      "savings": {"type": "String"},
+      "schemes": {"type": "String"},
+      "returns": {"type": "String"},
+      "goals": {"type": "String"}
+    }
+  },
+  "totalSavings": "Total Savings",
+  "thisMonthGrowth": "+1.2% this month",
+  "activeSchemes": "Active Schemes",
+  "joinedNewScheme": "Joined {count} new",
+  "@joinedNewScheme": {
+    "placeholders": {
+      "count": {"type": "String"}
+    }
+  },
+  "joinedNone": "Joined none",
+  "investmentReturns": "Investment Returns",
+  "lastQuarterGrowth": "+5% last quarter",
+  "goalsAchieved": "Goals Achieved",
+  "onTrackForMore": "On track for 3 more",
+  "recentActivitiesAndTips": "Recent Activities & Tips",
+  "recentActivitiesVoice": "Recent Activities and Tips section",
+  "noSchemesRegistered": "No schemes registered yet.",
+  "exploreNewSchemes": "Explore new schemes from the home page to get started!",
+  "noSchemesVoice": "No schemes registered yet. You can explore new schemes from the home page.",
+  "unnamedScheme": "Unnamed Scheme",
+  "amount": "Amount",
+  "registered": "Registered",
+  "nextDueDate": "Next Due Date",
+  "schemeVoiceInfo": "Scheme: {name}. Amount: {amount} rupees. Registered on: {regDate}. Next due date: {dueDate}",
+  "@schemeVoiceInfo": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "amount": {"type": "String"},
+      "regDate": {"type": "String"},
+      "dueDate": {"type": "String"}
+    }
+  },
+  "selectLanguage": "Select Language",
+  "languageSelected": "{language} selected",
+  "@languageSelected": {
+    "placeholders": {
+      "language": {"type": "String"}
+    }
+  },
+  "myProfilePageDescription": "My Profile page. View your personal information, financial summary, and active schemes.",
+  "profilePageVoice": "Profile: {name}, Active Member",
+  "@profilePageVoice": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "snapshotCardVoice": "{title}: {value}. {subtitle}",
+  "@snapshotCardVoice": {
+    "placeholders": {
+      "title": {"type": "String"},
+      "value": {"type": "String"},
+      "subtitle": {"type": "String"}
+    }
+  },
+  "contactItemVoice": "{label}: {value}",
+  "@contactItemVoice": {
+    "placeholders": {
+      "label": {"type": "String"},
+      "value": {"type": "String"}
+    }
+  }
 }

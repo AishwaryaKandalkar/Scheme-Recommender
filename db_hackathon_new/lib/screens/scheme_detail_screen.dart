@@ -31,6 +31,7 @@ class _SchemeDetailScreenState extends StatefulWidget {
 }
 
 class __SchemeDetailScreenStateState extends State<_SchemeDetailScreenState> {
+  static const darkBlue = Color(0xFF1A237E);
   Map<String, dynamic>? schemeData;
   bool loading = true;
   String? error;
@@ -141,7 +142,7 @@ class __SchemeDetailScreenStateState extends State<_SchemeDetailScreenState> {
     }
     
     final url = Uri.parse(
-        'http://10.166.220.105:5000/scheme_detail?name=${Uri.encodeComponent(widget.schemeName)}&lang=${widget.lang}');
+        'http://10.146.241.105:5000/scheme_detail?name=${Uri.encodeComponent(widget.schemeName)}&lang=${widget.lang}');
 
     try {
       final response = await http.get(url);
@@ -170,7 +171,7 @@ class __SchemeDetailScreenStateState extends State<_SchemeDetailScreenState> {
 
   Future<void> fetchPrediction() async {
     final url = Uri.parse(
-        'http://10.166.220.105:5000/predict_limits?scheme_name=${Uri.encodeComponent(widget.schemeName)}&lang=${widget.lang}');
+        'http://10.146.241.105:5000/predict_limits?scheme_name=${Uri.encodeComponent(widget.schemeName)}&lang=${widget.lang}');
 
     try {
       final response = await http.get(url);
@@ -319,35 +320,69 @@ class __SchemeDetailScreenStateState extends State<_SchemeDetailScreenState> {
 
   Widget _buildDetail(String title, String? value) {
     if (value == null || value.isEmpty || value == "N/A") return SizedBox();
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+    return Container(
+      margin: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: darkBlue.withOpacity(0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: darkBlue.withOpacity(0.05),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.check_circle_outline, color: Colors.green, size: 20),
-          SizedBox(width: 6),
+          Container(
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: darkBlue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(Icons.check_circle_outline, color: darkBlue, size: 20),
+          ),
+          SizedBox(width: 12),
           Expanded(
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: RichText(
-                    text: TextSpan(
-                      style: TextStyle(color: Colors.black87, fontSize: 14),
-                      children: [
-                        TextSpan(
-                            text: "$title: ",
-                            style: TextStyle(fontWeight: FontWeight.bold)),
-                        TextSpan(text: value),
-                      ],
-                    ),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: darkBlue,
+                    fontFamily: 'Roboto',
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: Colors.grey[700],
+                    fontSize: 13,
+                    fontFamily: 'Mulish',
                   ),
                 ),
               ],
             ),
           ),
-          IconButton(
-            icon: Icon(Icons.volume_up, color: Colors.deepPurple, size: 18),
-            onPressed: () => _speak("$title: $value"),
+          Container(
+            decoration: BoxDecoration(
+              color: darkBlue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: IconButton(
+              icon: Icon(Icons.volume_up, color: darkBlue, size: 16),
+              onPressed: () => _speak("$title: $value"),
+              padding: EdgeInsets.all(8),
+              constraints: BoxConstraints(minWidth: 32, minHeight: 32),
+            ),
           ),
         ],
       ),
@@ -358,28 +393,101 @@ class __SchemeDetailScreenStateState extends State<_SchemeDetailScreenState> {
     if (predictedAmount == null && predictedDuration == null) return SizedBox();
 
     final amtText = predictedAmount != null
-        ? "\u{1F4B0} ₹${predictedAmount!.toStringAsFixed(0)} (±20%)"
+        ? "₹${predictedAmount!.toStringAsFixed(0)} (±20%)"
         : null;
 
     final durationText =
-        predictedDuration != null ? "⏳ $predictedDuration months" : null;
+        predictedDuration != null ? "$predictedDuration months" : null;
 
-    return Card(
+    return Container(
       margin: EdgeInsets.only(top: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: Color(0xFFE6F0FA),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("🔍 Suggested by AI:",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            if (amtText != null) Text(amtText),
-            if (durationText != null) Text(durationText),
-            Text("These are inferred from the scheme using AI/ML."),
-          ],
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [darkBlue.withOpacity(0.1), Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: darkBlue.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: darkBlue.withOpacity(0.1),
+            blurRadius: 15,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: darkBlue.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.psychology, color: darkBlue, size: 20),
+              ),
+              SizedBox(width: 12),
+              Text(
+                "AI Recommendations",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: darkBlue,
+                  fontFamily: 'Roboto',
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          if (amtText != null)
+            Row(
+              children: [
+                Icon(Icons.account_balance_wallet, color: darkBlue.withOpacity(0.7), size: 16),
+                SizedBox(width: 8),
+                Text(
+                  amtText,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[700],
+                    fontFamily: 'Mulish',
+                  ),
+                ),
+              ],
+            ),
+          SizedBox(height: 6),
+          if (durationText != null)
+            Row(
+              children: [
+                Icon(Icons.schedule, color: darkBlue.withOpacity(0.7), size: 16),
+                SizedBox(width: 8),
+                Text(
+                  durationText,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[700],
+                    fontFamily: 'Mulish',
+                  ),
+                ),
+              ],
+            ),
+          SizedBox(height: 8),
+          Text(
+            "These suggestions are generated using advanced AI/ML algorithms.",
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[600],
+              fontStyle: FontStyle.italic,
+              fontFamily: 'Mulish',
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -387,109 +495,283 @@ class __SchemeDetailScreenStateState extends State<_SchemeDetailScreenState> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF7F8FA),
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: darkBlue,
         elevation: 0,
-        title: Text("Scheme Details", style: TextStyle(color: Colors.black)),
-        iconTheme: IconThemeData(color: Colors.black),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.volume_up),
-            onPressed: () => _speakSchemeDetails(),
+        title: Text(
+          "Scheme Details",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Roboto',
           ),
-          IconButton(
-            icon: Icon(Icons.help_outline),
-            onPressed: () => _speak("This screen shows detailed information about ${widget.schemeName}. You can listen to any section by tapping the speaker icon next to it, and register for the scheme at the bottom."),
+        ),
+        iconTheme: IconThemeData(color: Colors.white),
+        actions: [
+          Container(
+            margin: EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: Icon(Icons.volume_up, color: Colors.white),
+              onPressed: () => _speakSchemeDetails(),
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: Icon(Icons.help_outline, color: Colors.white),
+              onPressed: () => _speak("This screen shows detailed information about ${widget.schemeName}. You can listen to any section by tapping the speaker icon next to it, and register for the scheme at the bottom."),
+            ),
           ),
         ],
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [darkBlue, darkBlue.withOpacity(0.8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
       ),
       body: loading
-          ? Center(child: CircularProgressIndicator())
+          ? Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.grey[50]!, Colors.white],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(darkBlue),
+                      strokeWidth: 3,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      "Loading scheme details...",
+                      style: TextStyle(
+                        color: darkBlue,
+                        fontSize: 16,
+                        fontFamily: 'Mulish',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
           : error != null
-              ? Center(child: Text(error!))
-              : SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Scheme Image & Title
-                      SizedBox(height: 8),
-                      Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.shade200),
-                        ),
-                        child: Column(
-                          children: [
-                            SizedBox(height: 16),
-                            Image.asset(
-                              'assets/images/scheme_illustration.jpg',
-                              height: 120,
-                              fit: BoxFit.contain,
+              ? Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.grey[50]!, Colors.white],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                  child: Center(
+                    child: Container(
+                      margin: EdgeInsets.all(24),
+                      padding: EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.red.withOpacity(0.3)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.red.withOpacity(0.1),
+                            blurRadius: 15,
+                            offset: Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.error_outline, color: Colors.red, size: 48),
+                          SizedBox(height: 16),
+                          Text(
+                            "Error Loading Scheme",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: darkBlue,
+                              fontFamily: 'Roboto',
                             ),
-                            SizedBox(height: 12),
-                            Text(
-                              widget.schemeName,
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            error!,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.grey[700],
+                              fontFamily: 'Mulish',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+              : Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.grey[50]!, Colors.white],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Scheme Header Card
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Colors.white, darkBlue.withOpacity(0.05)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(25),
+                            border: Border.all(color: darkBlue.withOpacity(0.1)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: darkBlue.withOpacity(0.1),
+                                blurRadius: 20,
+                                offset: Offset(0, 8),
                               ),
-                              textAlign: TextAlign.center,
-                            ),
-                            SizedBox(height: 6),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.star, color: Colors.orange, size: 18),
-                                SizedBox(width: 4),
-                                Text(
-                                  schemeData?["rating"] != null
-                                      ? "${schemeData!["rating"]} (${schemeData!["reviews"] ?? "Reviewed"})"
-                                      : "4.8 (2,134 Reviewed)",
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              SizedBox(height: 24),
+                              Container(
+                                padding: EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: darkBlue.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Image.asset(
+                                  'assets/images/scheme_illustration.jpg',
+                                  height: 100,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                              SizedBox(height: 20),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 24),
+                                child: Text(
+                                  widget.schemeName,
                                   style: TextStyle(
-                                    color: Colors.pink,
-                                    fontWeight: FontWeight.w500,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: darkBlue,
+                                    fontFamily: 'Roboto',
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              SizedBox(height: 12),
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.star, color: Colors.orange, size: 18),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      schemeData?["rating"] != null
+                                          ? "${schemeData!["rating"]} (${schemeData!["reviews"] ?? "Reviewed"})"
+                                          : "4.8 (2,134 Reviews)",
+                                      style: TextStyle(
+                                        color: Colors.orange[700],
+                                        fontWeight: FontWeight.w600,
+                                        fontFamily: 'Mulish',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: 16),
+                              if (schemeData?["scheme_goal"] != null)
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 24),
+                                  child: Text(
+                                    schemeData!["scheme_goal"],
+                                    style: TextStyle(
+                                      color: Colors.grey[700],
+                                      fontSize: 14,
+                                      fontFamily: 'Mulish',
+                                    ),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ),
-                              ],
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              schemeData?["scheme_goal"] ?? "",
-                              style: TextStyle(
-                                color: Colors.grey[700],
-                                fontSize: 13,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            SizedBox(height: 16),
-                          ],
+                              SizedBox(height: 24),
+                            ],
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 18),
-                      // Overview & Benefits
-                      Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.shade200),
-                        ),
-                        padding: EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Scheme Overview & Benefits",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                        SizedBox(height: 24),
+                        // Overview & Benefits Section
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: darkBlue.withOpacity(0.1)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: darkBlue.withOpacity(0.08),
+                                blurRadius: 15,
+                                offset: Offset(0, 5),
                               ),
-                            ),
-                            SizedBox(height: 10),
+                            ],
+                          ),
+                          padding: EdgeInsets.all(24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: darkBlue.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(Icons.info_outline, color: darkBlue, size: 20),
+                                  ),
+                                  SizedBox(width: 12),
+                                  Text(
+                                    "Scheme Overview & Benefits",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                      color: darkBlue,
+                                      fontFamily: 'Roboto',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 20),
                             ...[
                               _buildDetail("Guaranteed annual returns", schemeData?["total_returns"]),
                               _buildDetail("Eligibility", schemeData?["eligibility"]),
@@ -502,296 +784,674 @@ class __SchemeDetailScreenStateState extends State<_SchemeDetailScreenState> {
                             ],
                             if (schemeData?["scheme_website"] != null &&
                                 schemeData!["scheme_website"].toString().startsWith("http"))
-                              GestureDetector(
-                                onTap: () => _launchWebsite(schemeData!["scheme_website"]),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                  child: Text(
-                                    "Visit Official Website",
-                                    style: TextStyle(
-                                        color: Colors.blue,
-                                        decoration: TextDecoration.underline),
+                              Container(
+                                margin: EdgeInsets.only(top: 16),
+                                child: InkWell(
+                                  onTap: () => _launchWebsite(schemeData!["scheme_website"]),
+                                  child: Container(
+                                    padding: EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [darkBlue, darkBlue.withOpacity(0.8)],
+                                      ),
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.language, color: Colors.white, size: 20),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          "Visit Official Website",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'Roboto',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 18),
-                      // Investment Goal
-                      Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.shade200),
-                        ),
-                        padding: EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Register for the scheme",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                        SizedBox(height: 24),
+                        // AI Prediction Info
+                        _buildPredictionInfo(),
+                        SizedBox(height: 32),
+                        // Registration Form Section
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: darkBlue.withOpacity(0.1)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: darkBlue.withOpacity(0.08),
+                                blurRadius: 15,
+                                offset: Offset(0, 5),
                               ),
-                            ),
-                            SizedBox(height: 12),
-                            Row(
-                              children: [
-                                Text(
-                                  "Current Investment",
-                                  style: TextStyle(color: Colors.grey[700]),
-                                ),
-                                Spacer(),
-                                Text(
-                                  predictedAmount != null
-                                      ? "₹${predictedAmount!.toStringAsFixed(0)}"
-                                      : "₹25,000",
-                                  style: TextStyle(
-                                    color: Colors.pink,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
+                            ],
+                          ),
+                          padding: EdgeInsets.all(24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: darkBlue.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(Icons.how_to_reg, color: darkBlue, size: 20),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 18),
-                      Divider(height: 32, thickness: 1.5),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              "Registration Form",
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.volume_up, color: Colors.deepPurple),
-                            onPressed: () => _speak("Registration form. Enter your investment amount, select a registration date, and click register to join this scheme."),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      TextField(
-                        controller: amountController,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: 'Amount you want to pay',
-                          border: OutlineInputBorder(),
-                          errorText: amountError,
-                          suffixIcon: IconButton(
-                            icon: Icon(Icons.mic, color: Colors.deepPurple),
-                            onPressed: _startListening,
-                          ),
-                        ),
-                        onChanged: (val) {
-                          if (predictedAmount != null) {
-                            final num? v = double.tryParse(val);
-                            final lower = predictedAmount! * 0.8;
-                            final upper = predictedAmount! * 1.2;
-                            setState(() {
-                              showAmountWarning =
-                                  v != null && (v < lower || v > upper);
-                            });
-                          }
-                        },
-                      ),
-                      if (showAmountWarning)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6.0),
-                          child: Text(
-                            '⚠️ This amount is outside the expected range.',
-                            style: TextStyle(color: Colors.orange[700]),
-                          ),
-                        ),
-                      SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Text('Registration date: '),
-                          Text(registrationDate == null
-                              ? 'Not set'
-                              : '${registrationDate!.toLocal()}'.split(' ')[0]),
-                          SizedBox(width: 8),
-                          ElevatedButton(
-                            onPressed: () async {
-                              await _speak("Opening date picker");
-                              final picked = await showDatePicker(
-                                context: context,
-                                initialDate: registrationDate ?? DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime.now().add(Duration(days: 365 * 5)),
-                              );
-                              if (picked != null) {
-                                setState(() {
-                                  registrationDate = picked;
-                                });
-                                calculateDueDate();
-                                await _speak("Registration date set to ${picked.day}-${picked.month}-${picked.year}");
-                              }
-                            },
-                            child: Text('Pick Date'),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.volume_up, color: Colors.deepPurple),
-                            onPressed: () {
-                              if (registrationDate != null) {
-                                _speak("Registration date is set to ${registrationDate!.day}-${registrationDate!.month}-${registrationDate!.year}");
-                              } else {
-                                _speak("No registration date selected yet. Please pick a date.");
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      if (dueDate != null)
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                'Next due date: ${dueDate!.toLocal()}'.split(' ')[0],
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                                  SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      "Registration Form",
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: darkBlue,
+                                        fontFamily: 'Roboto',
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: darkBlue.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: IconButton(
+                                      icon: Icon(Icons.volume_up, color: darkBlue, size: 16),
+                                      onPressed: () => _speak("Registration form. Enter your investment amount, select a registration date, and click register to join this scheme."),
+                                      padding: EdgeInsets.all(8),
+                                      constraints: BoxConstraints(minWidth: 32, minHeight: 32),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.volume_up, color: Colors.deepPurple),
-                              onPressed: () => _speak("Next due date is ${dueDate!.day}-${dueDate!.month}-${dueDate!.year}"),
-                            ),
-                          ],
-                        ),
-                      SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              icon: Icon(Icons.how_to_reg),
-                              label: registering
-                                  ? Text('Registering...')
-                                  : Text('Register for this Scheme'),
-                              onPressed: registering ? null : registerForScheme,
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          IconButton(
-                            icon: Icon(Icons.volume_up, color: Colors.deepPurple),
-                            onPressed: () => _speak("Tap the register button to complete your registration for ${widget.schemeName}"),
-                          ),
-                        ],
-                      ),
-                      if (registerMsg != null) ...[
-                        SizedBox(height: 12),
-                        Text(
-                          registerMsg!,
-                          style: TextStyle(
-                            color: registerMsg!.contains('success')
-                                ? Colors.green
-                                : Colors.red,
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          "Adjust Investment Percentage (Max ₹${predictedAmount?.toStringAsFixed(0) ?? "10,000"})",
-                          style: TextStyle(fontSize: 13, color: Colors.grey[700]),
-                        ),
-                        Slider(
-                          value: double.tryParse(amountController.text) ?? (predictedAmount ?? 10000),
-                          min: 0,
-                          max: predictedAmount ?? 10000,
-                          divisions: 100,
-                          label: amountController.text,
-                          onChanged: (val) {
-                            setState(() {
-                              amountController.text = val.toStringAsFixed(0);
-                            });
-                          },
-                        ),
-                      ],
-                      SizedBox(height: 18),
-                      // Similar Investment Opportunities
-                      if (schemeData?['similar_investments'] != null &&
-                          schemeData!['similar_investments'] is List) ...[
-                        Text(
-                          'Similar Investment Opportunities',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 8),
-                        SizedBox(
-                          height: 140, // Adjust height as needed for your card design
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: schemeData!['similar_investments'].length,
-                            separatorBuilder: (context, index) => SizedBox(width: 12),
-                            itemBuilder: (context, index) {
-                              final sim = schemeData!['similar_investments'][index];
-                              final simName = sim['investment_name'] ?? 'Unnamed';
-                              final returns = sim['total_returns'] ?? 'N/A';
-                              final duration = sim['time_duration'] ?? 'N/A';
-                              return Container(
-                                width: 200,
+                              SizedBox(height: 20),
+                              Container(
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.pink.shade100),
+                                  color: Colors.grey[50],
+                                  borderRadius: BorderRadius.circular(15),
+                                  border: Border.all(color: darkBlue.withOpacity(0.2)),
                                 ),
-                                padding: EdgeInsets.all(12),
+                                child: TextField(
+                                  controller: amountController,
+                                  keyboardType: TextInputType.number,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: darkBlue,
+                                    fontFamily: 'Mulish',
+                                  ),
+                                  decoration: InputDecoration(
+                                    labelText: 'Investment Amount (₹)',
+                                    labelStyle: TextStyle(
+                                      color: darkBlue.withOpacity(0.7),
+                                      fontFamily: 'Mulish',
+                                    ),
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.all(20),
+                                    errorText: amountError,
+                                    errorStyle: TextStyle(fontFamily: 'Mulish'),
+                                    prefixIcon: Container(
+                                      padding: EdgeInsets.all(12),
+                                      child: Icon(Icons.currency_rupee, color: darkBlue.withOpacity(0.7), size: 20),
+                                    ),
+                                    suffixIcon: Container(
+                                      margin: EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: darkBlue.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: IconButton(
+                                        icon: Icon(Icons.mic, color: darkBlue, size: 18),
+                                        onPressed: _startListening,
+                                      ),
+                                    ),
+                                  ),
+                                  onChanged: (val) {
+                                    if (predictedAmount != null) {
+                                      final num? v = double.tryParse(val);
+                                      final lower = predictedAmount! * 0.8;
+                                      final upper = predictedAmount! * 1.2;
+                                      setState(() {
+                                        showAmountWarning =
+                                            v != null && (v < lower || v > upper);
+                                      });
+                                    }
+                                  },
+                                ),
+                              ),
+                              if (showAmountWarning)
+                                Container(
+                                  margin: EdgeInsets.only(top: 12),
+                                  padding: EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange[50],
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.warning_amber, color: Colors.orange[700], size: 20),
+                                      SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'This amount is outside the recommended range.',
+                                          style: TextStyle(
+                                            color: Colors.orange[700],
+                                            fontFamily: 'Mulish',
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              SizedBox(height: 20),
+                              // Date Selection
+                              Container(
+                                padding: EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[50],
+                                  borderRadius: BorderRadius.circular(15),
+                                  border: Border.all(color: darkBlue.withOpacity(0.1)),
+                                ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
                                       children: [
-                                        Icon(Icons.trending_up, color: Colors.pink, size: 18),
-                                        SizedBox(width: 6),
-                                        Expanded(
-                                          child: Text(
-                                            simName,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
+                                        Icon(Icons.calendar_month, color: darkBlue.withOpacity(0.7), size: 20),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          'Registration Date:',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color: darkBlue,
+                                            fontFamily: 'Mulish',
+                                          ),
+                                        ),
+                                        Spacer(),
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            color: darkBlue.withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: IconButton(
+                                            icon: Icon(Icons.volume_up, color: darkBlue, size: 16),
+                                            onPressed: () {
+                                              if (registrationDate != null) {
+                                                _speak("Registration date is set to ${registrationDate!.day}-${registrationDate!.month}-${registrationDate!.year}");
+                                              } else {
+                                                _speak("No registration date selected yet. Please pick a date.");
+                                              }
+                                            },
+                                            padding: EdgeInsets.all(8),
+                                            constraints: BoxConstraints(minWidth: 32, minHeight: 32),
                                           ),
                                         ),
                                       ],
                                     ),
-                                    SizedBox(height: 4),
-                                    Text("Returns: $returns", style: TextStyle(fontSize: 12)),
-                                    Text("Duration: $duration", style: TextStyle(fontSize: 12)),
-                                    Spacer(),
-                                    Align(
-                                      alignment: Alignment.bottomRight,
-                                      child: TextButton(
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: Colors.pink,
-                                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(8),
-                                            side: BorderSide(color: Colors.pink.shade100),
+                                    SizedBox(height: 12),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            registrationDate == null
+                                                ? 'No date selected'
+                                                : '${registrationDate!.day}/${registrationDate!.month}/${registrationDate!.year}',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: registrationDate == null ? Colors.grey[600] : darkBlue,
+                                              fontWeight: FontWeight.w600,
+                                              fontFamily: 'Roboto',
+                                            ),
                                           ),
                                         ),
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => InvestmentDetailScreen(investment: sim),
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [darkBlue, darkBlue.withOpacity(0.8)],
                                             ),
-                                          );
-                                        },
-                                        child: Text("View Details"),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: ElevatedButton.icon(
+                                            onPressed: () async {
+                                              await _speak("Opening date picker");
+                                              final picked = await showDatePicker(
+                                                context: context,
+                                                initialDate: registrationDate ?? DateTime.now(),
+                                                firstDate: DateTime(2000),
+                                                lastDate: DateTime.now().add(Duration(days: 365 * 5)),
+                                              );
+                                              if (picked != null) {
+                                                setState(() {
+                                                  registrationDate = picked;
+                                                });
+                                                calculateDueDate();
+                                                await _speak("Registration date set to ${picked.day}-${picked.month}-${picked.year}");
+                                              }
+                                            },
+                                            icon: Icon(Icons.date_range, color: Colors.white, size: 18),
+                                            label: Text(
+                                              'Select Date',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontFamily: 'Roboto',
+                                              ),
+                                            ),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.transparent,
+                                              shadowColor: Colors.transparent,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    if (dueDate != null) ...[
+                                      SizedBox(height: 16),
+                                      Container(
+                                        padding: EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: darkBlue.withOpacity(0.05),
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.schedule, color: darkBlue.withOpacity(0.7), size: 18),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              'Next due date: ',
+                                              style: TextStyle(
+                                                color: Colors.grey[700],
+                                                fontFamily: 'Mulish',
+                                              ),
+                                            ),
+                                            Text(
+                                              '${dueDate!.day}/${dueDate!.month}/${dueDate!.year}',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: darkBlue,
+                                                fontFamily: 'Roboto',
+                                              ),
+                                            ),
+                                            Spacer(),
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: darkBlue.withOpacity(0.1),
+                                                borderRadius: BorderRadius.circular(6),
+                                              ),
+                                              child: IconButton(
+                                                icon: Icon(Icons.volume_up, color: darkBlue, size: 14),
+                                                onPressed: () => _speak("Next due date is ${dueDate!.day}-${dueDate!.month}-${dueDate!.year}"),
+                                                padding: EdgeInsets.all(6),
+                                                constraints: BoxConstraints(minWidth: 26, minHeight: 26),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: 24),
+                              // Register Button
+                              Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: registering 
+                                        ? [Colors.grey, Colors.grey.withOpacity(0.8)]
+                                        : [darkBlue, darkBlue.withOpacity(0.8)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(15),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: darkBlue.withOpacity(0.3),
+                                      blurRadius: 10,
+                                      offset: Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: ElevatedButton.icon(
+                                  icon: registering 
+                                      ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                      : Icon(Icons.how_to_reg, color: Colors.white),
+                                  label: Text(
+                                    registering ? 'Processing Registration...' : 'Register for this Scheme',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      fontFamily: 'Roboto',
+                                    ),
+                                  ),
+                                  onPressed: registering ? null : registerForScheme,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.transparent,
+                                    shadowColor: Colors.transparent,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                                    padding: EdgeInsets.symmetric(vertical: 18),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      "Tap the register button to complete your registration",
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 12,
+                                        fontFamily: 'Mulish',
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: darkBlue.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: IconButton(
+                                      icon: Icon(Icons.volume_up, color: darkBlue, size: 16),
+                                      onPressed: () => _speak("Tap the register button to complete your registration for ${widget.schemeName}"),
+                                      padding: EdgeInsets.all(8),
+                                      constraints: BoxConstraints(minWidth: 32, minHeight: 32),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (registerMsg != null) ...[
+                                SizedBox(height: 16),
+                                Container(
+                                  padding: EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: registerMsg!.contains('success') 
+                                        ? Colors.green[50] 
+                                        : Colors.red[50],
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: registerMsg!.contains('success') 
+                                          ? Colors.green.withOpacity(0.3) 
+                                          : Colors.red.withOpacity(0.3)
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        registerMsg!.contains('success') ? Icons.check_circle : Icons.error,
+                                        color: registerMsg!.contains('success') ? Colors.green : Colors.red,
+                                        size: 24,
+                                      ),
+                                      SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          registerMsg!,
+                                          style: TextStyle(
+                                            color: registerMsg!.contains('success') 
+                                                ? Colors.green[700] 
+                                                : Colors.red[700],
+                                            fontWeight: FontWeight.w600,
+                                            fontFamily: 'Mulish',
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: 16),
+                                Container(
+                                  padding: EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[50],
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: darkBlue.withOpacity(0.1)),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Adjust Investment Amount",
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: darkBlue,
+                                          fontFamily: 'Roboto',
+                                        ),
+                                      ),
+                                      Text(
+                                        "Maximum: ₹${predictedAmount?.toStringAsFixed(0) ?? "10,000"}",
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
+                                          fontFamily: 'Mulish',
+                                        ),
+                                      ),
+                                      SizedBox(height: 8),
+                                      SliderTheme(
+                                        data: SliderTheme.of(context).copyWith(
+                                          activeTrackColor: darkBlue,
+                                          inactiveTrackColor: darkBlue.withOpacity(0.2),
+                                          thumbColor: darkBlue,
+                                          overlayColor: darkBlue.withOpacity(0.2),
+                                        ),
+                                        child: Slider(
+                                          value: double.tryParse(amountController.text) ?? (predictedAmount ?? 10000),
+                                          min: 0,
+                                          max: predictedAmount ?? 10000,
+                                          divisions: 100,
+                                          label: "₹${amountController.text}",
+                                          onChanged: (val) {
+                                            setState(() {
+                                              amountController.text = val.toStringAsFixed(0);
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 24),
+                        // Similar Investment Opportunities
+                        if (schemeData?['similar_investments'] != null &&
+                            schemeData!['similar_investments'] is List) ...[
+                          Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: darkBlue.withOpacity(0.1)),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: darkBlue.withOpacity(0.08),
+                                  blurRadius: 15,
+                                  offset: Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            padding: EdgeInsets.all(24),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: darkBlue.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Icon(Icons.trending_up, color: darkBlue, size: 20),
+                                    ),
+                                    SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        'Similar Investment Opportunities',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: darkBlue,
+                                          fontFamily: 'Roboto',
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                              );
-                            },
+                                SizedBox(height: 16),
+                                SizedBox(
+                                  height: 160,
+                                  child: ListView.separated(
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: schemeData!['similar_investments'].length,
+                                    separatorBuilder: (context, index) => SizedBox(width: 16),
+                                    itemBuilder: (context, index) {
+                                      final sim = schemeData!['similar_investments'][index];
+                                      final simName = sim['investment_name'] ?? 'Unnamed';
+                                      final returns = sim['total_returns'] ?? 'N/A';
+                                      final duration = sim['time_duration'] ?? 'N/A';
+                                      return Container(
+                                        width: 220,
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [Colors.white, darkBlue.withOpacity(0.02)],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          ),
+                                          borderRadius: BorderRadius.circular(15),
+                                          border: Border.all(color: darkBlue.withOpacity(0.15)),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: darkBlue.withOpacity(0.05),
+                                              blurRadius: 8,
+                                              offset: Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        padding: EdgeInsets.all(16),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Container(
+                                                  padding: EdgeInsets.all(6),
+                                                  decoration: BoxDecoration(
+                                                    color: darkBlue.withOpacity(0.1),
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                  child: Icon(Icons.auto_graph, color: darkBlue, size: 16),
+                                                ),
+                                                SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Text(
+                                                    simName,
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 14,
+                                                      color: darkBlue,
+                                                      fontFamily: 'Roboto',
+                                                    ),
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 2,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            SizedBox(height: 12),
+                                            Row(
+                                              children: [
+                                                Icon(Icons.trending_up, color: Colors.green, size: 14),
+                                                SizedBox(width: 4),
+                                                Text(
+                                                  "Returns: $returns",
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.grey[700],
+                                                    fontFamily: 'Mulish',
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            SizedBox(height: 4),
+                                            Row(
+                                              children: [
+                                                Icon(Icons.schedule, color: Colors.blue, size: 14),
+                                                SizedBox(width: 4),
+                                                Text(
+                                                  "Duration: $duration",
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.grey[700],
+                                                    fontFamily: 'Mulish',
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            Spacer(),
+                                            Container(
+                                              width: double.infinity,
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  colors: [darkBlue, darkBlue.withOpacity(0.8)],
+                                                ),
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              child: TextButton(
+                                                onPressed: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (_) => InvestmentDetailScreen(investment: sim),
+                                                    ),
+                                                  );
+                                                },
+                                                child: Text(
+                                                  "View Details",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: 'Roboto',
+                                                  ),
+                                                ),
+                                                style: TextButton.styleFrom(
+                                                  backgroundColor: Colors.transparent,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(10),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
+                        ],
+                        SizedBox(height: 30),
                       ],
-                    ],
+                    ),
                   ),
                 ),
     );
