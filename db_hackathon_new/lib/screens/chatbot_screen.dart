@@ -68,10 +68,23 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       _controller.clear();
     });
     try {
+      // Get the current locale
+      final currentLocale = Localizations.localeOf(context).languageCode;
+      // Map locale to language code for the API
+      String langCode = 'en';
+      if (currentLocale == 'hi') {
+        langCode = 'hi';
+      } else if (currentLocale == 'mr') {
+        langCode = 'mr';
+      }
+      
       final response = await http.post(
         Uri.parse(chatbotApiUrl),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'question': userMessage}),
+        body: jsonEncode({
+          'question': userMessage,
+          'lang': langCode,
+        }),
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
