@@ -33,12 +33,23 @@ class _CommunityPageState extends State<CommunityPage> {
   }
 
   Future<List<dynamic>> fetchNews() async {
-    // Replace with your backend IP if running on device/emulator
-    final res = await http.get(Uri.parse('http://172.20.10.5:5000/news'));
-    if (res.statusCode == 200) {
-      return json.decode(res.body)['news'];
+    try {
+      // Use the same IP as other endpoints for consistency
+      final res = await http.get(Uri.parse('http://10.166.220.105:5000/news'));
+      print('News API Response Status: ${res.statusCode}');
+      print('News API Response Body: ${res.body}');
+      
+      if (res.statusCode == 200) {
+        final data = json.decode(res.body);
+        return data['news'] ?? [];
+      } else {
+        print('News API Error: Status ${res.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('News API Exception: $e');
+      return [];
     }
-    return [];
   }
 
   @override

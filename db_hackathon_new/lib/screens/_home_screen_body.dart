@@ -29,7 +29,7 @@ Future<Map<String, dynamic>?> _fetchProfile() async {
 }
 
 Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile, String lang) async {
-  final url = Uri.parse('http://192.168.1.6:5000/recommend');
+  final url = Uri.parse('http://10.166.220.105:5000/recommend');
   final payload = Map<String, dynamic>.from(profile);
   payload['lang'] = lang; // Pass language to backend
 
@@ -47,7 +47,7 @@ Future<List<dynamic>?> _fetchSchemes(Map<String, dynamic> profile, String lang) 
 }
 
 Future<List<dynamic>?> _fetchEligibleSchemes(Map<String, dynamic> profile, String lang) async {
-  final url = Uri.parse('http://192.168.1.6:5000/eligible_schemes');
+  final url = Uri.parse('http://10.166.220.105:5000/eligible_schemes');
   final payload = Map<String, dynamic>.from(profile);
   payload['lang'] = lang;
   final response = await http.post(
@@ -441,16 +441,17 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: Colors.grey.shade200),
                         ),
-                        padding: EdgeInsets.all(16),
+                        padding: EdgeInsets.all(12),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                         children: [
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Icon(Icons.auto_graph, color: Colors.pinkAccent, size: 28),
+                            children: [
+                              Icon(Icons.auto_graph, color: Colors.pinkAccent, size: 24),
+                              Spacer(),
                               IconButton(
-                                icon: Icon(Icons.volume_up, color: Colors.pinkAccent, size: 20),
+                                icon: Icon(Icons.volume_up, color: Colors.pinkAccent, size: 18),
                                 onPressed: () {
                                   String schemeInfo = scheme['scheme_name'] ?? '';
                                   if (scheme['total_returns'] != null) {
@@ -465,24 +466,26 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
                                   _speak(schemeInfo);
                                 },
                                 padding: EdgeInsets.zero,
-                                constraints: BoxConstraints(),
+                                constraints: BoxConstraints(minWidth: 24, minHeight: 24),
                               ),
                             ],
                           ),
-                            SizedBox(height: 10),
-                            Text(
-                              scheme['scheme_name'] ?? '',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                            SizedBox(height: 8),
+                            Flexible(
+                              child: Text(
+                                scheme['scheme_name'] ?? '',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                            SizedBox(height: 6),
+                            SizedBox(height: 4),
                             if (scheme['total_returns'] != null)
-                              Text('${loc.returns}: ${scheme['total_returns']}', style: TextStyle(fontSize: 13)),
+                              Text('${loc.returns}: ${scheme['total_returns']}', style: TextStyle(fontSize: 11)),
                             if (scheme['risk'] != null)
-                              Text('${loc.risk}: ${scheme['risk']}', style: TextStyle(fontSize: 13)),
+                              Text('${loc.risk}: ${scheme['risk']}', style: TextStyle(fontSize: 11)),
                             if (scheme['time_duration'] != null)
-                              Text('${loc.term}: ${scheme['time_duration']}', style: TextStyle(fontSize: 13)),
+                              Text('${loc.term}: ${scheme['time_duration']}', style: TextStyle(fontSize: 11)),
                           ],
                         ),
                       ),
