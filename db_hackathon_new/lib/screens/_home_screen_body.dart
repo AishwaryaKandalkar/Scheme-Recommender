@@ -12,6 +12,8 @@ import 'account_page.dart';
 import 'my_schemes_page.dart';
 import 'community_page.dart';
 import 'support_page.dart';
+import 'micro_loans_page.dart';
+
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
 void _logout(BuildContext context) async {
@@ -585,7 +587,7 @@ class HomeScreenBodyState extends State<HomeScreenBody> {
       _buildHomeContent(),
       SupportPage(),
       MySchemesPage(),
-      Center(child: Text(loc.microLoansComingSoon, style: TextStyle(fontSize: 18))),
+      MicroLoansPage(),
       CommunityPage(),
     ];
 
