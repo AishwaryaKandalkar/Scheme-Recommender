@@ -267,6 +267,86 @@ class AppLocalizationsHi extends AppLocalizations {
   String get support => 'सपोर्ट';
 
   @override
+  String get supportHub => 'सपोर्ट हब';
+
+  @override
+  String get supportHubWelcome =>
+      'सपोर्ट हब। स्थानीय एजेंटों से जुड़ें और अपनी वित्तीय योजनाओं के लिए सहायता प्राप्त करें।';
+
+  @override
+  String get howCanWeHelp => 'आज हम आपकी कैसे मदद कर सकते हैं?';
+
+  @override
+  String get searchKnowledgeBase =>
+      'हमारे ज्ञान आधार की खोज करें या किसी विशेषज्ञ से जुड़ें';
+
+  @override
+  String get searchHelpTopics => 'लेख, FAQ और सहायता विषयों की खोज करें...';
+
+  @override
+  String get searchCleared => 'खोज साफ़ की गई';
+
+  @override
+  String get connectWithLocalAgents => 'स्थानीय एजेंटों से जुड़ें';
+
+  @override
+  String get findExpertHelp => 'अपने क्षेत्र में विशेषज्ञ सहायता प्राप्त करें';
+
+  @override
+  String agentInfo(String name, String region) {
+    return 'एजेंट: $name, क्षेत्र: $region';
+  }
+
+  @override
+  String get regionNotSpecified => 'निर्दिष्ट नहीं';
+
+  @override
+  String calling(String phone) {
+    return '$phone पर कॉल कर रहे हैं';
+  }
+
+  @override
+  String openingEmail(String email) {
+    return '$email पर ईमेल खोल रहे हैं';
+  }
+
+  @override
+  String get call => 'कॉल करें';
+
+  @override
+  String get message => 'संदेश';
+
+  @override
+  String get bankCustomerCare => 'बैंक कस्टमर केयर';
+
+  @override
+  String get bankCustomerCareDescription =>
+      'आपकी सभी बैंकिंग आवश्यकताओं के लिए 24/7 सहायता';
+
+  @override
+  String get primaryCustomerCare => 'प्राथमिक कस्टमर केयर';
+
+  @override
+  String get primaryCustomerCareSubtitle => '24/7 उपलब्ध • सामान्य सहायता';
+
+  @override
+  String get technicalSupport => 'तकनीकी सहायता';
+
+  @override
+  String get technicalSupportSubtitle =>
+      'सोमवार-शुक्रवार, सुबह 8 बजे - शाम 6 बजे • तकनीकी समस्याएं';
+
+  @override
+  String get callNow => 'अभी कॉल करें';
+
+  @override
+  String get helpTooltip => 'सहायता';
+
+  @override
+  String get getHelpSupport =>
+      'अपनी वित्तीय योजनाओं और प्रश्नों के लिए सहायता और समर्थन प्राप्त करें';
+
+  @override
   String get myProfile => 'मेरी प्रोफ़ाइल';
 
   @override
@@ -277,10 +357,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get editProfile => 'प्रोफ़ाइल संपादित करें';
 
   @override
-  String get logout => 'लॉग आउट';
+  String get logout => 'लॉगआउट';
 
   @override
-  String get loggingOut => 'लॉग आउट किया जा रहा है';
+  String get loggingOut => 'लॉगआउट हो रहे हैं';
 
   @override
   String get contactInfo => 'संपर्क जानकारी';
@@ -289,13 +369,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get noEmail => 'कोई ईमेल नहीं';
 
   @override
-  String get noPhone => 'कोई फोन नहीं';
+  String get noPhone => 'कोई फ़ोन नहीं';
 
   @override
   String get noLocation => 'कोई स्थान नहीं';
 
   @override
-  String get phone => 'फोन';
+  String get phone => 'फ़ोन';
 
   @override
   String get location => 'स्थान';
@@ -307,7 +387,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get totalSavings => 'कुल बचत';
 
   @override
-  String get activeSchemes => 'सक्रिय योजनाएँ';
+  String get activeSchemes => 'सक्रिय योजनाएं';
 
   @override
   String get investmentReturns => 'निवेश रिटर्न';
@@ -352,7 +432,7 @@ class AppLocalizationsHi extends AppLocalizations {
       'अभी तक कोई योजना पंजीकृत नहीं है। आप होम पेज से नई योजनाएँ देख सकते हैं।';
 
   @override
-  String get unnamedScheme => 'बेनाम योजना';
+  String get unnamedScheme => 'अनाम योजना';
 
   @override
   String get amount => 'राशि';
@@ -361,13 +441,16 @@ class AppLocalizationsHi extends AppLocalizations {
   String get registeredOn => 'पंजीकृत तिथि';
 
   @override
-  String get nextDueDate => 'अगली देय तिथि';
+  String get nextDueDate => 'अगली देय तारीख';
 
   @override
   String get scheme => 'योजना';
 
   @override
-  String get financeInclude => 'फाइनेंसइन्क्लूड';
+  String get arthSamarth => 'ArthSamarth';
+
+  @override
+  String get financeInclude => 'ArthSamarth';
 
   @override
   String get pathToFinancialSuccess => 'आपकी वित्तीय सफलता का रास्ता';
@@ -400,7 +483,10 @@ class AppLocalizationsHi extends AppLocalizations {
       'स्कीम रिकमेंडर में आपका स्वागत है! सरकारी योजनाओं की खोज के लिए आपका एआई-संचालित वित्तीय साथी।';
 
   @override
-  String get loginToFinWise => 'FinWise में लॉगिन करें';
+  String get loginToArthSamarth => 'ArthSamarth में लॉगिन करें';
+
+  @override
+  String get loginToFinWise => 'ArthSamarth में लॉगिन करें';
 
   @override
   String get welcomeBack => 'वापसी पर स्वागत है!';
@@ -481,7 +567,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get or => 'या';
 
   @override
-  String get createFinWiseAccount => 'अपना FinWise खाता बनाएं';
+  String get createArthSamarthAccount => 'अपना ArthSamarth खाता बनाएं';
+
+  @override
+  String get createFinWiseAccount => 'अपना ArthSamarth खाता बनाएं';
 
   @override
   String get personalInfo => 'व्यक्तिगत\nजानकारी';
@@ -606,4 +695,204 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get goingBack => 'पिछले चरण पर वापस जा रहे हैं';
+
+  @override
+  String searchingForSchemes(Object goal) {
+    return 'योजनाओं की खोज की जा रही है: $goal';
+  }
+
+  @override
+  String get loadingEligibleSchemes => 'आपकी योग्य योजनाएं लोड की जा रही हैं';
+
+  @override
+  String foundSchemesForSearch(Object count, Object goal) {
+    return '$goal के लिए आपकी खोज से मेल खाने वाली $count योजनाएं मिलीं';
+  }
+
+  @override
+  String loadedEligibleSchemes(Object count) {
+    return 'आपके लिए योग्य $count योजनाएं लोड की गईं';
+  }
+
+  @override
+  String get failedToLoadSchemes =>
+      'योजनाएं लोड करने में विफल। कृपया पुनः प्रयास करें।';
+
+  @override
+  String pageNumber(Object page) {
+    return 'पृष्ठ $page';
+  }
+
+  @override
+  String get welcomeToFinancialHub =>
+      'फाइनेंसियल स्कीम हब में आपका स्वागत है! आपकी व्यक्तिगत सिफारिशें लोड की जा रही हैं।';
+
+  @override
+  String get welcomeToFinancialHubDescription =>
+      'फाइनेंसियल स्कीम हब में आपका स्वागत है! अपने वित्तीय लक्ष्यों के लिए व्यक्तिगत सिफारिशें खोजें।';
+
+  @override
+  String get discoverFinancialOpportunities => 'वित्तीय अवसरों की खोज करें';
+
+  @override
+  String get findYourPerfectScheme => 'अपनी सही योजना खोजें';
+
+  @override
+  String get whatAreYouLookingFor => 'आप क्या खोज रहे हैं?';
+
+  @override
+  String usingAiToFind(Object searchText) {
+    return '$searchText के लिए सर्वोत्तम योजनाओं को खोजने के लिए एआई का उपयोग कर रहे हैं';
+  }
+
+  @override
+  String get refreshingEligibleSchemes =>
+      'आपकी योग्य योजनाओं को रीफ्रेश कर रहे हैं';
+
+  @override
+  String get userProfileNotFound => 'उपयोगकर्ता प्रोफ़ाइल नहीं मिली।';
+
+  @override
+  String get noDataReceived => 'बैकएंड से कोई डेटा प्राप्त नहीं हुआ।';
+
+  @override
+  String get aiRecommendations => 'एआई सिफारिशें';
+
+  @override
+  String get eligibleSchemes => 'योग्य योजनाएं';
+
+  @override
+  String schemesFound(Object count) {
+    return '$count योजनाएं मिलीं';
+  }
+
+  @override
+  String get showingAiRecommendations =>
+      'आपकी खोज के आधार पर एआई-संचालित सिफारिशें दिखाई जा रही हैं';
+
+  @override
+  String get showingEligibleSchemes =>
+      'आपकी प्रोफ़ाइल के आधार पर योग्य योजनाएं दिखाई जा रही हैं';
+
+  @override
+  String foundSchemesTotal(Object count, Object modeText) {
+    return '$modeText। $count योजनाएं मिलीं।';
+  }
+
+  @override
+  String pageOf(Object current, Object total) {
+    return 'पृष्ठ $current का $total';
+  }
+
+  @override
+  String get schemes => 'योजनाएं';
+
+  @override
+  String totalSchemesFound(Object count, Object current, Object total) {
+    return 'पृष्ठ $current का $total। कुल $count योजनाएं मिलीं।';
+  }
+
+  @override
+  String get returnLabel => 'रिटर्न';
+
+  @override
+  String get riskLabel => 'जोखिम';
+
+  @override
+  String get termLabel => 'अवधि';
+
+  @override
+  String get changeLanguage => 'भाषा बदलें';
+
+  @override
+  String get activeMember => 'सक्रिय सदस्य';
+
+  @override
+  String profileUserInfo(String userName) {
+    return 'प्रोफ़ाइल: $userName, सक्रिय सदस्य';
+  }
+
+  @override
+  String get contactInformation => 'संपर्क जानकारी';
+
+  @override
+  String contactInfoVoice(String email, String phone, String location) {
+    return 'संपर्क जानकारी। ईमेल: $email। फ़ोन: $phone। स्थान: $location।';
+  }
+
+  @override
+  String financialSummaryVoice(
+      String savings, String schemes, String returns, String goals) {
+    return 'वित्तीय सारांश। कुल बचत: $savings रुपये। सक्रिय योजनाएं: $schemes। निवेश रिटर्न: $returns रुपये। लक्ष्य प्राप्त: $goals';
+  }
+
+  @override
+  String get thisMonthGrowth => 'इस महीने +1.2%';
+
+  @override
+  String joinedNewScheme(String count) {
+    return '$count नई जुड़ी';
+  }
+
+  @override
+  String get joinedNone => 'कोई नहीं जुड़ी';
+
+  @override
+  String get lastQuarterGrowth => 'पिछली तिमाही +5%';
+
+  @override
+  String get onTrackForMore => '3 और के लिए ट्रैक पर';
+
+  @override
+  String get recentActivitiesAndTips => 'हाल की गतिविधियां और सुझाव';
+
+  @override
+  String get recentActivitiesVoice => 'हाल की गतिविधियां और सुझाव अनुभाग';
+
+  @override
+  String get noSchemesRegistered => 'अभी तक कोई योजना पंजीकृत नहीं।';
+
+  @override
+  String get exploreNewSchemes =>
+      'शुरुआत करने के लिए होम पेज से नई योजनाओं का अन्वेषण करें!';
+
+  @override
+  String get noSchemesVoice =>
+      'अभी तक कोई योजना पंजीकृत नहीं। आप होम पेज से नई योजनाओं का अन्वेषण कर सकते हैं।';
+
+  @override
+  String get registered => 'पंजीकृत';
+
+  @override
+  String schemeVoiceInfo(
+      String name, String amount, String regDate, String dueDate) {
+    return 'योजना: $name। राशि: $amount रुपये। पंजीकृत: $regDate। अगली देय तारीख: $dueDate';
+  }
+
+  @override
+  String get selectLanguage => 'भाषा चुनें';
+
+  @override
+  String languageSelected(String language) {
+    return '$language चुनी गई';
+  }
+
+  @override
+  String get myProfilePageDescription =>
+      'मेरी प्रोफ़ाइल पेज। अपनी व्यक्तिगत जानकारी, वित्तीय सारांश और सक्रिय योजनाएं देखें।';
+
+  @override
+  String profilePageVoice(String name) {
+    return 'प्रोफ़ाइल: $name, सक्रिय सदस्य';
+  }
+
+  @override
+  String snapshotCardVoice(String title, String value, String subtitle) {
+    return '$title: $value। $subtitle';
+  }
+
+  @override
+  String contactItemVoice(String label, String value) {
+    return '$label: $value';
+  }
 }

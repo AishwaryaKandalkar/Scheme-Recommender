@@ -8,6 +8,7 @@ class MicroLoansPage extends StatefulWidget {
 
 class _MicroLoansPageState extends State<MicroLoansPage> {
   FlutterTts? flutterTts;
+  static const darkBlue = Color(0xFF1A237E);
 
   @override
   void initState() {
@@ -34,95 +35,164 @@ class _MicroLoansPageState extends State<MicroLoansPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Micro Finance Hub'),
-        backgroundColor: Colors.blue.shade600,
-        foregroundColor: Colors.white,
+        title: Text(
+          'Micro Finance Hub',
+          style: TextStyle(
+            fontFamily: 'Roboto',
+            color: darkBlue,
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 4,
+        shadowColor: darkBlue.withOpacity(0.1),
+        iconTheme: IconThemeData(color: darkBlue),
         actions: [
-          IconButton(
-            icon: Icon(Icons.volume_up),
-            onPressed: () => _speak("Micro Finance Hub. Empowering small businesses and entrepreneurs across India."),
+          Container(
+            margin: EdgeInsets.only(right: 12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [darkBlue, darkBlue.withOpacity(0.8)],
+              ),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: IconButton(
+              icon: Icon(Icons.volume_up, color: Colors.white),
+              onPressed: () => _speak("Micro Finance Hub. Empowering small businesses and entrepreneurs across India."),
+            ),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header with gradient
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.grey[50]!, Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with gradient
+              Container(
+                padding: EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [darkBlue, darkBlue.withOpacity(0.8)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(25),
+                  boxShadow: [
+                    BoxShadow(
+                      color: darkBlue.withOpacity(0.3),
+                      blurRadius: 15,
+                      offset: Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Icon(Icons.account_balance_wallet, color: Colors.white, size: 40),
+                    ),
+                    SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Micro Finance Hub',
+                            style: TextStyle(
+                              fontFamily: 'Roboto',
+                              color: Colors.white,
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Empowering small businesses & entrepreneurs across India',
+                            style: TextStyle(
+                              fontFamily: 'Mulish',
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 16,
+                              height: 1.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 28),
+
+            // Impact Statistics Dashboard
             Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+                  colors: [Colors.white, Colors.blue[50]!],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.account_balance_wallet, color: Colors.white, size: 40),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Micro Finance Hub',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          'Empowering small businesses & entrepreneurs across India',
-                          style: TextStyle(color: Colors.white70, fontSize: 16),
-                        ),
-                      ],
-                    ),
+                borderRadius: BorderRadius.circular(25),
+                boxShadow: [
+                  BoxShadow(
+                    color: darkBlue.withOpacity(0.1),
+                    blurRadius: 15,
+                    offset: Offset(0, 5),
                   ),
                 ],
-              ),
-            ),
-            SizedBox(height: 24),
-
-            // Impact Statistics Dashboard
-            Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.purple.shade50, Colors.purple.shade100],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.purple.shade200),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.analytics, color: Colors.purple.shade700, size: 24),
-                      SizedBox(width: 8),
-                      Text(
-                        'National Impact Dashboard',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.purple.shade800,
+                      Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: darkBlue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Icon(Icons.analytics, color: darkBlue, size: 24),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'National Impact Dashboard',
+                          style: TextStyle(
+                            fontFamily: 'Roboto',
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: darkBlue,
+                          ),
                         ),
                       ),
-                      Spacer(),
-                      IconButton(
-                        icon: Icon(Icons.volume_up, color: Colors.purple.shade700, size: 20),
-                        onPressed: () => _speak("National Impact Dashboard showing statistics of micro finance across India"),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: darkBlue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: IconButton(
+                          icon: Icon(Icons.volume_up, color: darkBlue, size: 20),
+                          onPressed: () => _speak("National Impact Dashboard showing statistics of micro finance across India"),
+                        ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 16),
+                  SizedBox(height: 20),
                   Row(
                     children: [
                       Expanded(
@@ -178,14 +248,35 @@ class _MicroLoansPageState extends State<MicroLoansPage> {
             // Loan Products Section
             Row(
               children: [
-                Text(
-                  'Popular Loan Products',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: darkBlue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Icon(Icons.account_balance_wallet, color: darkBlue, size: 24),
                 ),
-                Spacer(),
-                IconButton(
-                  icon: Icon(Icons.volume_up, color: Colors.blue, size: 20),
-                  onPressed: () => _speak("Popular loan products section. Explore different types of micro loans available."),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Popular Loan Products',
+                    style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: darkBlue,
+                    ),
+                  ),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: darkBlue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.volume_up, color: darkBlue, size: 20),
+                    onPressed: () => _speak("Popular loan products section. Explore different types of micro loans available."),
+                  ),
                 ),
               ],
             ),
@@ -238,14 +329,35 @@ class _MicroLoansPageState extends State<MicroLoansPage> {
             // Success Stories
             Row(
               children: [
-                Text(
-                  'Success Stories',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: darkBlue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Icon(Icons.star, color: darkBlue, size: 24),
                 ),
-                Spacer(),
-                IconButton(
-                  icon: Icon(Icons.volume_up, color: Colors.amber, size: 20),
-                  onPressed: () => _speak("Success stories of entrepreneurs who transformed their businesses with micro loans."),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Success Stories',
+                    style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: darkBlue,
+                    ),
+                  ),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: darkBlue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.volume_up, color: darkBlue, size: 20),
+                    onPressed: () => _speak("Success stories of entrepreneurs who transformed their businesses with micro loans."),
+                  ),
                 ),
               ],
             ),
@@ -253,9 +365,19 @@ class _MicroLoansPageState extends State<MicroLoansPage> {
             Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.amber.shade50,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.amber.shade200),
+                gradient: LinearGradient(
+                  colors: [Colors.white, Colors.amber[50]!],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: darkBlue.withOpacity(0.1),
+                    blurRadius: 15,
+                    offset: Offset(0, 5),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,30 +408,54 @@ class _MicroLoansPageState extends State<MicroLoansPage> {
             Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.blue.shade200),
+                gradient: LinearGradient(
+                  colors: [Colors.white, Colors.blue[50]!],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: darkBlue.withOpacity(0.1),
+                    blurRadius: 15,
+                    offset: Offset(0, 5),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.lightbulb_outline, color: Colors.blue, size: 24),
-                      SizedBox(width: 8),
+                      Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: darkBlue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Icon(Icons.lightbulb_outline, color: darkBlue, size: 24),
+                      ),
+                      SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'Tips for Successful Application',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontFamily: 'Roboto',
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.blue.shade800,
+                            color: darkBlue,
                           ),
                         ),
                       ),
-                      IconButton(
-                        icon: Icon(Icons.volume_up, color: Colors.blue, size: 20),
-                        onPressed: () => _speak("Tips for successful loan application to increase your chances of approval."),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: darkBlue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: IconButton(
+                          icon: Icon(Icons.volume_up, color: darkBlue, size: 20),
+                          onPressed: () => _speak("Tips for successful loan application to increase your chances of approval."),
+                        ),
                       ),
                     ],
                   ),
@@ -328,53 +474,108 @@ class _MicroLoansPageState extends State<MicroLoansPage> {
             Row(
               children: [
                 Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      _speak("Loan calculator feature will be available soon");
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Opening loan calculator...'),
-                          backgroundColor: Colors.blue,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [darkBlue, darkBlue.withOpacity(0.8)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: darkBlue.withOpacity(0.3),
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
                         ),
-                      );
-                    },
-                    icon: Icon(Icons.calculate, color: Colors.white),
-                    label: Text('Loan Calculator', style: TextStyle(color: Colors.white)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade600,
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                      ],
+                    ),
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        _speak("Loan calculator feature will be available soon");
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Opening loan calculator...'),
+                            backgroundColor: darkBlue,
+                          ),
+                        );
+                      },
+                      icon: Icon(Icons.calculate, color: Colors.white, size: 22),
+                      label: Text(
+                        'Loan Calculator',
+                        style: TextStyle(
+                          fontFamily: 'Roboto',
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.white,
+                        shadowColor: Colors.transparent,
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                       ),
                     ),
                   ),
                 ),
-                SizedBox(width: 12),
+                SizedBox(width: 16),
                 Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      _speak("Finding nearest micro finance institution");
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Finding nearest MFI...'),
-                          backgroundColor: Colors.green,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [darkBlue.withOpacity(0.8), darkBlue],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: darkBlue.withOpacity(0.3),
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
                         ),
-                      );
-                    },
-                    icon: Icon(Icons.location_on, color: Colors.white),
-                    label: Text('Find MFI Near Me', style: TextStyle(color: Colors.white)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green.shade600,
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                      ],
+                    ),
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        _speak("Finding nearest micro finance institution");
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Finding nearest MFI...'),
+                            backgroundColor: darkBlue,
+                          ),
+                        );
+                      },
+                      icon: Icon(Icons.location_on, color: Colors.white, size: 22),
+                      label: Text(
+                        'Find MFI Near Me',
+                        style: TextStyle(
+                          fontFamily: 'Roboto',
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.white,
+                        shadowColor: Colors.transparent,
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ],
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -388,15 +589,19 @@ class _MicroLoansPageState extends State<MicroLoansPage> {
     required Color color,
   }) {
     return Container(
-      padding: EdgeInsets.all(12),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        gradient: LinearGradient(
+          colors: [Colors.white, color.withOpacity(0.05)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.1),
-            blurRadius: 4,
-            offset: Offset(0, 2),
+            color: color.withOpacity(0.2),
+            blurRadius: 10,
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -405,35 +610,59 @@ class _MicroLoansPageState extends State<MicroLoansPage> {
         children: [
           Row(
             children: [
-              Icon(icon, color: color, size: 20),
-              SizedBox(width: 4),
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              SizedBox(width: 8),
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    fontFamily: 'Mulish',
+                    fontSize: 12, 
+                    fontWeight: FontWeight.w600,
+                    color: darkBlue,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              IconButton(
-                icon: Icon(Icons.volume_up, color: color, size: 16),
-                onPressed: () => _speak("$title: $value $subtitle"),
-                padding: EdgeInsets.zero,
-                constraints: BoxConstraints(),
+              Container(
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.volume_up, color: color, size: 16),
+                  onPressed: () => _speak("$title: $value $subtitle"),
+                  padding: EdgeInsets.all(4),
+                  constraints: BoxConstraints(),
+                ),
               ),
             ],
           ),
-          SizedBox(height: 6),
+          SizedBox(height: 12),
           Text(
             value,
             style: TextStyle(
-              fontSize: 16,
+              fontFamily: 'Roboto',
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: color,
             ),
           ),
+          SizedBox(height: 4),
           Text(
             subtitle,
-            style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+            style: TextStyle(
+              fontFamily: 'Mulish',
+              fontSize: 11, 
+              color: Colors.grey[600]
+            ),
           ),
         ],
       ),
@@ -450,11 +679,21 @@ class _MicroLoansPageState extends State<MicroLoansPage> {
     required Color color,
   }) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
+        gradient: LinearGradient(
+          colors: [Colors.white, Colors.blue[50]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: darkBlue.withOpacity(0.1),
+            blurRadius: 15,
+            offset: Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -462,10 +701,10 @@ class _MicroLoansPageState extends State<MicroLoansPage> {
           Row(
             children: [
               Container(
-                padding: EdgeInsets.all(8),
+                padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(15),
                 ),
                 child: Icon(icon, color: color, size: 24),
               ),
@@ -477,25 +716,36 @@ class _MicroLoansPageState extends State<MicroLoansPage> {
                     Text(
                       title,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontFamily: 'Roboto',
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: color,
+                        color: darkBlue,
                       ),
                     ),
                     Text(
                       subtitle,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      style: TextStyle(
+                        fontFamily: 'Mulish',
+                        fontSize: 14, 
+                        color: Colors.grey[600]
+                      ),
                     ),
                   ],
                 ),
               ),
-              IconButton(
-                icon: Icon(Icons.volume_up, color: color, size: 20),
-                onPressed: () => _speak("$title. $subtitle. Loan range: $loanRange. Tenure: $tenure. Features: ${features.join(', ')}"),
+              Container(
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.volume_up, color: color, size: 20),
+                  onPressed: () => _speak("$title. $subtitle. Loan range: $loanRange. Tenure: $tenure. Features: ${features.join(', ')}"),
+                ),
               ),
             ],
           ),
-          SizedBox(height: 12),
+          SizedBox(height: 16),
           Row(
             children: [
               Expanded(
@@ -506,23 +756,25 @@ class _MicroLoansPageState extends State<MicroLoansPage> {
               ),
             ],
           ),
-          SizedBox(height: 12),
+          SizedBox(height: 16),
           Wrap(
-            spacing: 6,
-            runSpacing: 4,
+            spacing: 8,
+            runSpacing: 6,
             children: features
                 .map((feature) => Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: color.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(color: color.withOpacity(0.3)),
                       ),
                       child: Text(
                         feature,
                         style: TextStyle(
-                          fontSize: 10,
+                          fontFamily: 'Mulish',
+                          fontSize: 12,
                           color: color,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ))
@@ -534,18 +786,35 @@ class _MicroLoansPageState extends State<MicroLoansPage> {
   }
 
   Widget _buildLoanInfo(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-        ),
-        Text(
-          value,
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-        ),
-      ],
+    return Container(
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: darkBlue.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Mulish',
+              fontSize: 12, 
+              color: Colors.grey[600]
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 14, 
+              fontWeight: FontWeight.bold,
+              color: darkBlue,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -559,18 +828,37 @@ class _MicroLoansPageState extends State<MicroLoansPage> {
       children: [
         Row(
           children: [
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: Colors.amber.shade200,
-              child: Text(
-                name[0],
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.amber.shade800,
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.amber[300]!, Colors.amber[600]!],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.amber.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  name[0],
+                  style: TextStyle(
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
-            SizedBox(width: 8),
+            SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -578,33 +866,51 @@ class _MicroLoansPageState extends State<MicroLoansPage> {
                   Text(
                     name,
                     style: TextStyle(
+                      fontFamily: 'Roboto',
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontSize: 16,
+                      color: darkBlue,
                     ),
                   ),
                   Text(
                     location,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontFamily: 'Mulish',
+                      fontSize: 14,
                       color: Colors.grey.shade600,
                     ),
                   ),
                 ],
               ),
             ),
-            IconButton(
-              icon: Icon(Icons.volume_up, color: Colors.amber.shade700, size: 18),
-              onPressed: () => _speak("Success story of $name from $location. $story"),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.amber.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: IconButton(
+                icon: Icon(Icons.volume_up, color: Colors.amber[700], size: 20),
+                onPressed: () => _speak("Success story of $name from $location. $story"),
+              ),
             ),
           ],
         ),
-        SizedBox(height: 8),
-        Text(
-          story,
-          style: TextStyle(
-            fontSize: 13,
-            color: Colors.grey.shade700,
-            fontStyle: FontStyle.italic,
+        SizedBox(height: 12),
+        Container(
+          padding: EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.amber.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            story,
+            style: TextStyle(
+              fontFamily: 'Mulish',
+              fontSize: 14,
+              color: Colors.grey.shade700,
+              fontStyle: FontStyle.italic,
+              height: 1.4,
+            ),
           ),
         ),
       ],
@@ -612,31 +918,49 @@ class _MicroLoansPageState extends State<MicroLoansPage> {
   }
 
   Widget _buildTip(String tip) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 8),
+    return Container(
+      margin: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: darkBlue.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.check_circle,
-            color: Colors.green,
-            size: 16,
+          Container(
+            padding: EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.green.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              Icons.check_circle,
+              color: Colors.green[600],
+              size: 18,
+            ),
           ),
-          SizedBox(width: 8),
+          SizedBox(width: 12),
           Expanded(
             child: Text(
               tip,
               style: TextStyle(
+                fontFamily: 'Mulish',
                 fontSize: 14,
-                color: Colors.grey.shade700,
+                color: darkBlue,
+                height: 1.3,
               ),
             ),
           ),
-          IconButton(
-            icon: Icon(Icons.volume_up, color: Colors.blue, size: 16),
-            onPressed: () => _speak(tip),
-            padding: EdgeInsets.zero,
-            constraints: BoxConstraints(),
+          Container(
+            decoration: BoxDecoration(
+              color: darkBlue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: IconButton(
+              icon: Icon(Icons.volume_up, color: darkBlue, size: 16),
+              onPressed: () => _speak(tip),
+            ),
           ),
         ],
       ),

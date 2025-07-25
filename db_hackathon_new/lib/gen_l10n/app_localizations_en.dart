@@ -268,6 +268,86 @@ class AppLocalizationsEn extends AppLocalizations {
   String get support => 'Support';
 
   @override
+  String get supportHub => 'Support Hub';
+
+  @override
+  String get supportHubWelcome =>
+      'Support Hub. Connect with local agents and get help with your financial schemes.';
+
+  @override
+  String get howCanWeHelp => 'How can we help you today?';
+
+  @override
+  String get searchKnowledgeBase =>
+      'Search our knowledge base or connect with an expert';
+
+  @override
+  String get searchHelpTopics => 'Search articles, FAQs, and help topics...';
+
+  @override
+  String get searchCleared => 'Search cleared';
+
+  @override
+  String get connectWithLocalAgents => 'Connect with Local Agents';
+
+  @override
+  String get findExpertHelp => 'Find expert help in your area';
+
+  @override
+  String agentInfo(String name, String region) {
+    return 'Agent: $name, Region: $region';
+  }
+
+  @override
+  String get regionNotSpecified => 'Not specified';
+
+  @override
+  String calling(String phone) {
+    return 'Calling $phone';
+  }
+
+  @override
+  String openingEmail(String email) {
+    return 'Opening email to $email';
+  }
+
+  @override
+  String get call => 'Call';
+
+  @override
+  String get message => 'Message';
+
+  @override
+  String get bankCustomerCare => 'Bank Customer Care';
+
+  @override
+  String get bankCustomerCareDescription =>
+      '24/7 support for all your banking needs';
+
+  @override
+  String get primaryCustomerCare => 'Primary Customer Care';
+
+  @override
+  String get primaryCustomerCareSubtitle => '24/7 Available • General Support';
+
+  @override
+  String get technicalSupport => 'Technical Support';
+
+  @override
+  String get technicalSupportSubtitle =>
+      'Mon-Fri, 8AM - 6PM • Technical Issues';
+
+  @override
+  String get callNow => 'Call Now';
+
+  @override
+  String get helpTooltip => 'Help';
+
+  @override
+  String get getHelpSupport =>
+      'Get help and support for your financial schemes and questions';
+
+  @override
   String get myProfile => 'My Profile';
 
   @override
@@ -368,7 +448,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheme => 'Scheme';
 
   @override
-  String get financeInclude => 'FinanceInclude';
+  String get arthSamarth => 'ArthSamarth';
+
+  @override
+  String get financeInclude => 'ArthSamarth';
 
   @override
   String get pathToFinancialSuccess => 'Your Path to Financial Success';
@@ -401,7 +484,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Welcome to Scheme Recommender! Your AI-powered financial companion for discovering government schemes.';
 
   @override
-  String get loginToFinWise => 'Login to FinWise';
+  String get loginToArthSamarth => 'Login to ArthSamarth';
+
+  @override
+  String get loginToFinWise => 'Login to ArthSamarth';
 
   @override
   String get welcomeBack => 'Welcome Back!';
@@ -482,7 +568,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get or => 'OR';
 
   @override
-  String get createFinWiseAccount => 'Create Your FinWise Account';
+  String get createArthSamarthAccount => 'Create Your ArthSamarth Account';
+
+  @override
+  String get createFinWiseAccount => 'Create Your ArthSamarth Account';
 
   @override
   String get personalInfo => 'Personal\nInfo';
@@ -605,4 +694,203 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get goingBack => 'Going back to previous step';
+
+  @override
+  String searchingForSchemes(Object goal) {
+    return 'Searching for schemes related to: $goal';
+  }
+
+  @override
+  String get loadingEligibleSchemes => 'Loading your eligible schemes';
+
+  @override
+  String foundSchemesForSearch(Object count, Object goal) {
+    return 'Found $count schemes matching your search for $goal';
+  }
+
+  @override
+  String loadedEligibleSchemes(Object count) {
+    return 'Loaded $count schemes you\'re eligible for';
+  }
+
+  @override
+  String get failedToLoadSchemes => 'Failed to load schemes. Please try again.';
+
+  @override
+  String pageNumber(Object page) {
+    return 'Page $page';
+  }
+
+  @override
+  String get welcomeToFinancialHub =>
+      'Welcome to Financial Scheme Hub! Loading your personalized recommendations.';
+
+  @override
+  String get welcomeToFinancialHubDescription =>
+      'Welcome to Financial Scheme Hub! Find personalized recommendations for your financial goals.';
+
+  @override
+  String get discoverFinancialOpportunities =>
+      'Discover Financial Opportunities';
+
+  @override
+  String get findYourPerfectScheme => 'Find Your Perfect Scheme';
+
+  @override
+  String get whatAreYouLookingFor => 'What are you looking for?';
+
+  @override
+  String usingAiToFind(Object searchText) {
+    return 'Using AI to find the best schemes for: $searchText';
+  }
+
+  @override
+  String get refreshingEligibleSchemes => 'Refreshing your eligible schemes';
+
+  @override
+  String get userProfileNotFound => 'User profile not found.';
+
+  @override
+  String get noDataReceived => 'No data received from backend.';
+
+  @override
+  String get aiRecommendations => 'AI Recommendations';
+
+  @override
+  String get eligibleSchemes => 'Eligible Schemes';
+
+  @override
+  String schemesFound(Object count) {
+    return '$count schemes found';
+  }
+
+  @override
+  String get showingAiRecommendations =>
+      'Showing AI-powered recommendations based on your search';
+
+  @override
+  String get showingEligibleSchemes =>
+      'Showing schemes you\'re eligible for based on your profile';
+
+  @override
+  String foundSchemesTotal(Object count, Object modeText) {
+    return '$modeText. Found $count schemes.';
+  }
+
+  @override
+  String pageOf(Object current, Object total) {
+    return 'Page $current of $total';
+  }
+
+  @override
+  String get schemes => 'schemes';
+
+  @override
+  String totalSchemesFound(Object count, Object current, Object total) {
+    return 'Page $current of $total. Total $count schemes found.';
+  }
+
+  @override
+  String get returnLabel => 'Return';
+
+  @override
+  String get riskLabel => 'Risk';
+
+  @override
+  String get termLabel => 'Term';
+
+  @override
+  String get changeLanguage => 'Change Language';
+
+  @override
+  String get activeMember => 'Active Member';
+
+  @override
+  String profileUserInfo(String userName) {
+    return 'Profile: $userName, Active Member';
+  }
+
+  @override
+  String get contactInformation => 'Contact Information';
+
+  @override
+  String contactInfoVoice(String email, String phone, String location) {
+    return 'Contact Information. Email: $email. Phone: $phone. Location: $location.';
+  }
+
+  @override
+  String financialSummaryVoice(
+      String savings, String schemes, String returns, String goals) {
+    return 'Financial Summary. Total Savings: $savings rupees. Active Schemes: $schemes. Investment Returns: $returns rupees. Goals Achieved: $goals';
+  }
+
+  @override
+  String get thisMonthGrowth => '+1.2% this month';
+
+  @override
+  String joinedNewScheme(String count) {
+    return 'Joined $count new';
+  }
+
+  @override
+  String get joinedNone => 'Joined none';
+
+  @override
+  String get lastQuarterGrowth => '+5% last quarter';
+
+  @override
+  String get onTrackForMore => 'On track for 3 more';
+
+  @override
+  String get recentActivitiesAndTips => 'Recent Activities & Tips';
+
+  @override
+  String get recentActivitiesVoice => 'Recent Activities and Tips section';
+
+  @override
+  String get noSchemesRegistered => 'No schemes registered yet.';
+
+  @override
+  String get exploreNewSchemes =>
+      'Explore new schemes from the home page to get started!';
+
+  @override
+  String get noSchemesVoice =>
+      'No schemes registered yet. You can explore new schemes from the home page.';
+
+  @override
+  String get registered => 'Registered';
+
+  @override
+  String schemeVoiceInfo(
+      String name, String amount, String regDate, String dueDate) {
+    return 'Scheme: $name. Amount: $amount rupees. Registered on: $regDate. Next due date: $dueDate';
+  }
+
+  @override
+  String get selectLanguage => 'Select Language';
+
+  @override
+  String languageSelected(String language) {
+    return '$language selected';
+  }
+
+  @override
+  String get myProfilePageDescription =>
+      'My Profile page. View your personal information, financial summary, and active schemes.';
+
+  @override
+  String profilePageVoice(String name) {
+    return 'Profile: $name, Active Member';
+  }
+
+  @override
+  String snapshotCardVoice(String title, String value, String subtitle) {
+    return '$title: $value. $subtitle';
+  }
+
+  @override
+  String contactItemVoice(String label, String value) {
+    return '$label: $value';
+  }
 }

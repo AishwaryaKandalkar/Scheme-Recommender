@@ -604,6 +604,144 @@ abstract class AppLocalizations {
   /// **'Support'**
   String get support;
 
+  /// No description provided for @supportHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Support Hub'**
+  String get supportHub;
+
+  /// No description provided for @supportHubWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Support Hub. Connect with local agents and get help with your financial schemes.'**
+  String get supportHubWelcome;
+
+  /// No description provided for @howCanWeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'How can we help you today?'**
+  String get howCanWeHelp;
+
+  /// No description provided for @searchKnowledgeBase.
+  ///
+  /// In en, this message translates to:
+  /// **'Search our knowledge base or connect with an expert'**
+  String get searchKnowledgeBase;
+
+  /// No description provided for @searchHelpTopics.
+  ///
+  /// In en, this message translates to:
+  /// **'Search articles, FAQs, and help topics...'**
+  String get searchHelpTopics;
+
+  /// No description provided for @searchCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Search cleared'**
+  String get searchCleared;
+
+  /// No description provided for @connectWithLocalAgents.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect with Local Agents'**
+  String get connectWithLocalAgents;
+
+  /// No description provided for @findExpertHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Find expert help in your area'**
+  String get findExpertHelp;
+
+  /// No description provided for @agentInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Agent: {name}, Region: {region}'**
+  String agentInfo(String name, String region);
+
+  /// No description provided for @regionNotSpecified.
+  ///
+  /// In en, this message translates to:
+  /// **'Not specified'**
+  String get regionNotSpecified;
+
+  /// No description provided for @calling.
+  ///
+  /// In en, this message translates to:
+  /// **'Calling {phone}'**
+  String calling(String phone);
+
+  /// No description provided for @openingEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening email to {email}'**
+  String openingEmail(String email);
+
+  /// No description provided for @call.
+  ///
+  /// In en, this message translates to:
+  /// **'Call'**
+  String get call;
+
+  /// No description provided for @message.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get message;
+
+  /// No description provided for @bankCustomerCare.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank Customer Care'**
+  String get bankCustomerCare;
+
+  /// No description provided for @bankCustomerCareDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'24/7 support for all your banking needs'**
+  String get bankCustomerCareDescription;
+
+  /// No description provided for @primaryCustomerCare.
+  ///
+  /// In en, this message translates to:
+  /// **'Primary Customer Care'**
+  String get primaryCustomerCare;
+
+  /// No description provided for @primaryCustomerCareSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'24/7 Available • General Support'**
+  String get primaryCustomerCareSubtitle;
+
+  /// No description provided for @technicalSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Technical Support'**
+  String get technicalSupport;
+
+  /// No description provided for @technicalSupportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mon-Fri, 8AM - 6PM • Technical Issues'**
+  String get technicalSupportSubtitle;
+
+  /// No description provided for @callNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Call Now'**
+  String get callNow;
+
+  /// No description provided for @helpTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Help'**
+  String get helpTooltip;
+
+  /// No description provided for @getHelpSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Get help and support for your financial schemes and questions'**
+  String get getHelpSupport;
+
   /// No description provided for @myProfile.
   ///
   /// In en, this message translates to:
@@ -784,10 +922,16 @@ abstract class AppLocalizations {
   /// **'Scheme'**
   String get scheme;
 
+  /// No description provided for @arthSamarth.
+  ///
+  /// In en, this message translates to:
+  /// **'ArthSamarth'**
+  String get arthSamarth;
+
   /// No description provided for @financeInclude.
   ///
   /// In en, this message translates to:
-  /// **'FinanceInclude'**
+  /// **'ArthSamarth'**
   String get financeInclude;
 
   /// No description provided for @pathToFinancialSuccess.
@@ -844,10 +988,16 @@ abstract class AppLocalizations {
   /// **'Welcome to Scheme Recommender! Your AI-powered financial companion for discovering government schemes.'**
   String get welcomeToSchemeRecommender;
 
+  /// No description provided for @loginToArthSamarth.
+  ///
+  /// In en, this message translates to:
+  /// **'Login to ArthSamarth'**
+  String get loginToArthSamarth;
+
   /// No description provided for @loginToFinWise.
   ///
   /// In en, this message translates to:
-  /// **'Login to FinWise'**
+  /// **'Login to ArthSamarth'**
   String get loginToFinWise;
 
   /// No description provided for @welcomeBack.
@@ -994,10 +1144,16 @@ abstract class AppLocalizations {
   /// **'OR'**
   String get or;
 
+  /// No description provided for @createArthSamarthAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Your ArthSamarth Account'**
+  String get createArthSamarthAccount;
+
   /// No description provided for @createFinWiseAccount.
   ///
   /// In en, this message translates to:
-  /// **'Create Your FinWise Account'**
+  /// **'Create Your ArthSamarth Account'**
   String get createFinWiseAccount;
 
   /// No description provided for @personalInfo.
@@ -1227,6 +1383,314 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Going back to previous step'**
   String get goingBack;
+
+  /// No description provided for @searchingForSchemes.
+  ///
+  /// In en, this message translates to:
+  /// **'Searching for schemes related to: {goal}'**
+  String searchingForSchemes(Object goal);
+
+  /// No description provided for @loadingEligibleSchemes.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading your eligible schemes'**
+  String get loadingEligibleSchemes;
+
+  /// No description provided for @foundSchemesForSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Found {count} schemes matching your search for {goal}'**
+  String foundSchemesForSearch(Object count, Object goal);
+
+  /// No description provided for @loadedEligibleSchemes.
+  ///
+  /// In en, this message translates to:
+  /// **'Loaded {count} schemes you\'re eligible for'**
+  String loadedEligibleSchemes(Object count);
+
+  /// No description provided for @failedToLoadSchemes.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load schemes. Please try again.'**
+  String get failedToLoadSchemes;
+
+  /// No description provided for @pageNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page}'**
+  String pageNumber(Object page);
+
+  /// No description provided for @welcomeToFinancialHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Financial Scheme Hub! Loading your personalized recommendations.'**
+  String get welcomeToFinancialHub;
+
+  /// No description provided for @welcomeToFinancialHubDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Financial Scheme Hub! Find personalized recommendations for your financial goals.'**
+  String get welcomeToFinancialHubDescription;
+
+  /// No description provided for @discoverFinancialOpportunities.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover Financial Opportunities'**
+  String get discoverFinancialOpportunities;
+
+  /// No description provided for @findYourPerfectScheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Find Your Perfect Scheme'**
+  String get findYourPerfectScheme;
+
+  /// No description provided for @whatAreYouLookingFor.
+  ///
+  /// In en, this message translates to:
+  /// **'What are you looking for?'**
+  String get whatAreYouLookingFor;
+
+  /// No description provided for @usingAiToFind.
+  ///
+  /// In en, this message translates to:
+  /// **'Using AI to find the best schemes for: {searchText}'**
+  String usingAiToFind(Object searchText);
+
+  /// No description provided for @refreshingEligibleSchemes.
+  ///
+  /// In en, this message translates to:
+  /// **'Refreshing your eligible schemes'**
+  String get refreshingEligibleSchemes;
+
+  /// No description provided for @userProfileNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'User profile not found.'**
+  String get userProfileNotFound;
+
+  /// No description provided for @noDataReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'No data received from backend.'**
+  String get noDataReceived;
+
+  /// No description provided for @aiRecommendations.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Recommendations'**
+  String get aiRecommendations;
+
+  /// No description provided for @eligibleSchemes.
+  ///
+  /// In en, this message translates to:
+  /// **'Eligible Schemes'**
+  String get eligibleSchemes;
+
+  /// No description provided for @schemesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} schemes found'**
+  String schemesFound(Object count);
+
+  /// No description provided for @showingAiRecommendations.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing AI-powered recommendations based on your search'**
+  String get showingAiRecommendations;
+
+  /// No description provided for @showingEligibleSchemes.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing schemes you\'re eligible for based on your profile'**
+  String get showingEligibleSchemes;
+
+  /// No description provided for @foundSchemesTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'{modeText}. Found {count} schemes.'**
+  String foundSchemesTotal(Object count, Object modeText);
+
+  /// No description provided for @pageOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {current} of {total}'**
+  String pageOf(Object current, Object total);
+
+  /// No description provided for @schemes.
+  ///
+  /// In en, this message translates to:
+  /// **'schemes'**
+  String get schemes;
+
+  /// No description provided for @totalSchemesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {current} of {total}. Total {count} schemes found.'**
+  String totalSchemesFound(Object count, Object current, Object total);
+
+  /// No description provided for @returnLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Return'**
+  String get returnLabel;
+
+  /// No description provided for @riskLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Risk'**
+  String get riskLabel;
+
+  /// No description provided for @termLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Term'**
+  String get termLabel;
+
+  /// No description provided for @changeLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Language'**
+  String get changeLanguage;
+
+  /// No description provided for @activeMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Member'**
+  String get activeMember;
+
+  /// No description provided for @profileUserInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile: {userName}, Active Member'**
+  String profileUserInfo(String userName);
+
+  /// No description provided for @contactInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Information'**
+  String get contactInformation;
+
+  /// No description provided for @contactInfoVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Information. Email: {email}. Phone: {phone}. Location: {location}.'**
+  String contactInfoVoice(String email, String phone, String location);
+
+  /// No description provided for @financialSummaryVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Financial Summary. Total Savings: {savings} rupees. Active Schemes: {schemes}. Investment Returns: {returns} rupees. Goals Achieved: {goals}'**
+  String financialSummaryVoice(
+      String savings, String schemes, String returns, String goals);
+
+  /// No description provided for @thisMonthGrowth.
+  ///
+  /// In en, this message translates to:
+  /// **'+1.2% this month'**
+  String get thisMonthGrowth;
+
+  /// No description provided for @joinedNewScheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined {count} new'**
+  String joinedNewScheme(String count);
+
+  /// No description provided for @joinedNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined none'**
+  String get joinedNone;
+
+  /// No description provided for @lastQuarterGrowth.
+  ///
+  /// In en, this message translates to:
+  /// **'+5% last quarter'**
+  String get lastQuarterGrowth;
+
+  /// No description provided for @onTrackForMore.
+  ///
+  /// In en, this message translates to:
+  /// **'On track for 3 more'**
+  String get onTrackForMore;
+
+  /// No description provided for @recentActivitiesAndTips.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Activities & Tips'**
+  String get recentActivitiesAndTips;
+
+  /// No description provided for @recentActivitiesVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Activities and Tips section'**
+  String get recentActivitiesVoice;
+
+  /// No description provided for @noSchemesRegistered.
+  ///
+  /// In en, this message translates to:
+  /// **'No schemes registered yet.'**
+  String get noSchemesRegistered;
+
+  /// No description provided for @exploreNewSchemes.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore new schemes from the home page to get started!'**
+  String get exploreNewSchemes;
+
+  /// No description provided for @noSchemesVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'No schemes registered yet. You can explore new schemes from the home page.'**
+  String get noSchemesVoice;
+
+  /// No description provided for @registered.
+  ///
+  /// In en, this message translates to:
+  /// **'Registered'**
+  String get registered;
+
+  /// No description provided for @schemeVoiceInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheme: {name}. Amount: {amount} rupees. Registered on: {regDate}. Next due date: {dueDate}'**
+  String schemeVoiceInfo(
+      String name, String amount, String regDate, String dueDate);
+
+  /// No description provided for @selectLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Language'**
+  String get selectLanguage;
+
+  /// No description provided for @languageSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'{language} selected'**
+  String languageSelected(String language);
+
+  /// No description provided for @myProfilePageDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'My Profile page. View your personal information, financial summary, and active schemes.'**
+  String get myProfilePageDescription;
+
+  /// No description provided for @profilePageVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile: {name}, Active Member'**
+  String profilePageVoice(String name);
+
+  /// No description provided for @snapshotCardVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'{title}: {value}. {subtitle}'**
+  String snapshotCardVoice(String title, String value, String subtitle);
+
+  /// No description provided for @contactItemVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}: {value}'**
+  String contactItemVoice(String label, String value);
 }
 
 class _AppLocalizationsDelegate

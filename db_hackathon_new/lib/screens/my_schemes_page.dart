@@ -4,8 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:provider/provider.dart';
 import '../providers/language_provider.dart';
-
-const Color kAppPink = Color(0xFFE91E63); // Main pink color
+import '../gen_l10n/app_localizations.dart';
 
 class MySchemesPage extends StatefulWidget {
   const MySchemesPage({Key? key}) : super(key: key);
@@ -16,13 +15,15 @@ class MySchemesPage extends StatefulWidget {
 
 class _MySchemesPageState extends State<MySchemesPage> {
   FlutterTts? flutterTts;
+  static const darkBlue = Color(0xFF1A237E);
 
   @override
   void initState() {
     super.initState();
     flutterTts = FlutterTts();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _speak("My Profile page. View your personal information, financial summary, and active schemes.");
+      final loc = AppLocalizations.of(context)!;
+      _speak(loc.myProfilePageDescription);
     });
   }
 
@@ -56,311 +57,571 @@ class _MySchemesPageState extends State<MySchemesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: kAppPink,
-        title: Text('My Profile'),
+        title: Text(
+          loc.myProfile,
+          style: TextStyle(
+            fontFamily: 'Roboto',
+            color: darkBlue,
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 4,
+        shadowColor: darkBlue.withOpacity(0.1),
+        iconTheme: IconThemeData(color: darkBlue),
         actions: [
-          IconButton(
-            icon: Icon(Icons.language),
-            tooltip: 'Change Language',
-            onPressed: () => _showLanguageDialog(context),
+          Container(
+            margin: EdgeInsets.only(right: 4),
+            decoration: BoxDecoration(
+              color: darkBlue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: IconButton(
+              icon: Icon(Icons.language, color: darkBlue),
+              tooltip: loc.changeLanguage,
+              onPressed: () => _showLanguageDialog(context),
+            ),
           ),
-          IconButton(
-            icon: Icon(Icons.volume_up, color: Colors.white),
-            onPressed: () => _speak("My Profile page. View your personal information, financial summary, and active schemes."),
+          Container(
+            margin: EdgeInsets.only(right: 4),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [darkBlue, darkBlue.withOpacity(0.8)],
+              ),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: IconButton(
+              icon: Icon(Icons.volume_up, color: Colors.white),
+              onPressed: () => _speak(loc.myProfilePageDescription),
+            ),
           ),
-          IconButton(
-            icon: Icon(Icons.edit),
-            tooltip: 'Edit Profile',
-            onPressed: () {
-              _speak("Edit Profile");
-              Navigator.pushNamed(context, '/profile');
-            },
+          Container(
+            margin: EdgeInsets.only(right: 4),
+            decoration: BoxDecoration(
+              color: darkBlue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: IconButton(
+              icon: Icon(Icons.edit, color: darkBlue),
+              tooltip: loc.editProfile,
+              onPressed: () {
+                _speak(loc.editProfile);
+                Navigator.pushNamed(context, '/profile');
+              },
+            ),
           ),
-          IconButton(
-            icon: Icon(Icons.logout),
-            tooltip: 'Logout',
-            onPressed: () async {
-              _speak("Logging out");
-              await FirebaseAuth.instance.signOut();
-              Navigator.pushReplacementNamed(context, '/login');
-            },
+          Container(
+            margin: EdgeInsets.only(right: 12),
+            decoration: BoxDecoration(
+              color: darkBlue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: IconButton(
+              icon: Icon(Icons.logout, color: darkBlue),
+              tooltip: loc.logout,
+              onPressed: () async {
+                _speak(loc.loggingOut);
+                await FirebaseAuth.instance.signOut();
+                Navigator.pushReplacementNamed(context, '/login');
+              },
+            ),
           ),
         ],
       ),
-      body: FutureBuilder<Map<String, dynamic>?>(
-        future: fetchUserProfile(),
-        builder: (context, userSnapshot) {
-          if (userSnapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator(color: kAppPink));
-          }
-          final user = userSnapshot.data;
-          return SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Column(
-              children: [
-                // User Info Card
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  padding: const EdgeInsets.all(18.0),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        backgroundColor: kAppPink.withOpacity(0.2),
-                        radius: 32,
-                        child: Text(
-                          user?['name'] != null && user!['name'].isNotEmpty
-                              ? user['name'][0].toUpperCase()
-                              : 'U',
-                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: kAppPink),
-                        ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.grey[50]!, Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: FutureBuilder<Map<String, dynamic>?>(
+          future: fetchUserProfile(),
+          builder: (context, userSnapshot) {
+            if (userSnapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator(color: darkBlue));
+            }
+            final user = userSnapshot.data;
+            return SingleChildScrollView(
+              padding: EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  // User Info Card
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [darkBlue, darkBlue.withOpacity(0.8)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                      SizedBox(width: 18),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              user?['name'] ?? 'User',
-                              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                      borderRadius: BorderRadius.circular(25),
+                      boxShadow: [
+                        BoxShadow(
+                          color: darkBlue.withOpacity(0.3),
+                          blurRadius: 15,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(24.0),
+                    child: Row(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          child: CircleAvatar(
+                            backgroundColor: Colors.transparent,
+                            radius: 35,
+                            child: Text(
+                              user?['name'] != null && user!['name'].isNotEmpty
+                                  ? user['name'][0].toUpperCase()
+                                  : 'U',
+                              style: TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontFamily: 'Roboto',
+                              ),
                             ),
-                            SizedBox(height: 4),
-                            Text('Active User', style: TextStyle(color: Colors.grey[600])),
-                          ],
+                          ),
                         ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.volume_up, color: kAppPink),
-                        onPressed: () {
-                          String userName = user?['name'] ?? 'User';
-                          _speak("Profile: $userName, Active User");
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 16),
-                // Contact Info Card
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  padding: const EdgeInsets.all(18.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text('Contact Information', style: TextStyle(fontWeight: FontWeight.bold)),
-                          SizedBox(width: 8),
-                          IconButton(
-                            icon: Icon(Icons.volume_up, color: kAppPink, size: 20),
+                        SizedBox(width: 20),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                user?['name'] ?? loc.user,
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  fontFamily: 'Roboto',
+                                ),
+                              ),
+                              SizedBox(height: 6),
+                              Text(
+                                loc.activeMember,
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.9),
+                                  fontSize: 16,
+                                  fontFamily: 'Mulish',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: IconButton(
+                            icon: Icon(Icons.volume_up, color: Colors.white),
                             onPressed: () {
-                              String email = user?['email'] ?? 'No email';
-                              String phone = user?['phone'] ?? 'No phone';
-                              String location = user?['location'] ?? 'No location';
-                              _speak("Contact Information. Email: $email. Phone: $phone. Location: $location.");
+                              String userName = user?['name'] ?? loc.user;
+                              _speak(loc.profileUserInfo(userName));
                             },
                           ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Icon(Icons.email_outlined, size: 20, color: kAppPink),
-                          SizedBox(width: 8),
-                          Expanded(child: Text(user?['email'] ?? 'No email')),
-                          IconButton(
-                            icon: Icon(Icons.volume_up, color: kAppPink, size: 16),
-                            onPressed: () => _speak("Email: ${user?['email'] ?? 'No email'}"),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Icon(Icons.phone_outlined, size: 20, color: kAppPink),
-                          SizedBox(width: 8),
-                          Expanded(child: Text(user?['phone'] ?? 'No phone')),
-                          IconButton(
-                            icon: Icon(Icons.volume_up, color: kAppPink, size: 16),
-                            onPressed: () => _speak("Phone: ${user?['phone'] ?? 'No phone'}"),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Icon(Icons.location_on_outlined, size: 20, color: kAppPink),
-                          SizedBox(width: 8),
-                          Expanded(child: Text(user?['location'] ?? 'No location')),
-                          IconButton(
-                            icon: Icon(Icons.volume_up, color: kAppPink, size: 16),
-                            onPressed: () => _speak("Location: ${user?['location'] ?? 'No location'}"),
-                          ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                SizedBox(height: 16),
-                // Financial Summary
-                FutureBuilder<List<Map<String, dynamic>>>(
-                  future: fetchMySchemes(),
-                  builder: (context, schemesSnapshot) {
-                    final schemes = schemesSnapshot.data ?? [];
-                    final totalSavings = user?['savings']?.toString() ?? '0';
-                    final activeSchemes = schemes.length;
-                    final investmentReturns = user?['returns']?.toString() ?? '+0';
-                    final goalsAchieved = user?['goals']?.toString() ?? '0';
-
-                    return Column(
+                  SizedBox(height: 24),
+                  // Contact Info Card
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.white, Colors.blue[50]!],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(25),
+                      boxShadow: [
+                        BoxShadow(
+                          color: darkBlue.withOpacity(0.1),
+                          blurRadius: 15,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: darkBlue.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: Icon(Icons.contact_page, color: darkBlue, size: 24),
+                            ),
+                            SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'Financial Summary',
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                loc.contactInformation,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                  color: darkBlue,
+                                  fontFamily: 'Roboto',
+                                ),
                               ),
                             ),
-                            IconButton(
-                              icon: Icon(Icons.volume_up, color: kAppPink),
-                              onPressed: () {
-                                _speak("Financial Summary. Total Savings: $totalSavings rupees. Active Schemes: $activeSchemes. Investment Returns: $investmentReturns rupees. Goals Achieved: $goalsAchieved");
-                              },
+                            Container(
+                              decoration: BoxDecoration(
+                                color: darkBlue.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: IconButton(
+                                icon: Icon(Icons.volume_up, color: darkBlue, size: 20),
+                                onPressed: () {
+                                  String email = user?['email'] ?? loc.noEmail;
+                                  String phone = user?['phone'] ?? loc.noPhone;
+                                  String location = user?['location'] ?? loc.noLocation;
+                                  _speak(loc.contactInfoVoice(email, phone, location));
+                                },
+                              ),
                             ),
                           ],
                         ),
-                        SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _snapshotCard(
-                              icon: Icons.savings_outlined,
-                              title: 'Total Savings',
-                              value: '₹$totalSavings',
-                              subtitle: '+1.2% this month',
-                            ),
-                            _snapshotCard(
-                              icon: Icons.assignment_turned_in_outlined,
-                              title: 'Active Schemes',
-                              value: '$activeSchemes',
-                              subtitle: 'Joined ${activeSchemes > 0 ? '1 new' : 'none'}',
-                            ),
-                            _snapshotCard(
-                              icon: Icons.trending_up,
-                              title: 'Investment Returns',
-                              value: '₹$investmentReturns',
-                              subtitle: '+5% last quarter',
-                            ),
-                            _snapshotCard(
-                              icon: Icons.flag_outlined,
-                              title: 'Goals Achieved',
-                              value: '$goalsAchieved',
-                              subtitle: 'On track for 3 more',
-                            ),
-                          ],
-                        ),
+                        SizedBox(height: 20),
+                        _buildContactItem(Icons.email_outlined, user?['email'] ?? loc.noEmail, loc.email),
+                        SizedBox(height: 12),
+                        _buildContactItem(Icons.phone_outlined, user?['phone'] ?? loc.noPhone, loc.phone),
+                        SizedBox(height: 12),
+                        _buildContactItem(Icons.location_on_outlined, user?['location'] ?? loc.noLocation, loc.location),
                       ],
-                    );
-                  },
-                ),
-                SizedBox(height: 24),
-                // Schemes List
-                Row(
-                  children: [
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Recent Activities & Tips',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                      ),
                     ),
-                    IconButton(
-                      icon: Icon(Icons.volume_up, color: kAppPink),
-                      onPressed: () => _speak("Recent Activities and Tips section"),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 8),
-                FutureBuilder<List<Map<String, dynamic>>>(
-                  future: fetchMySchemes(),
-                  builder: (context, snapshot) {
-                    final schemes = snapshot.data ?? [];
-                    if (schemes.isEmpty) {
+                  ),
+                  SizedBox(height: 24),
+                  // Financial Summary
+                  FutureBuilder<List<Map<String, dynamic>>>(
+                    future: fetchMySchemes(),
+                    builder: (context, schemesSnapshot) {
+                      final schemes = schemesSnapshot.data ?? [];
+                      final totalSavings = user?['savings']?.toString() ?? '0';
+                      final activeSchemes = schemes.length;
+                      final investmentReturns = user?['returns']?.toString() ?? '+0';
+                      final goalsAchieved = user?['goals']?.toString() ?? '0';
+
                       return Column(
                         children: [
-                          Center(child: Text('No schemes registered yet.')),
-                          SizedBox(height: 8),
-                          IconButton(
-                            icon: Icon(Icons.volume_up, color: kAppPink),
-                            onPressed: () => _speak("No schemes registered yet. You can explore new schemes from the home page."),
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Colors.white, Colors.blue[50]!],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(25),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: darkBlue.withOpacity(0.1),
+                                  blurRadius: 15,
+                                  offset: Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            padding: EdgeInsets.all(24),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: darkBlue.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      child: Icon(Icons.analytics, color: darkBlue, size: 24),
+                                    ),
+                                    SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        loc.financialSummary,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 20,
+                                          color: darkBlue,
+                                          fontFamily: 'Roboto',
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: darkBlue.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: IconButton(
+                                        icon: Icon(Icons.volume_up, color: darkBlue),
+                                        onPressed: () {
+                                          _speak(loc.financialSummaryVoice(totalSavings, activeSchemes.toString(), investmentReturns, goalsAchieved));
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 20),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    _snapshotCard(
+                                      icon: Icons.savings_outlined,
+                                      title: loc.totalSavings,
+                                      value: '₹$totalSavings',
+                                      subtitle: loc.thisMonthGrowth,
+                                      color: Colors.green,
+                                    ),
+                                    SizedBox(width: 12),
+                                    _snapshotCard(
+                                      icon: Icons.assignment_turned_in_outlined,
+                                      title: loc.activeSchemes,
+                                      value: '$activeSchemes',
+                                      subtitle: activeSchemes > 0 ? loc.joinedNewScheme('1') : loc.joinedNone,
+                                      color: Colors.blue,
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 12),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    _snapshotCard(
+                                      icon: Icons.trending_up,
+                                      title: loc.investmentReturns,
+                                      value: '₹$investmentReturns',
+                                      subtitle: loc.lastQuarterGrowth,
+                                      color: Colors.orange,
+                                    ),
+                                    SizedBox(width: 12),
+                                    _snapshotCard(
+                                      icon: Icons.flag_outlined,
+                                      title: loc.goalsAchieved,
+                                      value: '$goalsAchieved',
+                                      subtitle: loc.onTrackForMore,
+                                      color: Colors.purple,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       );
-                    }
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: schemes.length,
-                      itemBuilder: (context, index) {
-                        final scheme = schemes[index];
-                        final name = scheme['scheme_name'] ?? 'Unnamed Scheme';
-                        final amount = scheme['amount'];
-                        final regDate = scheme['registered_at'] != null ? DateTime.tryParse(scheme['registered_at']) : null;
-                        final dueDate = scheme['due_date'] != null ? DateTime.tryParse(scheme['due_date']) : null;
-
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
+                    },
+                  ),
+                  SizedBox(height: 24),
+                  // Schemes List
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: darkBlue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Icon(Icons.history, color: darkBlue, size: 24),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          loc.recentActivitiesAndTips,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                            color: darkBlue,
+                            fontFamily: 'Roboto',
                           ),
-                          margin: EdgeInsets.symmetric(vertical: 8),
-                          padding: const EdgeInsets.all(12.0),
-                          child: Row(
+                        ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: darkBlue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: IconButton(
+                          icon: Icon(Icons.volume_up, color: darkBlue),
+                          onPressed: () => _speak(loc.recentActivitiesVoice),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                  FutureBuilder<List<Map<String, dynamic>>>(
+                    future: fetchMySchemes(),
+                    builder: (context, snapshot) {
+                      final schemes = snapshot.data ?? [];
+                      if (schemes.isEmpty) {
+                        return Container(
+                          padding: EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Colors.white, Colors.blue[50]!],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(25),
+                            boxShadow: [
+                              BoxShadow(
+                                color: darkBlue.withOpacity(0.1),
+                                blurRadius: 15,
+                                offset: Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Column(
                             children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: kAppPink)),
-                                    if (amount != null) Text('Amount: ₹$amount'),
-                                    if (regDate != null)
-                                      Text('Registered on: ${regDate.toLocal().toString().split(' ')[0]}'),
-                                    if (dueDate != null)
-                                      Text('Next Due Date: ${dueDate.toLocal().toString().split(' ')[0]}'),
-                                  ],
+                              Icon(Icons.info_outline, size: 48, color: darkBlue.withOpacity(0.6)),
+                              SizedBox(height: 16),
+                              Text(
+                                loc.noSchemesRegistered,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: darkBlue,
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              IconButton(
-                                icon: Icon(Icons.volume_up, color: kAppPink),
-                                onPressed: () {
-                                  String schemeInfo = "Scheme: $name";
-                                  if (amount != null) schemeInfo += ". Amount: $amount rupees";
-                                  if (regDate != null) schemeInfo += ". Registered on: ${regDate.toLocal().toString().split(' ')[0]}";
-                                  if (dueDate != null) schemeInfo += ". Next due date: ${dueDate.toLocal().toString().split(' ')[0]}";
-                                  _speak(schemeInfo);
-                                },
+                              SizedBox(height: 8),
+                              Text(
+                                loc.exploreNewSchemes,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[600],
+                                  fontFamily: 'Mulish',
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(height: 16),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: darkBlue.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: IconButton(
+                                  icon: Icon(Icons.volume_up, color: darkBlue),
+                                  onPressed: () => _speak(loc.noSchemesVoice),
+                                ),
                               ),
                             ],
                           ),
                         );
-                      },
-                    );
-                  },
-                ),
-              ],
-            ),
-          );
-        },
+                      }
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: schemes.length,
+                        itemBuilder: (context, index) {
+                          final scheme = schemes[index];
+                          final name = scheme['scheme_name'] ?? loc.unnamedScheme;
+                          final amount = scheme['amount'];
+                          final regDate = scheme['registered_at'] != null ? DateTime.tryParse(scheme['registered_at']) : null;
+                          final dueDate = scheme['due_date'] != null ? DateTime.tryParse(scheme['due_date']) : null;
+
+                          return Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Colors.white, Colors.blue[50]!],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(25),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: darkBlue.withOpacity(0.1),
+                                  blurRadius: 15,
+                                  offset: Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            margin: EdgeInsets.symmetric(vertical: 10),
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: darkBlue.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      child: Icon(Icons.account_balance_wallet, color: darkBlue, size: 24),
+                                    ),
+                                    SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        name,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: darkBlue,
+                                          fontFamily: 'Roboto',
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: darkBlue.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: IconButton(
+                                        icon: Icon(Icons.volume_up, color: darkBlue),
+                                        onPressed: () {
+                                          String schemeInfo = "Scheme: $name";
+                                          if (amount != null) schemeInfo += ". Amount: $amount rupees";
+                                          if (regDate != null) schemeInfo += ". Registered on: ${regDate.toLocal().toString().split(' ')[0]}";
+                                          if (dueDate != null) schemeInfo += ". Next due date: ${dueDate.toLocal().toString().split(' ')[0]}";
+                                          _speak(schemeInfo);
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    if (amount != null) ...[
+                                      Expanded(
+                                        child: _buildSchemeInfo(loc.amount, '₹$amount'),
+                                      ),
+                                    ],
+                                    if (regDate != null) ...[
+                                      if (amount != null) SizedBox(width: 12),
+                                      Expanded(
+                                        child: _buildSchemeInfo(loc.registered, '${regDate.toLocal().toString().split(' ')[0]}'),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                if (dueDate != null) ...[
+                                  SizedBox(height: 12),
+                                  _buildSchemeInfo(loc.nextDueDate, '${dueDate.toLocal().toString().split(' ')[0]}'),
+                                ],
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -370,27 +631,88 @@ class _MySchemesPageState extends State<MySchemesPage> {
     required String title,
     required String value,
     required String subtitle,
+    required Color color,
   }) {
     return Expanded(
       child: GestureDetector(
-        onTap: () => _speak("$title: $value. $subtitle"),
+        onTap: () {
+          final loc = AppLocalizations.of(context)!;
+          _speak(loc.snapshotCardVoice(title, value, subtitle));
+        },
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              colors: [Colors.white, color.withOpacity(0.05)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.2),
+                blurRadius: 10,
+                offset: Offset(0, 4),
+              ),
+            ],
           ),
-          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 8),
+          padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              Icon(icon, size: 28, color: kAppPink),
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Icon(icon, size: 24, color: color),
+              ),
+              SizedBox(height: 12),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                  fontFamily: 'Roboto',
+                ),
+              ),
+              SizedBox(height: 6),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: darkBlue,
+                  fontFamily: 'Mulish',
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.green[600],
+                  fontFamily: 'Mulish',
+                ),
+                textAlign: TextAlign.center,
+              ),
               SizedBox(height: 8),
-              Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              SizedBox(height: 4),
-              Text(title, style: TextStyle(fontSize: 13, color: Colors.grey[700])),
-              SizedBox(height: 4),
-              Text(subtitle, style: TextStyle(fontSize: 11, color: Colors.green)),
-              SizedBox(height: 4),
-              Icon(Icons.volume_up, color: kAppPink, size: 16),
+              Container(
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.volume_up, color: color, size: 14),
+                  onPressed: () {
+                    final loc = AppLocalizations.of(context)!;
+                    _speak(loc.snapshotCardVoice(title, value, subtitle));
+                  },
+                  padding: EdgeInsets.all(4),
+                  constraints: BoxConstraints(),
+                ),
+              ),
             ],
           ),
         ),
@@ -398,11 +720,119 @@ class _MySchemesPageState extends State<MySchemesPage> {
     );
   }
 
+  Widget _buildSchemeInfo(String label, String value) {
+    return Container(
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: darkBlue.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: darkBlue.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[600],
+              fontFamily: 'Mulish',
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: darkBlue,
+              fontFamily: 'Roboto',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactItem(IconData icon, String value, String label) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: darkBlue.withOpacity(0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: darkBlue.withOpacity(0.05),
+            blurRadius: 5,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: darkBlue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: darkBlue, size: 18),
+          ),
+          SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontFamily: 'Mulish',
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: darkBlue,
+                    fontFamily: 'Roboto',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: darkBlue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: IconButton(
+              icon: Icon(Icons.volume_up, color: darkBlue, size: 16),
+              onPressed: () {
+                final loc = AppLocalizations.of(context)!;
+                _speak(loc.contactItemVoice(label, value));
+              },
+              padding: EdgeInsets.all(4),
+              constraints: BoxConstraints(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showLanguageDialog(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text('Select Language'),
+        title: Text(loc.selectLanguage),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -419,9 +849,10 @@ class _MySchemesPageState extends State<MySchemesPage> {
     return ListTile(
       title: Text(label),
       onTap: () {
+        final loc = AppLocalizations.of(context)!;
         Provider.of<LanguageProvider>(context, listen: false).setLanguage(code);
         Navigator.of(context).pop();
-        _speak("$label selected");
+        _speak(loc.languageSelected(label));
       },
     );
   }
