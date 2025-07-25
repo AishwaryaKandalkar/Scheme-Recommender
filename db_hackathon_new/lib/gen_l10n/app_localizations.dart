@@ -202,6 +202,24 @@ abstract class AppLocalizations {
   /// **'Email'**
   String get email;
 
+  /// No description provided for @phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get phone;
+
+  /// No description provided for @phoneRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number is required'**
+  String get phoneRequired;
+
+  /// No description provided for @phoneValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid 10-digit phone number'**
+  String get phoneValidation;
+
   /// No description provided for @password.
   ///
   /// In en, this message translates to:

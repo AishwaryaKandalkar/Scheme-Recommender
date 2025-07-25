@@ -21,12 +21,13 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
   int _currentStep = 0;
 
   final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _incomeController = TextEditingController();
   final _savingsController = TextEditingController();
   String _gender = 'Male';
   String _category = 'General';
+  bool _obscurePassword = true;
 
   final List<String> _genders = ['Male', 'Female', 'Other'];
   final List<String> _categories = ['General', 'OBC', 'SC', 'ST'];
@@ -52,6 +53,27 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
     await _flutterTts?.setSpeechRate(0.5);
     await _flutterTts?.setVolume(1.0);
     await _flutterTts?.setPitch(1.0);
+  }
+
+  String? _validatePhone(String? value) {
+    final loc = AppLocalizations.of(context)!;
+    if (value == null || value.isEmpty) {
+      return loc.phoneRequired;
+    }
+    
+    // Remove any non-digit characters for validation
+    String digits = value.replaceAll(RegExp(r'[^\d]'), '');
+    
+    if (digits.length != 10) {
+      return loc.phoneValidation;
+    }
+    
+    // Check if all characters are digits
+    if (!RegExp(r'^\d{10}$').hasMatch(digits)) {
+      return loc.phoneValidation;
+    }
+    
+    return null;
   }
 
   Future<void> _speak(String text) async {
@@ -120,15 +142,19 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
     try {
       await _speak("Creating your account, please wait...");
       
+      // Create email from phone number for Firebase Auth
+      String email = "${_phoneController.text.trim()}@phone.local";
+      
       UserCredential userCred = await _auth.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
+        email: email,
         password: _passwordController.text.trim(),
       );
 
       await _firestore.collection('users').doc(userCred.user!.uid).set({
         'uid': userCred.user!.uid,
         'name': _nameController.text.trim(),
-        'email': _emailController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        'email': email, // Generated email for Firebase compatibility
         'annual_income': _incomeController.text.trim(),
         'savings': _savingsController.text.trim(),
         'gender': _gender,
@@ -155,20 +181,40 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
     );
   }
 
-  Widget _styledTextField(TextEditingController controller, String label, IconData icon, Color fillColor, {bool isObscure = false, FormFieldValidator<String>? validator, String? voiceLabel}) {
+  Widget _styledTextField(TextEditingController controller, String label, IconData icon, Color fillColor, {bool isObscure = false, FormFieldValidator<String>? validator, String? voiceLabel, bool isPhone = false, bool isPassword = false}) {
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
       child: TextFormField(
         controller: controller,
-        obscureText: isObscure,
+        obscureText: isPassword ? _obscurePassword : isObscure,
         validator: validator,
+        keyboardType: isPhone ? TextInputType.phone : TextInputType.text,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon),
-          suffixIcon: voiceLabel != null && !isObscure ? IconButton(
-            icon: Icon(Icons.mic, color: Colors.deepPurple),
-            onPressed: () => _startListening(controller, voiceLabel),
-          ) : null,
+          suffixIcon: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isPassword)
+                IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                    color: Colors.deepPurple,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                    _speak(_obscurePassword ? "Password hidden" : "Password visible");
+                  },
+                ),
+              if (voiceLabel != null && !isPassword)
+                IconButton(
+                  icon: Icon(Icons.mic, color: Colors.deepPurple),
+                  onPressed: () => _startListening(controller, voiceLabel),
+                ),
+            ],
+          ),
           filled: true,
           fillColor: fillColor,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -221,7 +267,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
               Spacer(),
               IconButton(
                 icon: Icon(Icons.volume_up, color: Colors.blue),
-                onPressed: () => _speak("Step 1: Account Setup. Please enter your full name, email address, and create a secure password of at least 6 characters."),
+                onPressed: () => _speak("Step 1: Account Setup. Please enter your full name, phone number, and create a secure password of at least 6 characters."),
               ),
             ],
           ),
@@ -229,10 +275,10 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
           Text(loc.welcomeMessage, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           _styledTextField(_nameController, loc.name, Icons.account_circle_outlined, Colors.blue.shade50, 
             validator: (val) => val!.isEmpty ? loc.nameRequired : null, voiceLabel: "full name"),
-          _styledTextField(_emailController, loc.email, Icons.email_outlined, Colors.purple.shade50, 
-            validator: (val) => val!.isEmpty ? loc.emailRequired : null, voiceLabel: "email address"),
+          _styledTextField(_phoneController, loc.phone, Icons.phone_outlined, Colors.purple.shade50, 
+            validator: _validatePhone, voiceLabel: "phone number", isPhone: true),
           _styledTextField(_passwordController, loc.password, Icons.lock_outline, Colors.orange.shade50, 
-            isObscure: true, validator: (val) => val!.length < 6 ? loc.passwordLength : null),
+            validator: (val) => val!.length < 6 ? loc.passwordLength : null, isPassword: true),
         ]),
         _buildCardContent([
           Row(

@@ -63,6 +63,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get email => 'Email';
 
   @override
+  String get phone => 'Phone Number';
+
+  @override
+  String get phoneRequired => 'Phone number is required';
+
+  @override
+  String get phoneValidation => 'Please enter a valid 10-digit phone number';
+
+  @override
   String get password => 'Password';
 
   @override

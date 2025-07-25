@@ -63,6 +63,15 @@ class AppLocalizationsMr extends AppLocalizations {
   String get email => 'ईमेल';
 
   @override
+  String get phone => 'फोन नंबर';
+
+  @override
+  String get phoneRequired => 'फोन नंबर आवश्यक आहे';
+
+  @override
+  String get phoneValidation => 'कृपया वैध 10-अंकी फोन नंबर प्रविष्ट करा';
+
+  @override
   String get password => 'पासवर्ड';
 
   @override

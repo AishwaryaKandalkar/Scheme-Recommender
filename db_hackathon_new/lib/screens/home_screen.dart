@@ -64,6 +64,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return HomeScreenBody();
+    final locale = Localizations.localeOf(context).languageCode;
+    return HomeScreenBody(locale: locale);
   }
 }

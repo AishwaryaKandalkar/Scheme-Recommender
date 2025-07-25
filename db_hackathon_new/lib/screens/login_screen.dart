@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter/services.dart';
 import '../gen_l10n/app_localizations.dart';
+import '../utils/session_manager.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -11,10 +11,12 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _auth = FirebaseAuth.instance;
   bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _rememberMe = false;
 
   // Voice feature fields
   FlutterTts? flutterTts;
@@ -25,14 +27,26 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
     flutterTts = FlutterTts();
+    _loadRememberedCredentials();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _speak("Welcome to Scheme Recommender Login. Enter your credentials to access your account, or explore other options like chatbot or agent services.");
     });
   }
 
+  Future<void> _loadRememberedCredentials() async {
+    final credentials = await SessionManager.getRememberedCredentials();
+    if (credentials['rememberMe'] == 'true') {
+      setState(() {
+        _phoneController.text = credentials['email'] ?? '';
+        _passwordController.text = credentials['password'] ?? '';
+        _rememberMe = true;
+      });
+    }
+  }
+
   @override
   void dispose() {
-    _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     flutterTts?.stop();
     super.dispose();
@@ -63,10 +77,28 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
     _speak("Logging in");
     try {
-      await _auth.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
+      // Convert phone to email format for Firebase Auth
+      String email = "${_phoneController.text.trim()}@phone.local";
+      
+      final credential = await _auth.signInWithEmailAndPassword(
+        email: email,
         password: _passwordController.text.trim(),
       );
+      
+      // Save session and remember credentials if enabled
+      if (credential.user != null) {
+        await SessionManager.saveSession(credential.user!);
+        
+        if (_rememberMe) {
+          await SessionManager.saveRememberedCredentials(
+            _phoneController.text.trim(),
+            _passwordController.text.trim(),
+          );
+        } else {
+          await SessionManager.clearRememberedCredentials();
+        }
+      }
+      
       _speak("Login successful! Redirecting to home screen.");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(loc.loginSuccess)),
@@ -137,9 +169,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 SizedBox(height: 24),
 
                 TextField(
-                  controller: _emailController,
+                  controller: _phoneController,
                   decoration: InputDecoration(
-                    labelText: loc.email,
+                    labelText: loc.phone,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                     suffixIcon: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -149,34 +181,46 @@ class _LoginScreenState extends State<LoginScreen> {
                             isListening ? Icons.mic : Icons.mic_none,
                             color: isListening ? Colors.red : Colors.blue,
                           ),
-                          onPressed: () => _listen(_emailController),
+                          onPressed: () => _listen(_phoneController),
                         ),
                         IconButton(
                           icon: Icon(Icons.volume_up, color: Colors.blue),
                           onPressed: () {
-                            if (_emailController.text.isNotEmpty) {
-                              _speak("Email: ${_emailController.text}");
+                            if (_phoneController.text.isNotEmpty) {
+                              _speak("Phone: ${_phoneController.text}");
                             } else {
-                              _speak("Email field is empty");
+                              _speak("Phone field is empty");
                             }
                           },
                         ),
                       ],
                     ),
                   ),
-                  keyboardType: TextInputType.emailAddress,
+                  keyboardType: TextInputType.phone,
                 ),
                 SizedBox(height: 16),
 
                 TextField(
                   controller: _passwordController,
-                  obscureText: true,
+                  obscureText: _obscurePassword,
                   decoration: InputDecoration(
                     labelText: loc.password,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                     suffixIcon: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                            color: Colors.blue,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                            _speak(_obscurePassword ? "Password hidden" : "Password visible");
+                          },
+                        ),
                         IconButton(
                           icon: Icon(
                             isListening ? Icons.mic : Icons.mic_none,
@@ -198,7 +242,30 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: 24),
+                SizedBox(height: 16),
+                
+                // Remember Me Checkbox
+                Row(
+                  children: [
+                    Checkbox(
+                      value: _rememberMe,
+                      onChanged: (value) {
+                        setState(() {
+                          _rememberMe = value ?? false;
+                        });
+                        _speak(_rememberMe ? "Remember me enabled" : "Remember me disabled");
+                      },
+                      activeColor: Colors.blue,
+                    ),
+                    Text('Remember me'),
+                    Spacer(),
+                    IconButton(
+                      icon: Icon(Icons.volume_up, color: Colors.blue, size: 16),
+                      onPressed: () => _speak("Remember me option. Enable this to save your login credentials securely."),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8),
 
                 Row(
                   children: [
